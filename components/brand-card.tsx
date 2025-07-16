@@ -98,7 +98,29 @@ export default function BrandCard({
             </Button>
           </div>
         </CardContent>
-        {showActions && (
+        {showActions && !company.inCRM && company.source === 'research' && (
+          <CardFooter className="flex justify-end gap-16 border-t border-gray-200 bg-edge px-24 py-16">
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={handleRejectClick}
+              className="text-black border-gray-300 hover:bg-gray-100"
+              disabled={state.isLoading}
+            >
+              <span className="text-xs">Reject</span>
+            </Button>
+            <Button
+              size="sm"
+              onClick={handleApproveClick}
+              className="btn-premium bg-black text-white hover:bg-gray-800"
+              disabled={state.isLoading}
+            >
+              <Check className="mr-2 h-4 w-4" />
+              <span className="text-xs">Approve for CRM</span>
+            </Button>
+          </CardFooter>
+        )}
+        {showActions && company.inCRM && company.source === 'crm' && (
           <CardFooter className="flex justify-end gap-16 border-t border-gray-200 bg-edge px-24 py-16">
             <Button
               size="sm"

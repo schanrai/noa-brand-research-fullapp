@@ -52,7 +52,9 @@ export default function ConfirmationModal({
             </Avatar>
             <div className="flex-1">
               <DialogTitle className="text-xl font-bold uppercase tracking-wide text-left">
-                Update {company.companyName} in CRM?
+                {company.inCRM && company.source === 'crm'
+                  ? `Update ${company.companyName} in CRM?`
+                  : `Add ${company.companyName} to CRM?`}
               </DialogTitle>
               <p className="text-sm text-gray-600 font-medium uppercase tracking-wide mt-1">
                 {company.industry} • {company.hqLocation}
@@ -62,9 +64,9 @@ export default function ConfirmationModal({
         </DialogHeader>
 
         <DialogDescription id="confirmation-description" className="text-base text-gray-700 leading-relaxed">
-          This will update {company.companyName} in your CRM with the latest research data and any new contact
-          information discovered. You'll be able to track new interactions and manage the updated relationship from your
-          CRM dashboard.
+          {company.inCRM && company.source === 'crm'
+            ? `This will update ${company.companyName} in your CRM with the latest research data and any new contact information discovered. You'll be able to track new interactions and manage the updated relationship from your CRM dashboard.`
+            : `This will add ${company.companyName} to your CRM with all available contact information and research data. You'll be able to track interactions and manage the relationship from your CRM dashboard.`}
         </DialogDescription>
 
         <div className="space-y-6 py-4">
