@@ -6,7 +6,7 @@ import TopNavigation from "../components/top-navigation"
 import LeftSidebar from "../components/left-sidebar"
 import MainContent from "../components/main-content"
 import RightSidebar from "../components/right-sidebar"
-import ConfirmationToast from "../components/confirmation-toast"
+import SuccessBanner from "@/components/confirmation-toast"
 import brandsData from "../data/brands.json"
 import "./globals.css"
 
@@ -21,6 +21,7 @@ export default function Home() {
     size: "",
     revenue: "",
   })
+  const [searchMode, setSearchMode] = useState<'research' | 'crm'>('crm')
 
   // Toast notification state
   const [toastNotification, setToastNotification] = useState<{
@@ -36,6 +37,7 @@ export default function Home() {
 
   const handleSearch = (newFilters: any) => {
     setFilters({ ...filters, ...newFilters })
+    setSearchMode('crm')
 
     // Check if all filters are empty (this indicates a reset/clear all action)
     const allFiltersEmpty =
@@ -144,12 +146,13 @@ export default function Home() {
         show: true,
         type: "success",
         company: company,
-        message: `${company.companyName} has been rejected.`,
+        message: `${company.companyName} has been rejected. Please provide feedback to refine your search.`,
       })
 
       // Remove the company from search results after a delay
       setTimeout(() => {
         setSearchResults((prevResults) => prevResults.filter((c) => c.id !== companyId))
+        setSearchStage("feedback") // Enter feedback mode for chat refinement
       }, 2000)
     }
   }
@@ -184,49 +187,47 @@ export default function Home() {
         size: "",
         revenue: "",
       })
+      setSearchMode('crm')
     } else if (stage === "region") {
       setSearchStage("region")
     } else if (stage === "division") {
       setSearchStage("division")
     } else if (stage === "results") {
-      // Create a mock company based on the user's input or find existing one
-      let companyResult = brandsData.companies.find((company) =>
-        company.companyName.toLowerCase().includes(value.toLowerCase()),
-      )
-      if (!companyResult) {
-        companyResult = {
-          id: "generated-1",
-          companyName: value,
-          industry: "Technology",
-          hqLocation: "San Francisco, CA",
-          division: "Consumer Electronics",
-          description: `${value} is a leading global company with operations across multiple markets and divisions. The company has established itself as a key player in its industry with a focus on innovation and strategic partnerships.`,
-          foundingDate: "2010-01-01",
-          regions: ["North America", "Europe", "Asia Pacific"],
-          annualRevenue: "$3.2B",
-          lastFunding: "$200M Series D (2023)",
-          totalFunding: "$500M",
-          website: `https://${value.toLowerCase().replace(/\s+/g, "")}.com`,
-          employees: 4200,
-          targetAudience: "Global consumers and enterprise clients",
-          sponsorshipTypes: ["Sports Events", "Tech Conferences", "Community Programs"],
-          keySponsorships: ["Innovation Summit", "Global Partnership Awards", "Technology Excellence Program"],
-          strategicFocus: "Expanding global market presence and strategic partnerships",
-          profileURL: `/companies/${value.toLowerCase().replace(/\s+/g, "-")}`,
-          outreachProfile: "Actively seeking strategic partnerships and sponsorship opportunities",
-          lastUpdated: new Date().toISOString().split("T")[0],
-          logo: "/placeholder.svg?height=80&width=80",
-          inCRM: false,
-          contacts: [
-            {
-              name: "John Smith",
-              email: `john.smith@${value.toLowerCase().replace(/\s+/g, "")}.com`,
-              title: "VP of Strategic Partnerships",
-              source: "AI Research",
-              relationshipNotes: "Generated contact based on company research",
-            },
-          ],
-        }
+      setSearchMode('research')
+      // Always create a new company result for research, never return a CRM company
+      const companyResult = {
+        id: `generated-${Date.now()}`,
+        companyName: value,
+        industry: "Technology",
+        hqLocation: "San Francisco, CA",
+        division: "Consumer Electronics",
+        description: `${value} is a leading global company with operations across multiple markets and divisions. The company has established itself as a key player in its industry with a focus on innovation and strategic partnerships.`,
+        foundingDate: "2010-01-01",
+        regions: ["North America", "Europe", "Asia Pacific"],
+        annualRevenue: "$3.2B",
+        lastFunding: "$200M Series D (2023)",
+        totalFunding: "$500M",
+        website: `https://${value.toLowerCase().replace(/\s+/g, "")}.com`,
+        employees: 4200,
+        targetAudience: "Global consumers and enterprise clients",
+        sponsorshipTypes: ["Sports Events", "Tech Conferences", "Community Programs"],
+        keySponsorships: ["Innovation Summit", "Global Partnership Awards", "Technology Excellence Program"],
+        strategicFocus: "Expanding global market presence and strategic partnerships",
+        profileURL: `/companies/${value.toLowerCase().replace(/\s+/g, "-")}`,
+        outreachProfile: "Actively seeking strategic partnerships and sponsorship opportunities",
+        lastUpdated: new Date().toISOString().split("T")[0],
+        logo: "/placeholder.svg?height=80&width=80",
+        inCRM: false,
+        source: "research",
+        contacts: [
+          {
+            name: "John Smith",
+            email: `john.smith@${value.toLowerCase().replace(/\s+/g, "")}.com`,
+            title: "VP of Strategic Partnerships",
+            source: "AI Research",
+            relationshipNotes: "Generated contact based on company research",
+          },
+        ],
       }
       setSearchResults([companyResult])
       setSearchStage("results")
@@ -246,19 +247,16 @@ export default function Home() {
           onReject={handleReject}
           searchStage={searchStage}
           onChatResponse={(tab: string) => handleChatResponse(tab, "")}
+          searchMode={searchMode}
         />
         <RightSidebar />
       </div>
 
-      {/* Toast Notification */}
+      {/* Success Banner Notification */}
       {toastNotification.show && (
-        <ConfirmationToast
-          type={toastNotification.type}
-          company={toastNotification.company}
+        <SuccessBanner
           message={toastNotification.message}
           onDismiss={handleToastDismiss}
-          autoHide={true}
-          duration={5000}
         />
       )}
     </div>

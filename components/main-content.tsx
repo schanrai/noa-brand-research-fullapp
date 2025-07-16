@@ -22,6 +22,7 @@ interface MainContentProps {
     revenue: string
     query?: string
   }
+  searchMode: 'research' | 'crm'
 }
 
 export default function MainContent({
@@ -33,6 +34,7 @@ export default function MainContent({
   searchStage,
   onChatResponse,
   filters = { region: "", industry: "", sponsorshipType: "", size: "", revenue: "" },
+  searchMode,
 }: MainContentProps) {
   const [expandedCompanyId, setExpandedCompanyId] = useState<string | null>(null)
   const [feedbackMode, setFeedbackMode] = useState(false)
@@ -69,20 +71,17 @@ export default function MainContent({
         <div className="space-y-48">
           {!feedbackMode && (
             <div>
-              <h3 className="text-base font-bold uppercase tracking-wide mb-16">CRM Search Results</h3>
+              <h3 className="text-base font-bold uppercase tracking-wide mb-16">
+                {searchMode === 'research' ? 'Brand Research Results' : 'CRM Search Results'}
+              </h3>
               <div className="flex items-start gap-16 mb-48 p-24 border border-gray-200 rounded-lg bg-white">
                 <div className="flex-shrink-0 w-8 h-8 rounded-full border border-gray-300 flex items-center justify-center bg-white">
                   <Lightbulb className="h-4 w-4 text-gray-600" />
                 </div>
                 <p className="text-body text-gray-800 leading-relaxed">
-                  Chris, here are the companies from your CRM that match your search criteria
-                  {filters.query && ` for "${filters.query}"`}
-                  {filters.region && ` in ${filters.region}`}
-                  {filters.industry && ` in the ${filters.industry} industry`}
-                  {filters.sponsorshipType && ` with ${filters.sponsorshipType} sponsorship experience`}
-                  {filters.size && ` with ${filters.size} employees`}
-                  {filters.revenue && ` in the ${filters.revenue} revenue range`}.
-                  You can update any of these records to initiate further research.
+                  {searchMode === 'research'
+                    ? `Here are the results of your brand research query. You can approve a company to add it to your CRM, or reject and refine your search.`
+                    : `Chris, here are the companies from your CRM that match your search criteria${filters.query ? ` for "${filters.query}"` : ''}${filters.region ? ` in ${filters.region}` : ''}${filters.industry ? ` in the ${filters.industry} industry` : ''}${filters.sponsorshipType ? ` with ${filters.sponsorshipType} sponsorship experience` : ''}${filters.size ? ` with ${filters.size} employees` : ''}${filters.revenue ? ` in the ${filters.revenue} revenue range` : ''}. You can update any of these records to initiate further research.`}
                 </p>
               </div>
             </div>
@@ -97,7 +96,7 @@ export default function MainContent({
                   onToggleExpand={() => handleToggleExpand(company.id)}
                   onApprove={() => onApprove(company.id)}
                   onReject={() => handleReject(company.id)}
-                  showActions={!feedbackMode}
+                  showActions={searchStage !== "results" || !company.inCRM}
                 />
 
                 {expandedCompanyId === company.id && <BrandProfilePanel company={company} />}

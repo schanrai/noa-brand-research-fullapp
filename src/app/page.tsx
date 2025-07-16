@@ -256,15 +256,11 @@ export default function Home() {
         <RightSidebar />
       </div>
 
-      {/* Toast Notification */}
+      {/* Success Banner Notification */}
       {toastNotification.show && (
         <ConfirmationToast
-          type={toastNotification.type}
-          company={toastNotification.company}
           message={toastNotification.message}
           onDismiss={handleToastDismiss}
-          autoHide={true}
-          duration={5000}
         />
       )}
     </div>
