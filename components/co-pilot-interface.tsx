@@ -5,10 +5,11 @@ import type React from "react"
 import { useState, useEffect, useRef } from "react"
 import { Button } from "@/components/ui/button"
 import { Send, Lightbulb, Star, Loader2, Network } from "lucide-react"
+import { getLLMResearch } from "@/lib/llm-client"
 
 interface CoPilotInterfaceProps {
-  stage: "initial" | "region" | "division" | "results" | "feedback" | "feedback-clarification"
-  onResponse: (stage: string, value: string) => void
+  stage: "initial" | "region" | "division" |"confirmation" | "results" | "feedback" | "feedback-clarification" | "processing" | "processing-feedback"
+  onResponse: (stage: string, value: string, llmResult?: string) => void
   feedbackMode?: boolean
   onFeedbackComplete?: () => void
 }
@@ -25,17 +26,17 @@ export default function CoPilotInterface({
       role: "assistant",
       content: feedbackMode
         ? "I see you'd like to make some changes to the research results. What specific adjustments would you like me to make to better match what you're looking for?"
-        : "Hey Chris, which company would you like to research today?",
+        : "Hey there, which company would you like to research today?",
       timestamp: new Date(),
     },
   ])
   const [companyName, setCompanyName] = useState("")
   const [isProcessing, setIsProcessing] = useState(false)
   const [processingSteps, setProcessingSteps] = useState<string[]>([])
-  const [currentStage, setCurrentStage] = useState(feedbackMode ? "feedback" : stage)
+  const [currentStage, setCurrentStage] = useState<CoPilotInterfaceProps['stage']>(feedbackMode ? "feedback" : stage)
   const [isCollapsed, setIsCollapsed] = useState(false)
   const [showConversationHistory, setShowConversationHistory] = useState(false)
-
+  const [llmResult, setLlmResult] = useState<string | null>(null)
   const conversationEndRef = useRef<HTMLDivElement>(null)
 
   // Reset conversation when stage changes to initial
@@ -44,7 +45,7 @@ export default function CoPilotInterface({
       setConversationHistory([
         {
           role: "assistant",
-          content: "Hey Chris, which company would you like to research today?",
+          content: "Hey there, which company would you like to research today?",
           timestamp: new Date(),
         },
       ])
@@ -84,28 +85,36 @@ export default function CoPilotInterface({
       let currentStep = 0
       const interval = setInterval(() => {
         if (currentStep < steps.length) {
-          const step = steps[currentStep]
-          if (step && step.trim()) {
-            setProcessingSteps((prev) => [...prev, step])
-          }
-          currentStep++
+          // ... step logic ...
+          currentStep++;
         } else {
-          clearInterval(interval)
-          // Transition to results after processing is complete
-          setTimeout(() => {
-            setIsProcessing(false)
-            if (currentStage === "processing-feedback") {
-              onFeedbackComplete?.()
-            } else {
-              onResponse("results", companyName)
+          clearInterval(interval);
+          // <<== PLACE THE LLM CALL HERE
+          const runLLM = async () => {
+            try {
+              const model = "openai/gpt-4o-mini-search-preview"; // Hardcoded for company search
+              const prompt = `Search for company: ${companyName}. Return a comprehensive summary including industry, location, annual revenue, funding, headquarters, employees, target audiences and key sponsorships and marketing campaigns in JSON format.`;
+              const output = await getLLMResearch(prompt, model);
+              setLlmResult(output);
+            } catch (e) {
+              setLlmResult("Error: " + (e as Error).message);
+            } finally {
+              setIsProcessing(false);
+              if (currentStage === "processing-feedback") {
+                onFeedbackComplete?.();
+              } else {
+                onResponse("results", companyName);
+              }
             }
-          }, 1500)
+          };
+  
+          setTimeout(runLLM, 1500); // Small delay after steps complete
         }
       }, 1000)
 
       return () => clearInterval(interval)
     }
-  }, [isProcessing, companyName, onResponse, currentStage, onFeedbackComplete])
+  }, [isProcessing, companyName, onResponse, currentStage, onFeedbackComplete, setLlmResult, llmResult])
 
   // Auto-scroll to bottom when new messages are added
   useEffect(() => {
