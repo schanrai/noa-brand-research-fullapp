@@ -13,7 +13,7 @@ interface MainContentProps {
   onApprove: (companyId: string) => void
   onReject: (companyId: string) => void
   searchStage: "initial" | "region" | "division" | "results"
-  onChatResponse: (tab: string) => void
+  onChatResponse: (tab: string, value?: string) => void
   filters?: {
     region: string
     industry: string
