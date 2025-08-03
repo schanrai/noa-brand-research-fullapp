@@ -112,8 +112,19 @@ export default function BrandProfilePanel({ company }: BrandProfilePanelProps) {
                 </AccordionContent>
               </AccordionItem>
 
+
+              {/* Marketing Activity */}
+                <AccordionItem value="marketing-activity">
+                  <AccordionTrigger>Marketing Activity</AccordionTrigger>
+                  <AccordionContent>
+                    <p className="text-sm text-muted-foreground">
+                      {company.companyName} employs a comprehensive marketing strategy...
+                    </p>
+                  </AccordionContent>
+                </AccordionItem>
+
               <AccordionItem value="sponsorship-history">
-                <AccordionTrigger>Key Sponsorships & Campaigns</AccordionTrigger>
+                <AccordionTrigger>Key Sponsorships & Experiential Activities</AccordionTrigger>
                 <AccordionContent>
                   <p className="text-sm text-muted-foreground">
                     {company.companyName} has been active in sponsorships across
