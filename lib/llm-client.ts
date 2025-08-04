@@ -40,8 +40,8 @@ export async function getDetailedReport(prompt: string) {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ 
       prompt, 
-      model: "openai/gpt-4o-search-preview"
-      // Uses default temperature and other params
+      model: "openai/gpt-4o-search-preview",
+      max_tokens: 4000
     }),
   });
   const data = await response.json();
