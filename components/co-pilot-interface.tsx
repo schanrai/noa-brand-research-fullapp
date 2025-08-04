@@ -5,10 +5,10 @@ import type React from "react"
 import { useState, useEffect, useRef } from "react"
 import { Button } from "@/components/ui/button"
 import { Send, Lightbulb, Star, Loader2, Network } from "lucide-react"
-import { getLLMResearch, getStructuredData } from "@/lib/llm-client"
+import { getLLMResearch, getStructuredData, getDetailedReport } from "@/lib/llm-client"
 
 interface CoPilotInterfaceProps {
-  stage: "initial" | "region" | "division" |"confirmation" | "results" | "feedback" | "feedback-clarification" | "processing" | "processing-feedback"
+  stage: "initial" | "region" | "region-specific" | "division" | "division-specific" | "confirmation" | "results" | "feedback" | "feedback-clarification" | "processing" | "processing-feedback"
   onResponse: (stage: string, value: string, llmResult?: string) => void
   feedbackMode?: boolean
   onFeedbackComplete?: () => void
@@ -39,6 +39,11 @@ export default function CoPilotInterface({
   const [llmResult, setLlmResult] = useState<string | null>(null)
   const conversationEndRef = useRef<HTMLDivElement>(null)
 
+  // Add these state variables at the top with your other state declarations
+  const [researchFocus, setResearchFocus] = useState<"comprehensive" | "specific" | "products">("comprehensive")
+  const [specificDivision, setSpecificDivision] = useState("")
+  const [regionFocus, setRegionFocus] = useState<"global" | "specific">("global")
+  const [specificRegion, setSpecificRegion] = useState("")
   // Reset conversation when stage changes to initial
   useEffect(() => {
     if (stage === "initial" && !feedbackMode) {
@@ -51,6 +56,10 @@ export default function CoPilotInterface({
       ])
       setUserInput("")
       setCompanyName("")
+      setResearchFocus("comprehensive")
+      setSpecificDivision("")
+      setRegionFocus("global")
+      setSpecificRegion("")
       setIsProcessing(false)
       setProcessingSteps([])
       setCurrentStage("initial")
@@ -85,16 +94,128 @@ export default function CoPilotInterface({
       let currentStep = 0
       const interval = setInterval(() => {
         if (currentStep < steps.length) {
-          // ... step logic ...
+          setProcessingSteps(steps.slice(0, currentStep + 1));
           currentStep++;
         } else {
           clearInterval(interval);
           // <<== PLACE THE LLM CALL HERE
           const runLLM = async () => {
             try {
-              const prompt = `I would like to research the company Apple Inc.`;
-              const output = await getStructuredData(prompt);
-              setLlmResult(output);
+              // Build the region part of the prompt
+              const regionText = regionFocus === "specific" ? ` in ${specificRegion}` : "";
+              
+              // Build the focus part of the prompt
+              let focusText = "";
+              if (researchFocus === "comprehensive") {
+                focusText = "";
+              } else if (researchFocus === "specific") {
+                focusText = `, specifically their ${specificDivision} division`;
+              }
+              
+              // First, get structured data
+              const structuredPrompt = `I would like to research the company ${companyName}${regionText}${focusText}. I need the six company data points below.
+
+You are a data‐formatter.  Output **exactly twelve lines** and then stop.  No extra words.
+
+Overwrite only the <value> placeholders.  Do not add any commentary, dates, "as of…," citations, parentheses, or bullets.
+
+INDUSTRY
+
+<value>
+
+FOUNDED
+
+<value>
+
+WEBSITE
+
+<value>
+
+HEADQUARTERS
+
+<value>
+
+ANNUAL REVENUE
+
+<value>
+
+EMPLOYEES
+
+<value>`;
+              
+              const structuredOutput = await getStructuredData(structuredPrompt);
+              
+              // Then, get detailed analysis
+              const detailedRegionText = regionFocus === "specific" ? `specifically their ${specificRegion} and ` : "";
+              const detailedDivisionText = researchFocus === "comprehensive" ? "overall operations" : 
+                                          researchFocus === "specific" ? `${specificDivision}` : "overall operations";
+              
+              const detailedPrompt = `I would like to research the company ${companyName}, ${detailedRegionText}${detailedDivisionText}.
+
+The research should be crafted in a concise, professional and insight-rich style, suitable for displaying onscreen in a dedicated research application for evaluating potential partnership opportunities, and for populating in a CRM thereafter.
+
+Use subheadings, bullet points, and include citations or references to source materials wherever possible. Where information is unavailable, note it transparently.
+
+Adhere to the following structure and content guidelines:
+
+1. **Company Overview(100-150 words):**
+
+Provide:
+
+Concise company overview including global footprint, core business divisions and primary service lines (e.g., B2B, Retail)
+
+2. **Company Background (150–350 words)**
+
+Summarize core divisions, key global and ${regionFocus === "specific" ? specificRegion : "global"} milestones, main offices, structure, and defining values or cultural traits.
+
+3. **Financial Overview (100–200 words)**
+
+Summarize key financial milestones, indicators of stability, ownership structure, total funding and latest round, plus any recent acquisitions or mergers.
+
+4. **Audience & Segmentation (50–75 words)**
+
+Outline target audiences in ${regionFocus === "specific" ? specificRegion : "global markets"}, including current customer types (age, psychographics, wealth, roles) and any notable emerging segments.
+
+5. **Marketing Activity (350-550 words)**
+
+Summarize marketing activity over the last two years. Split into:
+
+- **Global Marketing**  – campaign focus, thought leadership
+- **Regional Marketing** – key channels (e.g., events, digital) and core themes/messages
+
+6. **Sponsorships and Experiential Activities** (350-850 words) 
+
+Provide detailed overview of the following over the last three years 
+
+**Sponsorships/Partnerships (if applicable)**
+
+- Highlight  current and recent sponsorships in sports, arts, culture, entertainment or lifestyle only, with details on scope, strategic fit, and alignment with brand goals. If none exist, please note this.
+
+**Experiential Events ( if applicable)**
+
+- Detail experiential initiatives—e.g., VIP/client-only events, curated experiences, global tours, museum tie‑ins. Include purpose/context and  how cultural or thought leadership elements engage target audiences. If none exist, please note this.
+
+7. **Social Media Presence** (350 -450words)
+
+Assess recent (last two years) platform activity, engagement tactics, and brand tone—by division and region—across LinkedIn, Twitter, Instagram, etc. Reference specific examples of noteworthy campaigns.
+
+8. **Strategic Focus**
+
+Summarize how the company differentiates and positions itself in the market, including key brand traits and competitive stance. Include any Risk considerations or sensitivities (e.g., past litigation, reputation constraints)
+
+9. **Contacts:**
+
+Include names, title/designations, emails and phone numbers where possible.
+
+- Leadership team (in ${regionFocus === "specific" ? specificRegion : "global"} if possible)
+- Key Contacts in Marketing and Sponsorships functions.`;
+              
+              const detailedOutput = await getDetailedReport(detailedPrompt);
+              
+              // Combine both results
+              const combinedResult = `=== STRUCTURED DATA ===\n\n${structuredOutput}\n\n=== DETAILED ANALYSIS ===\n\n${detailedOutput}`;
+              setLlmResult(combinedResult);
+              
             } catch (e) {
               setLlmResult("Error: " + (e as Error).message);
             } finally {
@@ -113,7 +234,7 @@ export default function CoPilotInterface({
 
       return () => clearInterval(interval)
     }
-  }, [isProcessing, companyName, onResponse, currentStage, onFeedbackComplete, setLlmResult, llmResult])
+  }, [isProcessing, companyName, onResponse, currentStage, onFeedbackComplete, setLlmResult, llmResult, researchFocus, specificDivision, regionFocus, specificRegion])
 
   // Auto-scroll to bottom when new messages are added
   useEffect(() => {
@@ -148,15 +269,72 @@ export default function CoPilotInterface({
 
     if (currentStage === "initial") {
       setCompanyName(userInput)
-      assistantResponse = `Great! Would you like me to focus on a specific geographical market or region for ${userInput}? For example, North America, Europe, Asia Pacific, or would you prefer a global overview?`
+      assistantResponse = `Great! How would you like me to focus the research on ${userInput}?
+
+1. Global overview (worldwide operations)
+2. Specific region or market
+
+Please choose 1 or 2, or describe your preference.`
       nextStage = "region"
       setCurrentStage("region")
     } else if (currentStage === "region") {
-      assistantResponse = `Perfect! Is there a specific business area, division, or aspect of ${companyName} you'd like me to focus on? For example, their main products/services, a particular business unit, or would you prefer a comprehensive overview?`
+      const userResponse = userInput.trim();
+      
+      if (userResponse === "1") {
+        setRegionFocus("global");
+        setSpecificRegion("global");
+        assistantResponse = `Perfect! Now how would you like me to focus the research on ${companyName}?
+
+1. Comprehensive overview (all business areas)
+2. Specific division or business unit
+
+Please choose 1 or 2.`
+        nextStage = "division"
+        setCurrentStage("division")
+      } else if (userResponse === "2") {
+        setRegionFocus("specific");
+        assistantResponse = `Great! Which specific region or market would you like me to focus on? For example: North America, Europe, Asia Pacific, Latin America, or a specific country.`
+        nextStage = "region-specific"
+        setCurrentStage("region-specific")
+      } else {
+        // Invalid input - ask them to choose 1 or 2
+        assistantResponse = `Please choose 1 for global overview or 2 for specific region.`
+        nextStage = "region"
+        setCurrentStage("region")
+      }
+    } else if (currentStage === "region-specific") {
+      setSpecificRegion(userInput);
+      assistantResponse = `Perfect! Now how would you like me to focus the research on ${companyName} in ${userInput}?
+
+1. Comprehensive overview (all business areas)
+2. Specific division or business unit
+
+Please choose 1 or 2.`
       nextStage = "division"
       setCurrentStage("division")
     } else if (currentStage === "division") {
-      assistantResponse = `Makes sense - I'll present you with an initial research draft which you will be able to refine or approve. Sound good?`
+      const userResponse = userInput.trim();
+      
+      if (userResponse === "1") {
+        setResearchFocus("comprehensive");
+        // Don't set specificDivision for comprehensive overview
+        assistantResponse = `Perfect! I'll provide a research report for ${companyName}${regionFocus === "specific" ? ` in ${specificRegion}` : " globally"}. Sound good?`
+        nextStage = "confirmation"
+        setCurrentStage("confirmation")
+      } else if (userResponse === "2") {
+        setResearchFocus("specific");
+        assistantResponse = `Great! Which specific division or business unit would you like me to focus on?`
+        nextStage = "division-specific"
+        setCurrentStage("division-specific")
+      } else {
+        // Invalid input - ask them to choose 1 or 2
+        assistantResponse = `Please choose 1 for comprehensive overview or 2 for specific division.`
+        nextStage = "division"
+        setCurrentStage("division")
+      }
+    } else if (currentStage === "division-specific") {
+      setSpecificDivision(userInput);
+      assistantResponse = `Perfect! I'll provide a research report for ${companyName}${regionFocus === "specific" ? ` in ${specificRegion}` : " globally"}, focusing on their ${userInput} division. Sound good?`
       nextStage = "confirmation"
       setCurrentStage("confirmation")
     } else if (currentStage === "confirmation") {

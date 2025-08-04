@@ -139,3 +139,49 @@ The brand profile panel can remain largely the same since it will receive the co
     {company.financialOverview || "No financial overview available."}
   </p>
 </AccordionContent>
+
+
+
+Stage 5: Add the Second Call
+Once Stage 4 is working, add the second call:
+
+// ... existing imports ...
+import { getStructuredData, getDetailedReport } from "@/lib/llm-client"
+
+// In the runLLM function:
+const runLLM = async () => {
+  try {
+    // First call: Structured data
+    const structuredPrompt = `Search for company: ${companyName}. Return a comprehensive summary including industry, location, annual revenue, funding, headquarters, employees, target audiences and key sponsorships and marketing campaigns in JSON format.`;
+    const structuredOutput = await getStructuredData(structuredPrompt);
+    
+    // Second call: Detailed report
+    const detailedPrompt = `Generate a detailed brand report for ${companyName} including company background, financial overview, marketing activity, sponsorship history, strategic focus, and target audience.`;
+    const detailedOutput = await getDetailedReport(detailedPrompt);
+    
+    // Combine the outputs
+    const combinedResult = {
+      structured: structuredOutput,
+      detailed: detailedOutput
+    };
+    
+    setLlmResult(JSON.stringify(combinedResult, null, 2));
+  } catch (e) {
+    setLlmResult("Error: " + (e as Error).message);
+  } finally {
+    setIsProcessing(false);
+    if (currentStage === "processing-feedback") {
+      onFeedbackComplete?.();
+    } else {
+      onResponse("results", companyName);
+    }
+  }
+};
+
+Test this stage:
+Verify both calls work
+Check that you get both structured and detailed outputs
+Verify the structured output is concise and the detailed output is more comprehensive
+
+Stage 6: Add Error Handling and Loading States
+Add proper error handling for individual calls:
