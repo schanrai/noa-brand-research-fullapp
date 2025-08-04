@@ -5,7 +5,7 @@ import type React from "react"
 import { useState, useEffect, useRef } from "react"
 import { Button } from "@/components/ui/button"
 import { Send, Lightbulb, Star, Loader2, Network } from "lucide-react"
-import { getLLMResearch } from "@/lib/llm-client"
+import { getLLMResearch, getStructuredData } from "@/lib/llm-client"
 
 interface CoPilotInterfaceProps {
   stage: "initial" | "region" | "division" |"confirmation" | "results" | "feedback" | "feedback-clarification" | "processing" | "processing-feedback"
@@ -92,9 +92,8 @@ export default function CoPilotInterface({
           // <<== PLACE THE LLM CALL HERE
           const runLLM = async () => {
             try {
-              const model = "openai/gpt-4o-mini-search-preview"; // Hardcoded for company search
-              const prompt = `Search for company: ${companyName}. Return a comprehensive summary including industry, location, annual revenue, funding, headquarters, employees, target audiences and key sponsorships and marketing campaigns in JSON format.`;
-              const output = await getLLMResearch(prompt, model);
+              const prompt = `I would like to research the company Apple Inc.`;
+              const output = await getStructuredData(prompt);
               setLlmResult(output);
             } catch (e) {
               setLlmResult("Error: " + (e as Error).message);

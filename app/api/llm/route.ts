@@ -1,23 +1,36 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(req: NextRequest) {
-  const { prompt, model = "openai/gpt-4-0-search-preview" } = await req.json();
+  const { 
+    prompt, 
+    model = "openai/gpt-4o-search-preview",
+    temperature,
+    top_p,
+    max_tokens,
+    stop
+   } = await req.json();
+
+   const requestBody: any = {
+    model,
+    messages: [
+      { role: 'system', content: 'You are a helpful assistant for brand research.' },
+      { role: 'user', content: prompt }
+    ],
+    temperature: temperature ?? 0.7, // Default if not provided
+  };
+
+  // Only add parameters if they are explicitly provided
+  if (top_p !== undefined) requestBody.top_p = top_p;
+  if (max_tokens !== undefined) requestBody.max_tokens = max_tokens;
+  if (stop !== undefined) requestBody.stop = stop;
 
   const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
     method: 'POST',
     headers: {
-      'Authorization': `Bearer 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`,
+      'Authorization': `Bearer ${process.env.OPENROUTER_API_KEY}`,
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({
-      model,
-      messages: [
-        { role: 'system', content: 'You are a helpful assistant for brand research.' },
-        { role: 'user', content: prompt }
-      ],
-      //max_tokens: 1024,
-      temperature: 0.7,
-    }),
+    body: JSON.stringify(requestBody),
   });
 
   if (!response.ok) {
