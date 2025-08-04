@@ -1,3 +1,4 @@
 {
-  "/page": "app/page.js"
+  "/api/llm/route": "app/api/llm/route.js",
+  "/_not-found/page": "app/_not-found/page.js"
 }
