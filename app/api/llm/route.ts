@@ -7,7 +7,8 @@ export async function POST(req: NextRequest) {
     temperature,
     top_p,
     max_tokens,
-    stop
+    stop,
+    response_format
    } = await req.json();
 
    const requestBody: any = {
@@ -23,6 +24,7 @@ export async function POST(req: NextRequest) {
   if (top_p !== undefined) requestBody.top_p = top_p;
   if (max_tokens !== undefined) requestBody.max_tokens = max_tokens;
   if (stop !== undefined) requestBody.stop = stop;
+  if (response_format !== undefined) requestBody.response_format = response_format;
 
   const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
     method: 'POST',
