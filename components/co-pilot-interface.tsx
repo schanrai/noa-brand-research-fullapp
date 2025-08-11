@@ -36,7 +36,8 @@ export default function CoPilotInterface({
   const [currentStage, setCurrentStage] = useState<CoPilotInterfaceProps['stage']>(feedbackMode ? "feedback" : stage)
   const [isCollapsed, setIsCollapsed] = useState(false)
   const [showConversationHistory, setShowConversationHistory] = useState(false)
-  const [llmResult, setLlmResult] = useState<string | null>(null)
+  const [llmResult, setLlmResult] = useState<string | null>(null);
+  const [structuredData, setStructuredData] = useState<any>(null);
   const conversationEndRef = useRef<HTMLDivElement>(null)
 
   // Add these state variables at the top with your other state declarations
@@ -99,6 +100,7 @@ export default function CoPilotInterface({
         } else {
           clearInterval(interval);
           // <<== PLACE THE LLM CALL HERE
+          let combinedResult: any = null;
           const runLLM = async () => {
             try {
               // Build the region part of the prompt
@@ -112,40 +114,23 @@ export default function CoPilotInterface({
                 focusText = `, specifically their ${specificDivision} division`;
               }
               
-              // First, get structured data
-              const structuredPrompt = `I would like to research the company ${companyName}${regionText}${focusText}. I need the six company data points below.
+              // Update the structured data prompt to request JSON format
+              const structuredPrompt = `I would like to research the company ${companyName}${regionText}${focusText}. 
 
-You are a data‐formatter.  Output **exactly twelve lines** and then stop.  No extra words.
+IMPORTANT: You must respond with ONLY valid JSON. Do not include any other text, explanations, or formatting.
 
-Overwrite only the <value> placeholders.  Do not add any commentary, dates, "as of…," citations, parentheses, or bullets.
+Please provide the company data in this exact JSON format:
 
-INDUSTRY
-
-<value>
-
-FOUNDED
-
-<value>
-
-WEBSITE
-
-<value>
-
-HEADQUARTERS
-
-<value>
-
-ANNUAL REVENUE
-
-<value>
-
-EMPLOYEES
-
-<value>`;
+{
+  "industry": "<value>",
+  "founded": "<value>",
+  "website": "<value>",
+  "headquarters": "<value>",
+  "annualRevenue": "<value>",
+  "employees": "<value>"
+}`;
               
-              const structuredOutput = await getStructuredData(structuredPrompt);
-              
-              // Then, get detailed analysis
+              // Update the detailed analysis prompt to request JSON format
               const detailedRegionText = regionFocus === "specific" ? `specifically their ${specificRegion} and ` : "";
               const detailedDivisionText = researchFocus === "comprehensive" ? "overall operations" : 
                                           researchFocus === "specific" ? `${specificDivision}` : "overall operations";
@@ -154,67 +139,93 @@ EMPLOYEES
 
 The research should be crafted in a concise, professional and insight-rich style, suitable for displaying onscreen in a dedicated research application for evaluating potential partnership opportunities, and for populating in a CRM thereafter.
 
-Use subheadings, bullet points, and include citations or references to source materials wherever possible. Where information is unavailable, note it transparently.
+IMPORTANT: You must respond with ONLY valid JSON. Do not include any other text, explanations, or formatting.
 
-Adhere to the following structure and content guidelines:
+Please provide the research in this exact JSON format:
 
-1. **Company Overview(100-150 words):**
-
-Provide:
-
-Concise company overview including global footprint, core business divisions and primary service lines (e.g., B2B, Retail)
-
-2. **Company Background (150–350 words)**
-
-Summarize core divisions, key global and ${regionFocus === "specific" ? specificRegion : "global"} milestones, main offices, structure, and defining values or cultural traits.
-
-3. **Financial Overview (100–200 words)**
-
-Summarize key financial milestones, indicators of stability, ownership structure, total funding and latest round, plus any recent acquisitions or mergers.
-
-4. **Audience & Segmentation (50–75 words)**
-
-Outline target audiences in ${regionFocus === "specific" ? specificRegion : "global markets"}, including current customer types (age, psychographics, wealth, roles) and any notable emerging segments.
-
-5. **Marketing Activity (350-550 words)**
-
-Summarize marketing activity over the last two years. Split into:
-
-- **Global Marketing**  – campaign focus, thought leadership
-- **Regional Marketing** – key channels (e.g., events, digital) and core themes/messages
-
-6. **Sponsorships and Experiential Activities** (350-850 words) 
-
-Provide detailed overview of the following over the last three years 
-
-**Sponsorships/Partnerships (if applicable)**
-
-- Highlight  current and recent sponsorships in sports, arts, culture, entertainment or lifestyle only, with details on scope, strategic fit, and alignment with brand goals. If none exist, please note this.
-
-**Experiential Events ( if applicable)**
-
-- Detail experiential initiatives—e.g., VIP/client-only events, curated experiences, global tours, museum tie‑ins. Include purpose/context and  how cultural or thought leadership elements engage target audiences. If none exist, please note this.
-
-7. **Social Media Presence** (350 -450words)
-
-Assess recent (last two years) platform activity, engagement tactics, and brand tone—by division and region—across LinkedIn, Twitter, Instagram, etc. Reference specific examples of noteworthy campaigns.
-
-8. **Strategic Focus**
-
-Summarize how the company differentiates and positions itself in the market, including key brand traits and competitive stance. Include any Risk considerations or sensitivities (e.g., past litigation, reputation constraints)
-
-9. **Contacts:**
-
-Include names, title/designations, emails and phone numbers where possible.
-
-- Leadership team (in ${regionFocus === "specific" ? specificRegion : "global"} if possible)
-- Key Contacts in Marketing and Sponsorships functions.`;
+{
+  "companyOverview": {
+    "content": "<100-150 words about company overview including global footprint, core business divisions and primary service lines>",
+    "wordCount": <number>
+  },
+  "companyBackground": {
+    "content": "<150-350 words about core divisions, key milestones, main offices, structure, and defining values>",
+    "wordCount": <number>
+  },
+  "financialOverview": {
+    "content": "<100-200 words about key financial milestones, stability indicators, ownership structure, funding, and recent acquisitions>",
+    "wordCount": <number>
+  },
+  "audienceSegmentation": {
+    "content": "<50-75 words about target audiences, current customer types, and emerging segments>",
+    "wordCount": <number>
+  },
+  "marketingActivity": {
+    "globalMarketing": "<content about global campaign focus and thought leadership>",
+    "regionalMarketing": "<content about key channels, events, digital, and core themes/messages>",
+    "wordCount": <number>
+  },
+  "sponsorshipsExperiential": {
+    "sponsorships": "<content about current and recent sponsorships in sports, arts, culture, entertainment or lifestyle>",
+    "experientialEvents": "<content about VIP/client-only events, curated experiences, global tours, museum tie-ins>",
+    "wordCount": <number>
+  },
+  "socialMediaPresence": {
+    "content": "<350-450 words about recent platform activity, engagement tactics, and brand tone across LinkedIn, Twitter, Instagram>",
+    "wordCount": <number>
+  },
+  "strategicFocus": {
+    "content": "<content about how the company differentiates itself, brand traits, competitive stance, and risk considerations>",
+    "wordCount": <number>
+  },
+  "contacts": {
+    "leadership": [
+      {
+        "name": "<name>",
+        "title": "<title>",
+        "email": "<email>",
+        "phone": "<phone>"
+      }
+    ],
+    "marketingContacts": [
+      {
+        "name": "<name>",
+        "title": "<title>",
+        "email": "<email>",
+        "phone": "<phone>"
+      }
+    ],
+    "sponsorshipContacts": [
+      {
+        "name": "<name>",
+        "title": "<title>",
+        "email": "<email>",
+        "phone": "<phone>"
+      }
+    ]
+  }
+}`;
               
+              // Update the response handling to work with JSON data
+              const structuredOutput = await getStructuredData(structuredPrompt);
               const detailedOutput = await getDetailedReport(detailedPrompt);
+
+              // Combine both results into a single JSON object
+              combinedResult = {
+                structuredData: structuredOutput,
+                detailedAnalysis: detailedOutput,
+                metadata: {
+                  companyName,
+                  regionFocus,
+                  specificRegion,
+                  researchFocus,
+                  specificDivision,
+                  timestamp: new Date().toISOString()
+                }
+              };
               
-              // Combine both results
-              const combinedResult = `=== STRUCTURED DATA ===\n\n${structuredOutput}\n\n=== DETAILED ANALYSIS ===\n\n${detailedOutput}`;
-              setLlmResult(combinedResult);
+              setLlmResult(JSON.stringify(combinedResult, null, 2));
+              setStructuredData(combinedResult);
               
             } catch (e) {
               setLlmResult("Error: " + (e as Error).message);
@@ -223,7 +234,8 @@ Include names, title/designations, emails and phone numbers where possible.
               if (currentStage === "processing-feedback") {
                 onFeedbackComplete?.();
               } else {
-                onResponse("results", companyName);
+                // Pass the structured JSON data to the parent component
+                onResponse("results", companyName, JSON.stringify(combinedResult));
               }
             }
           };
