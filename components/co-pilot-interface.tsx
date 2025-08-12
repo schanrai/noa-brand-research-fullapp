@@ -5,10 +5,10 @@ import type React from "react"
 import { useState, useEffect, useRef } from "react"
 import { Button } from "@/components/ui/button"
 import { Send, Lightbulb, Star, Loader2, Network } from "lucide-react"
-import { getLLMResearch, getStructuredData } from "@/lib/llm-client"
+import { getLLMResearch, getStructuredData, getDetailedReport } from "@/lib/llm-client"
 
 interface CoPilotInterfaceProps {
-  stage: "initial" | "region" | "division" |"confirmation" | "results" | "feedback" | "feedback-clarification" | "processing" | "processing-feedback"
+  stage: "initial" | "region" | "region-specific" | "division" | "division-specific" | "confirmation" | "results" | "feedback" | "feedback-clarification" | "processing" | "processing-feedback"
   onResponse: (stage: string, value: string, llmResult?: string) => void
   feedbackMode?: boolean
   onFeedbackComplete?: () => void
@@ -36,9 +36,15 @@ export default function CoPilotInterface({
   const [currentStage, setCurrentStage] = useState<CoPilotInterfaceProps['stage']>(feedbackMode ? "feedback" : stage)
   const [isCollapsed, setIsCollapsed] = useState(false)
   const [showConversationHistory, setShowConversationHistory] = useState(false)
-  const [llmResult, setLlmResult] = useState<string | null>(null)
+  const [llmResult, setLlmResult] = useState<string | null>(null);
+  const [structuredData, setStructuredData] = useState<any>(null);
   const conversationEndRef = useRef<HTMLDivElement>(null)
 
+  // Add these state variables at the top with your other state declarations
+  const [researchFocus, setResearchFocus] = useState<"comprehensive" | "specific" | "products">("comprehensive")
+  const [specificDivision, setSpecificDivision] = useState("")
+  const [regionFocus, setRegionFocus] = useState<"global" | "specific">("global")
+  const [specificRegion, setSpecificRegion] = useState("")
   // Reset conversation when stage changes to initial
   useEffect(() => {
     if (stage === "initial" && !feedbackMode) {
@@ -51,6 +57,10 @@ export default function CoPilotInterface({
       ])
       setUserInput("")
       setCompanyName("")
+      setResearchFocus("comprehensive")
+      setSpecificDivision("")
+      setRegionFocus("global")
+      setSpecificRegion("")
       setIsProcessing(false)
       setProcessingSteps([])
       setCurrentStage("initial")
@@ -85,16 +95,138 @@ export default function CoPilotInterface({
       let currentStep = 0
       const interval = setInterval(() => {
         if (currentStep < steps.length) {
-          // ... step logic ...
+          setProcessingSteps(steps.slice(0, currentStep + 1));
           currentStep++;
         } else {
           clearInterval(interval);
           // <<== PLACE THE LLM CALL HERE
+          let combinedResult: any = null;
           const runLLM = async () => {
             try {
-              const prompt = `I would like to research the company Apple Inc.`;
-              const output = await getStructuredData(prompt);
-              setLlmResult(output);
+              // Build the region part of the prompt
+              const regionText = regionFocus === "specific" ? ` in ${specificRegion}` : "";
+              
+              // Build the focus part of the prompt
+              let focusText = "";
+              if (researchFocus === "comprehensive") {
+                focusText = "";
+              } else if (researchFocus === "specific") {
+                focusText = `, specifically their ${specificDivision} division`;
+              }
+              
+              // Update the structured data prompt to request JSON format
+              const structuredPrompt = `I would like to research the company ${companyName}${regionText}${focusText}. 
+
+IMPORTANT: You must respond with ONLY valid JSON. Do not include any other text, explanations, or formatting.
+
+Please provide the company data in this exact JSON format:
+
+{
+  "industry": "<value>",
+  "founded": "<value>",
+  "website": "<value>",
+  "headquarters": "<value>",
+  "annualRevenue": "<value>",
+  "employees": "<value>"
+}`;
+              
+              // Update the detailed analysis prompt to request JSON format
+              const detailedRegionText = regionFocus === "specific" ? `specifically their ${specificRegion} and ` : "";
+              const detailedDivisionText = researchFocus === "comprehensive" ? "overall operations" : 
+                                          researchFocus === "specific" ? `${specificDivision}` : "overall operations";
+              
+              const detailedPrompt = `I would like to research the company ${companyName}, ${detailedRegionText}${detailedDivisionText}.
+
+The research should be crafted in a concise, professional and insight-rich style, suitable for displaying onscreen in a dedicated research application for evaluating potential partnership opportunities, and for populating in a CRM thereafter.
+
+IMPORTANT: You must respond with ONLY valid JSON. Do not include any other text, explanations, or formatting.
+
+Please provide the research in this exact JSON format:
+
+{
+  "companyOverview": {
+    "content": "<100-150 words about company overview including global footprint, core business divisions and primary service lines>",
+    "wordCount": <number>
+  },
+  "companyBackground": {
+    "content": "<150-350 words about core divisions, key milestones, main offices, structure, and defining values>",
+    "wordCount": <number>
+  },
+  "financialOverview": {
+    "content": "<100-200 words about key financial milestones, stability indicators, ownership structure, funding, and recent acquisitions>",
+    "wordCount": <number>
+  },
+  "audienceSegmentation": {
+    "content": "<50-75 words about target audiences, current customer types, and emerging segments>",
+    "wordCount": <number>
+  },
+  "marketingActivity": {
+    "globalMarketing": "<content about global campaign focus and thought leadership>",
+    "regionalMarketing": "<content about key channels, events, digital, and core themes/messages>",
+    "wordCount": <number>
+  },
+  "sponsorshipsExperiential": {
+    "sponsorships": "<content about current and recent sponsorships in sports, arts, culture, entertainment or lifestyle>",
+    "experientialEvents": "<content about VIP/client-only events, curated experiences, global tours, museum tie-ins>",
+    "wordCount": <number>
+  },
+  "socialMediaPresence": {
+    "content": "<350-450 words about recent platform activity, engagement tactics, and brand tone across LinkedIn, Twitter, Instagram>",
+    "wordCount": <number>
+  },
+  "strategicFocus": {
+    "content": "<content about how the company differentiates itself, brand traits, competitive stance, and risk considerations>",
+    "wordCount": <number>
+  },
+  "contacts": {
+    "leadership": [
+      {
+        "name": "<name>",
+        "title": "<title>",
+        "email": "<email>",
+        "phone": "<phone>"
+      }
+    ],
+    "marketingContacts": [
+      {
+        "name": "<name>",
+        "title": "<title>",
+        "email": "<email>",
+        "phone": "<phone>"
+      }
+    ],
+    "sponsorshipContacts": [
+      {
+        "name": "<name>",
+        "title": "<title>",
+        "email": "<email>",
+        "phone": "<phone>"
+      }
+    ]
+  }
+}`;
+              
+              // Update the response handling to work with JSON data
+              const structuredOutput = await getStructuredData(structuredPrompt);
+              const detailedOutput = await getDetailedReport(detailedPrompt);
+
+              // Combine both results into a single JSON object
+              combinedResult = {
+                structuredData: structuredOutput,
+                detailedAnalysis: detailedOutput,
+                metadata: {
+                  companyName,
+                  regionFocus,
+                  specificRegion,
+                  researchFocus,
+                  specificDivision,
+                  timestamp: new Date().toISOString()
+                }
+              };
+              
+              setLlmResult(JSON.stringify(combinedResult, null, 2));
+              setStructuredData(combinedResult);
+              
             } catch (e) {
               setLlmResult("Error: " + (e as Error).message);
             } finally {
@@ -102,7 +234,8 @@ export default function CoPilotInterface({
               if (currentStage === "processing-feedback") {
                 onFeedbackComplete?.();
               } else {
-                onResponse("results", companyName);
+                // Pass the structured JSON data to the parent component
+                onResponse("results", companyName, JSON.stringify(combinedResult));
               }
             }
           };
@@ -113,7 +246,7 @@ export default function CoPilotInterface({
 
       return () => clearInterval(interval)
     }
-  }, [isProcessing, companyName, onResponse, currentStage, onFeedbackComplete, setLlmResult, llmResult])
+  }, [isProcessing, companyName, onResponse, currentStage, onFeedbackComplete, setLlmResult, llmResult, researchFocus, specificDivision, regionFocus, specificRegion])
 
   // Auto-scroll to bottom when new messages are added
   useEffect(() => {
@@ -148,15 +281,72 @@ export default function CoPilotInterface({
 
     if (currentStage === "initial") {
       setCompanyName(userInput)
-      assistantResponse = `Great! Would you like me to focus on a specific geographical market or region for ${userInput}? For example, North America, Europe, Asia Pacific, or would you prefer a global overview?`
+      assistantResponse = `Great! How would you like me to focus the research on ${userInput}?
+
+1. Global overview (worldwide operations)
+2. Specific region or market
+
+Please choose 1 or 2, or describe your preference.`
       nextStage = "region"
       setCurrentStage("region")
     } else if (currentStage === "region") {
-      assistantResponse = `Perfect! Is there a specific business area, division, or aspect of ${companyName} you'd like me to focus on? For example, their main products/services, a particular business unit, or would you prefer a comprehensive overview?`
+      const userResponse = userInput.trim();
+      
+      if (userResponse === "1") {
+        setRegionFocus("global");
+        setSpecificRegion("global");
+        assistantResponse = `Perfect! Now how would you like me to focus the research on ${companyName}?
+
+1. Comprehensive overview (all business areas)
+2. Specific division or business unit
+
+Please choose 1 or 2.`
+        nextStage = "division"
+        setCurrentStage("division")
+      } else if (userResponse === "2") {
+        setRegionFocus("specific");
+        assistantResponse = `Great! Which specific region or market would you like me to focus on? For example: North America, Europe, Asia Pacific, Latin America, or a specific country.`
+        nextStage = "region-specific"
+        setCurrentStage("region-specific")
+      } else {
+        // Invalid input - ask them to choose 1 or 2
+        assistantResponse = `Please choose 1 for global overview or 2 for specific region.`
+        nextStage = "region"
+        setCurrentStage("region")
+      }
+    } else if (currentStage === "region-specific") {
+      setSpecificRegion(userInput);
+      assistantResponse = `Perfect! Now how would you like me to focus the research on ${companyName} in ${userInput}?
+
+1. Comprehensive overview (all business areas)
+2. Specific division or business unit
+
+Please choose 1 or 2.`
       nextStage = "division"
       setCurrentStage("division")
     } else if (currentStage === "division") {
-      assistantResponse = `Makes sense - I'll present you with an initial research draft which you will be able to refine or approve. Sound good?`
+      const userResponse = userInput.trim();
+      
+      if (userResponse === "1") {
+        setResearchFocus("comprehensive");
+        // Don't set specificDivision for comprehensive overview
+        assistantResponse = `Perfect! I'll provide a research report for ${companyName}${regionFocus === "specific" ? ` in ${specificRegion}` : " globally"}. Sound good?`
+        nextStage = "confirmation"
+        setCurrentStage("confirmation")
+      } else if (userResponse === "2") {
+        setResearchFocus("specific");
+        assistantResponse = `Great! Which specific division or business unit would you like me to focus on?`
+        nextStage = "division-specific"
+        setCurrentStage("division-specific")
+      } else {
+        // Invalid input - ask them to choose 1 or 2
+        assistantResponse = `Please choose 1 for comprehensive overview or 2 for specific division.`
+        nextStage = "division"
+        setCurrentStage("division")
+      }
+    } else if (currentStage === "division-specific") {
+      setSpecificDivision(userInput);
+      assistantResponse = `Perfect! I'll provide a research report for ${companyName}${regionFocus === "specific" ? ` in ${specificRegion}` : " globally"}, focusing on their ${userInput} division. Sound good?`
       nextStage = "confirmation"
       setCurrentStage("confirmation")
     } else if (currentStage === "confirmation") {
