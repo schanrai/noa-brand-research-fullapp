@@ -173,7 +173,7 @@ export default function Home() {
     }, 300) // Small delay to allow toast fade-out animation
   }
 
-  const handleChatResponse = (stage: string, value: string) => {
+  const handleChatResponse = (stage: string, value: string, llmResult?: string) => {
     if (stage === "reset-to-initial") {
       // Handle reset from top navigation
       setSearchStage("initial")
@@ -194,28 +194,44 @@ export default function Home() {
       // In a real app, this would update the chat history
     } else if (stage === "results") {
       setSearchMode('research')
-      // Always create a new company for research queries, never return existing CRM companies
+      
+      // Parse the LLM result if provided
+      let parsedData = null
+      if (llmResult) {
+        try {
+          parsedData = JSON.parse(llmResult)
+          console.log('Parsed LLM data:', parsedData) // Debug log
+        } catch (e) {
+          console.error('Failed to parse LLM result:', e)
+        }
+      }
+      
       const companyName = value && value.trim() ? value : "Unknown Company"
       
-      // Generate a company based on the search query
+      // Generate a company based on the search query and LLM data
       const companyResult = {
         id: `generated-${Date.now()}`,
         companyName: companyName,
-        industry: "Technology", // Default industry
-        hqLocation: "San Francisco, CA",
-        division: "Innovation",
-        description: `${companyName} is a leading global company with operations across multiple markets and divisions. The company has established itself as a key player in its industry with a focus on innovation and strategic partnerships.`,
-        foundingDate: "2010-01-01",
-        regions: ["North America", "Europe", "Asia Pacific"],
-        annualRevenue: "$3.2B",
-        lastFunding: "$200M Series D (2023)",
-        totalFunding: "$500M",
-        website: `https://${companyName.toLowerCase().replace(/\s+/g, "")}.com`,
-        employees: 4200,
-        targetAudience: "Global consumers and enterprise clients",
-        sponsorshipTypes: ["Sports Events", "Tech Conferences", "Community Programs"],
-        keySponsorships: ["Innovation Summit", "Global Partnership Awards", "Technology Excellence Program"],
-        strategicFocus: "Expanding global market presence and strategic partnerships",
+        // Use LLM data for these fields if available
+        industry: parsedData?.structuredData?.industry || "Technology",
+        hqLocation: parsedData?.structuredData?.headquarters || "San Francisco, CA",
+        division: parsedData?.structuredData?.division || "Innovation",
+        description: parsedData?.detailedAnalysis?.companyOverview?.content || 
+                    `${companyName} is a leading global company with operations across multiple markets and divisions.`,
+        foundingDate: parsedData?.structuredData?.founded || "2010-01-01",
+        regions: ["North America", "Europe", "Asia Pacific"], // Could be enhanced with LLM data
+        annualRevenue: parsedData?.structuredData?.annualRevenue || "$3.2B",
+        lastFunding: "$200M Series D (2023)", // Could be enhanced with LLM data
+        totalFunding: "$500M", // Could be enhanced with LLM data
+        website: parsedData?.structuredData?.website || 
+                 `https://${companyName.toLowerCase().replace(/\s+/g, "")}.com`,
+        employees: parsedData?.structuredData?.employees || 4200,
+        targetAudience: parsedData?.detailedAnalysis?.audienceSegmentation?.content || 
+                       "Global consumers and enterprise clients",
+        sponsorshipTypes: ["Sports Events", "Tech Conferences", "Community Programs"], // Could be enhanced
+        keySponsorships: ["Innovation Summit", "Global Partnership Awards", "Technology Excellence Program"], // Could be enhanced
+        strategicFocus: parsedData?.detailedAnalysis?.strategicFocus?.content || 
+                       "Expanding global market presence and strategic partnerships",
         profileURL: `/companies/${companyName.toLowerCase().replace(/\s+/g, "-")}`,
         outreachProfile: "Actively seeking strategic partnerships and sponsorship opportunities",
         lastUpdated: new Date().toISOString().split("T")[0],
@@ -231,6 +247,38 @@ export default function Home() {
             relationshipNotes: "Generated contact based on company research",
           },
         ],
+        // Use the actual LLM data for detailed analysis
+        detailedAnalysis: parsedData?.detailedAnalysis || {
+          companyOverview: {
+            content: `${companyName} is a leading technology company with a strong focus on innovation and strategic partnerships.`
+          },
+          companyBackground: {
+            content: `${companyName} was founded in 2010 and has grown from a startup to a major player in the technology sector.`
+          },
+          financialOverview: {
+            content: `${companyName} has achieved significant financial success with annual revenue of $3.2B.`
+          },
+          audienceSegmentation: {
+            content: `${companyName} targets both global consumers and enterprise clients.`
+          },
+          marketingActivity: {
+            globalMarketing: `${companyName} maintains a strong global marketing presence.`,
+            regionalMarketing: `The company adapts its marketing strategies to local markets.`
+          },
+          sponsorshipsExperiential: {
+            sponsorships: `${companyName} actively participates in major sports events and tech conferences.`,
+            experientialEvents: `The company hosts innovation summits and technology excellence programs.`
+          },
+          socialMediaPresence: {
+            content: `${companyName} maintains an active social media presence across major platforms.`
+          },
+          strategicFocus: {
+            content: `${companyName} is focused on expanding its global market presence.`
+          }
+        },
+        // Include the raw LLM data for debugging and future use
+        structuredData: parsedData?.structuredData || null,
+        metadata: parsedData?.metadata || null,
       }
 
       setSearchResults([companyResult])
@@ -250,8 +298,9 @@ export default function Home() {
           onApprove={handleApprove}
           onReject={handleReject}
           searchStage={searchStage}
-          onChatResponse={(tab: string, value?: string) => handleChatResponse(tab, value || "")}
+          onChatResponse={(tab: string, value?: string, llmResult?: string) => handleChatResponse(tab, value || "", llmResult)}
           searchMode={searchMode}
+          filters={filters}
         />
         <RightSidebar />
       </div>

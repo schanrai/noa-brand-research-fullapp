@@ -87,77 +87,123 @@ export default function BrandProfilePanel({ company }: BrandProfilePanelProps) {
 
           <TabsContent value="report" className="space-y-4">
             <Accordion type="single" collapsible className="w-full">
-              <AccordionItem value="company-background">
-                <AccordionTrigger>Company Background</AccordionTrigger>
-                <AccordionContent>
-                  <p className="text-sm text-muted-foreground">
-                    {company.companyName} was founded on {new Date(company.foundingDate).toLocaleDateString()}
-                    and has grown to become a significant player in the {company.industry} industry. With headquarters
-                    in {company.hqLocation}, the company has expanded its operations to {company.regions.join(", ")}.
-                    The company currently employs approximately
-                    {company.employees.toLocaleString()} people worldwide.
-                  </p>
-                </AccordionContent>
-              </AccordionItem>
-
-              <AccordionItem value="financial-overview">
-                <AccordionTrigger>Financial Overview</AccordionTrigger>
-                <AccordionContent>
-                  <p className="text-sm text-muted-foreground">
-                    {company.companyName} reports annual revenue of {company.annualRevenue}. Their last funding round
-                    was {company.lastFunding}, bringing their total funding to {company.totalFunding}. The company has
-                    shown steady growth in the {company.industry} sector, with strategic investments in
-                    {company.division}.
-                  </p>
-                </AccordionContent>
-              </AccordionItem>
-
-
-              {/* Marketing Activity */}
-                <AccordionItem value="marketing-activity">
-                  <AccordionTrigger>Marketing Activity</AccordionTrigger>
+              {/* Company Overview */}
+              {company.detailedAnalysis?.companyOverview && (
+                <AccordionItem value="company-overview">
+                  <AccordionTrigger>Company Overview</AccordionTrigger>
                   <AccordionContent>
                     <p className="text-sm text-muted-foreground">
-                      {company.companyName} employs a comprehensive marketing strategy...
+                      {company.detailedAnalysis.companyOverview.content}
                     </p>
                   </AccordionContent>
                 </AccordionItem>
+              )}
 
-              <AccordionItem value="sponsorship-history">
-                <AccordionTrigger>Key Sponsorships & Experiential Activities</AccordionTrigger>
-                <AccordionContent>
-                  <p className="text-sm text-muted-foreground">
-                    {company.companyName} has been active in sponsorships across
-                    {company.sponsorshipTypes.join(", ")}. Key sponsorships include
-                    {company.keySponsorships.join(", ")}. Their sponsorship strategy aligns with their focus on{" "}
-                    {company.strategicFocus}.
-                  </p>
-                </AccordionContent>
-              </AccordionItem>
+              {/* Company Background */}
+              {company.detailedAnalysis?.companyBackground && (
+                <AccordionItem value="company-background">
+                  <AccordionTrigger>Company Background</AccordionTrigger>
+                  <AccordionContent>
+                    <p className="text-sm text-muted-foreground">
+                      {company.detailedAnalysis.companyBackground.content}
+                    </p>
+                  </AccordionContent>
+                </AccordionItem>
+              )}
 
-              <AccordionItem value="market-position">
-                <AccordionTrigger>Strategic Focus</AccordionTrigger>
-                <AccordionContent>
-                  <p className="text-sm text-muted-foreground">
-                    Within the {company.industry} industry, {company.companyName} has positioned itself as a key player
-                    in the {company.division} division. Their target audience primarily consists of{" "}
-                    {company.targetAudience}. The company's strategic focus on {company.strategicFocus} has helped them
-                    maintain a competitive edge in the market.
-                  </p>
-                </AccordionContent>
-              </AccordionItem>
+              {/* Financial Overview */}
+              {company.detailedAnalysis?.financialOverview && (
+                <AccordionItem value="financial-overview">
+                  <AccordionTrigger>Financial Overview</AccordionTrigger>
+                  <AccordionContent>
+                    <p className="text-sm text-muted-foreground">
+                      {company.detailedAnalysis.financialOverview.content}
+                    </p>
+                  </AccordionContent>
+                </AccordionItem>
+              )}
 
-              <AccordionItem value="target-audience">
-                <AccordionTrigger>Target Audience</AccordionTrigger>
-                <AccordionContent>
-                  <p className="text-sm text-muted-foreground">
-                    {company.companyName} primarily targets {company.targetAudience}. Their marketing and partnership
-                    strategies are designed to reach this demographic through various channels and touchpoints. The
-                    company's approach to audience engagement focuses on building meaningful connections and delivering
-                    value that resonates with their core customer base.
-                  </p>
-                </AccordionContent>
-              </AccordionItem>
+              {/* Audience Segmentation */}
+              {company.detailedAnalysis?.audienceSegmentation && (
+                <AccordionItem value="audience-segmentation">
+                  <AccordionTrigger>Target Audience</AccordionTrigger>
+                  <AccordionContent>
+                    <p className="text-sm text-muted-foreground">
+                      {company.detailedAnalysis.audienceSegmentation.content}
+                    </p>
+                  </AccordionContent>
+                </AccordionItem>
+              )}
+
+              {/* Marketing Activity */}
+              {company.detailedAnalysis?.marketingActivity && (
+                <AccordionItem value="marketing-activity">
+                  <AccordionTrigger>Marketing Activity</AccordionTrigger>
+                  <AccordionContent>
+                    <div className="space-y-3">
+                      <div>
+                        <h5 className="font-medium text-sm">Global Marketing</h5>
+                        <p className="text-sm text-muted-foreground">
+                          {company.detailedAnalysis.marketingActivity.globalMarketing}
+                        </p>
+                      </div>
+                      <div>
+                        <h5 className="font-medium text-sm">Regional Marketing</h5>
+                        <p className="text-sm text-muted-foreground">
+                          {company.detailedAnalysis.marketingActivity.regionalMarketing}
+                        </p>
+                      </div>
+                    </div>
+                  </AccordionContent>
+                </AccordionItem>
+              )}
+
+              {/* Sponsorships & Experiential */}
+              {company.detailedAnalysis?.sponsorshipsExperiential && (
+                <AccordionItem value="sponsorships-experiential">
+                  <AccordionTrigger>Sponsorships & Experiential</AccordionTrigger>
+                  <AccordionContent>
+                    <div className="space-y-3">
+                      <div>
+                        <h5 className="font-medium text-sm">Sponsorships</h5>
+                        <p className="text-sm text-muted-foreground">
+                          {company.detailedAnalysis.sponsorshipsExperiential.sponsorships}
+                        </p>
+                      </div>
+                      <div>
+                        <h5 className="font-medium text-sm">Experiential Events</h5>
+                        <p className="text-sm text-muted-foreground">
+                          {company.detailedAnalysis.sponsorshipsExperiential.experientialEvents}
+                        </p>
+                      </div>
+                    </div>
+                  </AccordionContent>
+                </AccordionItem>
+              )}
+
+              {/* Social Media Presence */}
+              {company.detailedAnalysis?.socialMediaPresence && (
+                <AccordionItem value="social-media-presence">
+                  <AccordionTrigger>Social Media Presence</AccordionTrigger>
+                  <AccordionContent>
+                    <p className="text-sm text-muted-foreground">
+                      {company.detailedAnalysis.socialMediaPresence.content}
+                    </p>
+                  </AccordionContent>
+                </AccordionItem>
+              )}
+
+              {/* Strategic Focus */}
+              {company.detailedAnalysis?.strategicFocus && (
+                <AccordionItem value="strategic-focus">
+                  <AccordionTrigger>Strategic Focus</AccordionTrigger>
+                  <AccordionContent>
+                    <p className="text-sm text-muted-foreground">
+                      {company.detailedAnalysis.strategicFocus.content}
+                    </p>
+                  </AccordionContent>
+                </AccordionItem>
+              )}
             </Accordion>
 
             <div>
