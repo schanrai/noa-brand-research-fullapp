@@ -13,7 +13,7 @@ interface MainContentProps {
   onApprove: (companyId: string) => void
   onReject: (companyId: string) => void
   searchStage: "initial" | "region" | "division" | "results"
-  onChatResponse: (tab: string, value?: string) => void
+  onChatResponse: (tab: string, value?: string, llmResult?: string) => void
   filters?: {
     region: string
     industry: string
@@ -56,12 +56,16 @@ export default function MainContent({
     // This function is no longer needed for filtered searches
   }
 
+  const handleChatResponse = (tab: string, value?: string, llmResult?: string) => {
+    onChatResponse(tab, value, llmResult)
+  }
+
   return (
     <div className="flex-1 overflow-auto p-48 bg-main pt-[22px] pb-52">
       {(searchStage !== "results" || feedbackMode) && (
         <CoPilotInterface
           stage={feedbackMode ? "feedback" : searchStage}
-          onResponse={onChatResponse}
+          onResponse={handleChatResponse}
           feedbackMode={feedbackMode}
           onFeedbackComplete={() => setFeedbackMode(false)}
         />
