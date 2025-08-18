@@ -137,46 +137,38 @@ Please provide the company data in this exact JSON format:
               
               const detailedPrompt = `I would like to research the company ${companyName}, ${detailedRegionText}${detailedDivisionText}.
 
-The research should be crafted in a concise, professional and insight-rich style, suitable for displaying onscreen in a dedicated research application for evaluating potential partnership opportunities, and for populating in a CRM thereafter.
+The research should be crafted in a concise, professional and insight-rich style, suitable for displaying onscreen in a dedicated research application for evaluating potential partnership opportunities, and for populating in a CRM thereafter. Use information from at least 8 or more distinct sources.  Use data only from verifiable sources such as company press releases, reputable media coverage, case studies, and event listings.
 
-IMPORTANT: You must respond with ONLY valid JSON. Do not include any other text, explanations, or formatting.
+IMPORTANT: You must respond with ONLY valid JSON. Do not include any other text, explanations, or formatting. 
 
 Please provide the research in this exact JSON format:
 
 {
   "companyOverview": {
-    "content": "<100-150 words about company overview including global footprint, core business divisions and primary service lines>",
-    "wordCount": <number>
+    "content": "<100-150 words about company overview including global footprint, core business divisions and primary service lines>"
   },
   "companyBackground": {
-    "content": "<150-350 words about core divisions, key milestones, main offices, structure, and defining values>",
-    "wordCount": <number>
+    "content": "<150-350 words about core divisions, key milestones, main offices, structure, and defining values>"
   },
   "financialOverview": {
-    "content": "<100-200 words about key financial milestones, stability indicators, ownership structure, funding, and recent acquisitions>",
-    "wordCount": <number>
+    "content": "<100-200 words about key financial milestones, stability indicators, ownership structure, funding, and recent acquisitions>"
   },
   "audienceSegmentation": {
-    "content": "<50-75 words about target audiences, current customer types, and emerging segments>",
-    "wordCount": <number>
+    "content": "<50-75 words about target audiences, current customer types, and emerging segments>"
   },
   "marketingActivity": {
-    "globalMarketing": "<content about global campaign focus and thought leadership>",
-    "regionalMarketing": "<content about key channels, events, digital, and core themes/messages>",
-    "wordCount": <number>
+    "globalMarketing": "<300-450 words about global marketing campaigns, strategies, and initiatives>",
+    "regionalMarketing": "<300-450 words about regional marketing activities, local campaigns, and market-specific strategies>"
   },
   "sponsorshipsExperiential": {
-    "sponsorships": "<content about current and recent sponsorships in sports, arts, culture, entertainment or lifestyle>",
-    "experientialEvents": "<content about VIP/client-only events, curated experiences, global tours, museum tie-ins>",
-    "wordCount": <number>
+    "sponsorships": "<300-450 words about sponsorship portfolio, partnerships, and brand collaborations>",
+    "experientialEvents": "<300-450 words about experiential initiatives, events, and customer engagement programs>"
   },
   "socialMediaPresence": {
-    "content": "<350-450 words about recent platform activity, engagement tactics, and brand tone across LinkedIn, Twitter, Instagram>",
-    "wordCount": <number>
+    "content": "<350-450 words about recent platform activity, engagement tactics, and brand tone across LinkedIn, Twitter, Instagram, TikTok, YouTube and other relevant platforms>"
   },
   "strategicFocus": {
-    "content": "<content about how the company differentiates itself, brand traits, competitive stance, and risk considerations>",
-    "wordCount": <number>
+    "content": "<200-350 words about how the company differentiates itself, brand traits, competitive stance, and risk considerations>"
   },
   "contacts": {
     "leadership": [
@@ -202,6 +194,7 @@ Please provide the research in this exact JSON format:
         "email": "<email>",
         "phone": "<phone>"
       }
+      },
     ]
   }
 }`;

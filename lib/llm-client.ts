@@ -22,8 +22,84 @@ function cleanJsonResponse(responseText: string): string {
     jsonString = jsonString.replace(/```\n?/g, '');
   }
   
-  // Trim whitespace
-  return jsonString.trim();
+  // Remove any trailing commas before closing braces/brackets
+  jsonString = jsonString.replace(/,(\s*[}\]])/g, '$1');
+  
+  // Try to parse as-is first
+  try {
+    JSON.parse(jsonString);
+    return jsonString.trim();
+  } catch (parseError) {
+    console.warn("Initial JSON parsing failed, attempting to clean response:", parseError);
+    
+    // Fix the main issue: unescaped quotes in content fields
+    let cleanedString = jsonString;
+    
+    // Find and fix content fields with unescaped quotes
+    const contentRegex = /"content":\s*"([^"]*(?:\\"|[^"])*?)"/g;
+    let match;
+    
+    while ((match = contentRegex.exec(jsonString)) !== null) {
+      const originalContent = match[1];
+      // Escape quotes and other problematic characters
+      const escapedContent = originalContent
+        .replace(/"/g, '\\"')
+        .replace(/\n/g, '\\n')
+        .replace(/\r/g, '\\r')
+        .replace(/\t/g, '\\t');
+      
+      cleanedString = cleanedString.replace(originalContent, escapedContent);
+    }
+    
+    // Try parsing again
+    try {
+      JSON.parse(cleanedString);
+      return cleanedString.trim();
+    } catch (secondError) {
+      console.error("Failed to clean JSON response:", secondError);
+      
+      // Last resort: try to extract just the JSON structure
+      return attemptJsonRecovery(jsonString);
+    }
+  }
+}
+
+// Emergency JSON recovery function
+function attemptJsonRecovery(jsonString: string): string {
+  console.log("Attempting JSON recovery...");
+  
+  // Try to find the JSON structure and extract valid parts
+  const startBrace = jsonString.indexOf('{');
+  const endBrace = jsonString.lastIndexOf('}');
+  
+  if (startBrace === -1 || endBrace === -1 || startBrace >= endBrace) {
+    throw new Error("Cannot find valid JSON structure");
+  }
+  
+  // Extract the content between braces
+  let extracted = jsonString.substring(startBrace, endBrace + 1);
+  
+  // Try to fix common issues
+  extracted = extracted
+    .replace(/[\u0000-\u001F\u007F-\u009F]/g, '') // Remove control characters
+    .replace(/,(\s*[}\]])/g, '$1') // Remove trailing commas
+    .replace(/"([^"]*?)(\n|\r|\t)([^"]*?)"/g, '"$1\\n$3"') // Fix newlines in strings
+    .replace(/"([^"]*?)([^\\])"([^"]*?)"/g, '"$1\\"$3"'); // Fix unescaped quotes
+  
+  // Try parsing the recovered JSON
+  try {
+    JSON.parse(extracted);
+    return extracted;
+  } catch (finalError) {
+    console.error("JSON recovery parsing failed:", finalError);
+    
+    // If all else fails, return a minimal valid JSON structure
+    return JSON.stringify({
+      error: "Failed to parse LLM response",
+      originalLength: jsonString.length,
+      timestamp: new Date().toISOString()
+    });
+  }
 }
 
 // Function for structured data with strict parameters - returns JSON
