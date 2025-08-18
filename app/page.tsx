@@ -262,12 +262,16 @@ export default function Home() {
             content: `${companyName} targets both global consumers and enterprise clients.`
           },
           marketingActivity: {
-            globalMarketing: `${companyName} maintains a strong global marketing presence.`,
-            regionalMarketing: `The company adapts its marketing strategies to local markets.`
+            globalMarketing: parsedData?.detailedAnalysis?.marketingActivity?.globalMarketing || 
+                             `${companyName} maintains a strong global marketing presence.`,
+            regionalMarketing: parsedData?.detailedAnalysis?.marketingActivity?.regionalMarketing || 
+                               `The company adapts its marketing strategies to local markets.`
           },
           sponsorshipsExperiential: {
-            sponsorships: `${companyName} actively participates in major sports events and tech conferences.`,
-            experientialEvents: `The company hosts innovation summits and technology excellence programs.`
+            sponsorships: parsedData?.detailedAnalysis?.sponsorshipsExperiential?.sponsorships || 
+                          `${companyName} actively participates in major sports events and tech conferences.`,
+            experientialEvents: parsedData?.detailedAnalysis?.sponsorshipsExperiential?.experientialEvents || 
+                                `The company hosts innovation summits and technology excellence programs.`
           },
           socialMediaPresence: {
             content: `${companyName} maintains an active social media presence across major platforms.`
