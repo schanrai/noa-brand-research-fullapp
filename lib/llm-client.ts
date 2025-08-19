@@ -29,9 +29,11 @@ export async function getStructuredData(prompt: string) {
   console.log("Structured data result: ", data);
   if (!response.ok) throw new Error(data.error || 'LLM error');
   
-  // Parse the JSON response
+  // FIX: Clean the response before parsing
   try {
-    return JSON.parse(data.result);
+    const cleanedResponse = cleanJsonResponse(data.result);
+    console.log("Cleaned response:", cleanedResponse);
+    return JSON.parse(cleanedResponse);
   } catch (e) {
     console.error("Failed to parse structured data as JSON:", e);
     console.error("Raw response:", data.result);
@@ -85,4 +87,21 @@ export async function getFormattedData(content: string, schema: any) {
     console.error("Failed to parse formatted data as JSON:", e);
     throw new Error("Failed to parse formatted data response");
   }
+} 
+
+// ADD: Simple JSON cleaning function
+function cleanJsonResponse(responseText: string): string {
+  let jsonString = responseText;
+  
+  // Remove markdown code blocks if present
+  if (jsonString.includes('```json')) {
+    jsonString = jsonString.replace(/```json\n?/g, '').replace(/```\n?/g, '');
+  } else if (jsonString.includes('```')) {
+    jsonString = jsonString.replace(/```\n?/g, '');
+  }
+  
+  // Remove extra quotes around the whole response
+  jsonString = jsonString.replace(/^"|"$/g, '');
+  
+  return jsonString.trim();
 } 
