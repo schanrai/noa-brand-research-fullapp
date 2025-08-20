@@ -21,7 +21,7 @@ export const companyOverviewSchema = {
   }
 };
 
-// Schema for overview sections - NO LENGTH LIMITS
+// Schema for overview sections - ADD SOURCES
 export const overviewSchema = {
   type: "json_schema",
   json_schema: {
@@ -30,14 +30,14 @@ export const overviewSchema = {
     schema: {
       type: "object",
       additionalProperties: false,
-      required: ["companyOverview", "companyBackground", "financialOverview", "audienceSegmentation"],
+      required: ["companyOverview", "companyBackground", "financialOverview", "audienceSegmentation", "sources"],  // ADD sources here
       properties: {
         companyOverview: {
           type: "object",
           additionalProperties: false,
           required: ["content"],
           properties: {
-            content: { type: "string" }  // NO LENGTH LIMITS
+            content: { type: "string" }
           }
         },
         companyBackground: {
@@ -45,7 +45,7 @@ export const overviewSchema = {
           additionalProperties: false,
           required: ["content"],
           properties: {
-            content: { type: "string" }  // NO LENGTH LIMITS
+            content: { type: "string" }
           }
         },
         financialOverview: {
@@ -53,7 +53,7 @@ export const overviewSchema = {
           additionalProperties: false,
           required: ["content"],
           properties: {
-            content: { type: "string" }  // NO LENGTH LIMITS
+            content: { type: "string" }
           }
         },
         audienceSegmentation: {
@@ -61,8 +61,14 @@ export const overviewSchema = {
           additionalProperties: false,
           required: ["content"],
           properties: {
-            content: { type: "string" }  // NO LENGTH LIMITS
+            content: { type: "string" }
           }
+        },
+        // ADD: Sources array
+        sources: {
+          type: "array",
+          items: { type: "string" },
+          minItems: 1
         }
       }
     }
