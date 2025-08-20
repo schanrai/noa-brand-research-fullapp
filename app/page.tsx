@@ -278,7 +278,8 @@ export default function Home() {
           },
           strategicFocus: {
             content: `${companyName} is focused on expanding its global market presence.`
-          }
+          },
+          sources: parsedData?.detailedAnalysis?.sources || []
         },
         // Include the raw LLM data for debugging and future use
         structuredData: parsedData?.structuredData || null,

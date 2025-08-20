@@ -116,7 +116,7 @@ export default function CoPilotInterface({
               }
               
               // PASS 1: Basic company info (keep working as-is)
-              const structuredPrompt = `I would like to research the company ${companyName}${regionText}${focusText}. 
+            const structuredPrompt = `I would like to research the company ${companyName}${regionText}${focusText}. 
 
 IMPORTANT: You must respond with ONLY valid JSON. Do not include any other text, explanations, or formatting. Retrieve the information from high quality, verifiable information such as from the company website, press releases, reputable media coverage and high authority publishers
 
@@ -137,11 +137,16 @@ DO NOT add any explanations, dates, parentheses, or additional context to values
               const overviewPrompt = `Research ${companyName}${regionText} and provide:
 
 1. Company Overview (100-150 words): Global footprint, core business divisions and brands, primary service lines, main offices
-2. Company Background (150-350 words): Brief history of the company, key milestones,  organisational structure, defining values
+2. Company Background (150-350 words): Brief history of the company, key milestones, organisational structure, defining values
 3. Financial Overview (100-200 words): Key financial performance with specific datapoints, stability indicators, ownership structure, funding and recent acquisitions
 4. Audience Segmentation (50-75 words): Target audiences, current customer types, emerging segments
 
-Focus on factual information from company press releases, financial reports, and reputable business sources.`;
+Focus on factual information from company press releases, financial reports, and reputable business sources.
+
+SOURCES REQUIREMENTS:
+- Collect ALL sources used in your research
+- Provide full URLs for verification
+- Minimum 5 sources, include as many relevant sources as found`;
 
               // PASS 3: Marketing Activity (dedicated search for depth)
               const marketingPrompt = `Research ${companyName}${regionText}${focusText} recent and current marketing activities.
@@ -236,7 +241,9 @@ Focus on recent activity and verifiable information from company announcements a
                   marketingActivity: formattedMarketing.marketingActivity,
                   sponsorshipsExperiential: formattedSponsorships.sponsorshipsExperiential,
                   socialMediaPresence: formattedSocialMedia.socialMediaPresence,
-                  strategicFocus: formattedSocialMedia.strategicFocus
+                  strategicFocus: formattedSocialMedia.strategicFocus,
+                  // ADD THIS LINE FOR SOURCES:
+                  sources: formattedOverview.sources || []
                 },
                 metadata: {
                   companyName,

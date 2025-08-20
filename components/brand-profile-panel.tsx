@@ -13,6 +13,57 @@ interface BrandProfilePanelProps {
 export default function BrandProfilePanel({ company }: BrandProfilePanelProps) {
   const [activeTab, setActiveTab] = useState("overview")
 
+  // REMOVE THESE DEBUG LOGS:
+  console.log("🔍 BrandProfilePanel - sources:", company?.detailedAnalysis?.sources);
+  console.log("🔍 BrandProfilePanel - sources length:", company?.detailedAnalysis?.sources?.length);
+
+  const renderSourceWithLinks = (source: string) => {
+    // Check if it's a plain URL
+    const urlRegex = /^https?:\/\/.+/;
+    
+    if (urlRegex.test(source.trim())) {
+      // It's a plain URL, make it clickable
+      return (
+        <a
+          href={source}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-blue-600 hover:underline"
+        >
+          {source}
+        </a>
+      );
+    }
+    
+    // Otherwise, handle markdown links [text](url)
+    const linkRegex = /\[([^\]]+)\]\(([^)]+)\)/g;
+    const parts = [];
+    let lastIndex = 0;
+    let match;
+
+    while ((match = linkRegex.exec(source)) !== null) {
+      if (match.index > lastIndex) {
+        parts.push(source.slice(lastIndex, match.index));
+      }
+      parts.push(
+        <a
+          key={match.index}
+          href={match[2]}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-blue-600 hover:underline"
+        >
+          {match[1]}
+        </a>
+      );
+      lastIndex = match.index + match[0].length;
+    }
+    if (lastIndex < source.length) {
+      parts.push(source.slice(lastIndex));
+    }
+    return parts.length > 0 ? parts : source;
+  };
+
   return (
     <Card>
       <CardContent className="p-6">
@@ -184,17 +235,18 @@ export default function BrandProfilePanel({ company }: BrandProfilePanelProps) {
               )}
             </Accordion>
 
-            <div>
-              <h3 className="mb-2 text-lg font-semibold">Sources</h3>
-              <ul className="list-disc space-y-1 pl-5 text-sm text-muted-foreground">
-                <li>
-                  Company website: <span className="text-primary">{company.website}</span>
-                </li>
-                <li>Annual report (2023)</li>
-                <li>Industry analysis by Market Research Firm</li>
-                <li>Press releases and news articles</li>
-              </ul>
-            </div>
+            {company.detailedAnalysis?.sources && company.detailedAnalysis.sources.length > 0 && (
+              <div className="mt-8 border-t pt-4">
+                <h3 className="text-lg font-semibold mb-2">SOURCES</h3>
+                <ul className="list-disc pl-5 space-y-1">
+                  {company.detailedAnalysis.sources.map((source: string, index: number) => (
+                    <li key={index} className="text-sm text-muted-foreground">
+                      {renderSourceWithLinks(source)}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
           </TabsContent>
 
           <TabsContent value="contacts">
