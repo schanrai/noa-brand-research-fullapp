@@ -101,7 +101,7 @@ export async function getFormattedData(content: string, schema: any) {
       model: "openai/gpt-4o-mini",
       temperature: 0.0,
       top_p: 0.1,
-      max_tokens: 300,
+      max_tokens: 5000,
       response_format: schema
     }),
   });
@@ -110,9 +110,13 @@ export async function getFormattedData(content: string, schema: any) {
   if (!response.ok) throw new Error(data.error || 'LLM error');
   
   try {
-    return JSON.parse(data.result);
+    // ADD: Clean the response before parsing (same as getStructuredData)
+    const cleanedResponse = cleanJsonResponse(data.result);
+    console.log("Cleaned response before parsing:", cleanedResponse);
+    return JSON.parse(cleanedResponse);
   } catch (e) {
     console.error("Failed to parse formatted data as JSON:", e);
+    console.error("Raw response that failed:", data.result);
     throw new Error("Failed to parse formatted data response");
   }
 } 
