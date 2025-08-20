@@ -10,7 +10,7 @@ export const companyOverviewSchema = {
       properties: {
         section: { type: "string", const: "companyOverview" },
         content_format: { type: "string", enum: ["markdown"] },
-        content: { type: "string", minLength: 1 },
+        content: { type: "string" },
         sources: {
           type: "array",
           items: { type: "string", minLength: 1 },
@@ -21,7 +21,7 @@ export const companyOverviewSchema = {
   }
 };
 
-// Schema for overview sections (company overview, background, financial, audience)
+// Schema for overview sections - NO LENGTH LIMITS
 export const overviewSchema = {
   type: "json_schema",
   json_schema: {
@@ -34,30 +34,34 @@ export const overviewSchema = {
       properties: {
         companyOverview: {
           type: "object",
+          additionalProperties: false,
           required: ["content"],
           properties: {
-            content: { type: "string", minLength: 100, maxLength: 200 }
+            content: { type: "string" }  // NO LENGTH LIMITS
           }
         },
         companyBackground: {
           type: "object",
+          additionalProperties: false,
           required: ["content"],
           properties: {
-            content: { type: "string", minLength: 150, maxLength: 400 }
+            content: { type: "string" }  // NO LENGTH LIMITS
           }
         },
         financialOverview: {
           type: "object",
+          additionalProperties: false,
           required: ["content"],
           properties: {
-            content: { type: "string", minLength: 100, maxLength: 250 }
+            content: { type: "string" }  // NO LENGTH LIMITS
           }
         },
         audienceSegmentation: {
           type: "object",
+          additionalProperties: false,
           required: ["content"],
           properties: {
-            content: { type: "string", minLength: 50, maxLength: 100 }
+            content: { type: "string" }  // NO LENGTH LIMITS
           }
         }
       }
@@ -78,9 +82,10 @@ export const marketingSchema = {
       properties: {
         marketingActivity: {
           type: "object",
+          additionalProperties: false,
           required: ["content"],
           properties: {
-            content: { type: "string", minLength: 600, maxLength: 900 }
+            content: { type: "string" }
           }
         }
       }
@@ -101,9 +106,10 @@ export const sponsorshipsSchema = {
       properties: {
         sponsorshipsExperiential: {
           type: "object",
+          additionalProperties: false,
           required: ["content"],
           properties: {
-            content: { type: "string", minLength: 600, maxLength: 900 }
+            content: { type: "string" }
           }
         }
       }
@@ -124,16 +130,18 @@ export const socialMediaSchema = {
       properties: {
         socialMediaPresence: {
           type: "object",
+          additionalProperties: false,
           required: ["content"],
           properties: {
-            content: { type: "string", minLength: 350, maxLength: 500 }
+            content: { type: "string" }
           }
         },
         strategicFocus: {
           type: "object",
+          additionalProperties: false,
           required: ["content"],
           properties: {
-            content: { type: "string", minLength: 200, maxLength: 400 }
+            content: { type: "string" }
           }
         }
       }

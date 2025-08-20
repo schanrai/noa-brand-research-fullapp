@@ -140,20 +140,9 @@ export default function BrandProfilePanel({ company }: BrandProfilePanelProps) {
                 <AccordionItem value="marketing-activity">
                   <AccordionTrigger>Marketing Activity</AccordionTrigger>
                   <AccordionContent>
-                    <div className="space-y-3">
-                      <div>
-                        <h5 className="font-medium text-sm">Global Marketing</h5>
-                        <p className="text-sm text-muted-foreground">
-                          {company.detailedAnalysis.marketingActivity.globalMarketing}
-                        </p>
-                      </div>
-                      <div>
-                        <h5 className="font-medium text-sm">Regional Marketing</h5>
-                        <p className="text-sm text-muted-foreground">
-                          {company.detailedAnalysis.marketingActivity.regionalMarketing}
-                        </p>
-                      </div>
-                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      {company.detailedAnalysis.marketingActivity.content}
+                    </p>
                   </AccordionContent>
                 </AccordionItem>
               )}
@@ -163,20 +152,9 @@ export default function BrandProfilePanel({ company }: BrandProfilePanelProps) {
                 <AccordionItem value="sponsorships-experiential">
                   <AccordionTrigger>Sponsorships & Experiential</AccordionTrigger>
                   <AccordionContent>
-                    <div className="space-y-3">
-                      <div>
-                        <h5 className="font-medium text-sm">Sponsorships</h5>
-                        <p className="text-sm text-muted-foreground">
-                          {company.detailedAnalysis.sponsorshipsExperiential.sponsorships}
-                        </p>
-                      </div>
-                      <div>
-                        <h5 className="font-medium text-sm">Experiential Events</h5>
-                        <p className="text-sm text-muted-foreground">
-                          {company.detailedAnalysis.sponsorshipsExperiential.experientialEvents}
-                        </p>
-                      </div>
-                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      {company.detailedAnalysis.sponsorshipsExperiential.content}
+                    </p>
                   </AccordionContent>
                 </AccordionItem>
               )}
