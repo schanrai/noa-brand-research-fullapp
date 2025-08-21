@@ -14,8 +14,8 @@ export default function BrandProfilePanel({ company }: BrandProfilePanelProps) {
   const [activeTab, setActiveTab] = useState("overview")
 
   // REMOVE THESE DEBUG LOGS:
-  console.log("🔍 BrandProfilePanel - sources:", company?.detailedAnalysis?.sources);
-  console.log("🔍 BrandProfilePanel - sources length:", company?.detailedAnalysis?.sources?.length);
+  //console.log("🔍 BrandProfilePanel - sources:", company?.detailedAnalysis?.sources);
+  //console.log("🔍 BrandProfilePanel - sources length:", company?.detailedAnalysis?.sources?.length);
 
   const renderSourceWithLinks = (source: string) => {
     // Check if it's a plain URL
@@ -63,6 +63,27 @@ export default function BrandProfilePanel({ company }: BrandProfilePanelProps) {
     }
     return parts.length > 0 ? parts : source;
   };
+
+  function renderMarkdownContent(content: string) {
+    try {
+      // Simple HTML conversion without external library
+      let htmlContent = content;
+      
+      // Convert markdown links to clickable HTML
+      htmlContent = htmlContent.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" class="text-blue-600 hover:underline">$1</a>');
+      
+      // Add spacing before numbered headings
+      htmlContent = htmlContent.replace(/\*\*(\d+)\./g, '<br><br><strong>$1.</strong>');
+      
+      // Add spacing around bold labels
+      htmlContent = htmlContent.replace(/\*\*([^:]+):\*\*/g, '<br><br><strong>$1:</strong><br>');
+      
+      return htmlContent;
+    } catch (error) {
+      console.error('Content parsing error:', error);
+      return content;
+    }
+  }
 
   return (
     <Card>
@@ -191,9 +212,12 @@ export default function BrandProfilePanel({ company }: BrandProfilePanelProps) {
                 <AccordionItem value="marketing-activity">
                   <AccordionTrigger>Marketing Activity</AccordionTrigger>
                   <AccordionContent>
-                    <p className="text-sm text-muted-foreground">
-                      {company.detailedAnalysis.marketingActivity.content}
-                    </p>
+                    <div 
+                      className="text-sm text-muted-foreground"
+                      dangerouslySetInnerHTML={{ 
+                        __html: renderMarkdownContent(company.detailedAnalysis.marketingActivity.content) 
+                      }}
+                    />
                   </AccordionContent>
                 </AccordionItem>
               )}

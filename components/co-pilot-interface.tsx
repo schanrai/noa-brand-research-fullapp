@@ -116,7 +116,7 @@ export default function CoPilotInterface({
               }
               
               // PASS 1: Basic company info (keep working as-is)
-            const structuredPrompt = `I would like to research the company ${companyName}${regionText}${focusText}. 
+              const structuredPrompt = `I would like to research the company ${companyName}${regionText}${focusText}. 
 
 IMPORTANT: You must respond with ONLY valid JSON. Do not include any other text, explanations, or formatting. Retrieve the information from high quality, verifiable information such as from the company website, press releases, reputable media coverage and high authority publishers
 
@@ -148,44 +148,27 @@ SOURCES REQUIREMENTS:
 - Provide full URLs for verification
 - Minimum 5 sources, include as many relevant sources as found`;
 
-              // PASS 3: Marketing Activity (dedicated search for depth)
+              // PASS 3: Marketing Activity (restored detailed structure)
               const marketingPrompt = `Research ${companyName}${regionText}${focusText} recent and current marketing activities.
 
-Provide detailed analysis of current and recent global marketing activity. Include at least 5 specific named campaigns with:
-- Target audience segments
-- Messaging themes  
-- Measurable outcomes (engagement metrics, ROI, media coverage)
-- Creative concepts
-- Channels used
-- Partnerships or collaborations
+Provide a detailed narrative analysis of current and recent global marketing activity within the last 3-5 years. Include at least 5 specific named campaigns For each campaign describe the campaign name, target audience segments, messaging themes, measurable outcomes, creative concepts, channels used, and partnerships or collaborations.
 
 If a region was specified, include regional marketing details with concrete examples of events, digital campaigns, or key channel activations, including timing, format, target audience, and strategic rationale.
 
-Focus on high quality, verifiable information from the company website, press releases, reputable media coverage and high authority publishers. Avoid vague descriptions - all examples must reference verifiable sources, initiatives, or announcements.`;
+Write this as flowing narrative text that naturally incorporates all the details, not as a structured list or bullet points. Focus on high quality, verifiable information from the company website, press releases, reputable media coverage and high authority publishers. Avoid vague descriptions - all examples must reference verifiable sources, initiatives, or announcements.
+
+IMPORTANT: Include inline source links using markdown format [Link Text](URL) for all verifiable information.`;
 
               // PASS 4: Sponsorships & Experiential (dedicated search for depth)
-              const sponsorshipsPrompt = `Research ${companyName}${regionText}${focusText} recent and currentsponsorship portfolio and experiential initiatives.
+              const sponsorshipsPrompt = `Research ${companyName}${regionText}${focusText} recent and current sponsorship portfolio and experiential initiatives.
 
-Identify and describe at least 5 specific sponsorships within the last 3-5 years in sports, arts, culture, entertainment, or lifestyle. For each provide:
-- Sponsorship name
-- Exact or approximate start/end dates
-- Geographic location
-- Event/partner name
-- Activation channels
-- Budget or scale indicators (if available)
-- Strategic fit with brand goals
-- Measurable outcomes (audience reach, media coverage, ROI, engagement metrics)
+Provide a detailed narrative analysis of at least 5 specific sponsorships within the last 3-5 years in sports, arts, culture, entertainment, or lifestyle. For each sponsorship, describe the sponsorship name, exact or approximate start/end dates, geographic location, event/partner name, activation channels, budget or scale indicators (if available), strategic fit with brand goals, and measurable outcomes (audience reach, media coverage, ROI, engagement metrics).
 
-For experiential initiatives, identify at least 3 named initiatives within the last 3-5 years such as VIP/client-only events, curated experiences, global tours, or museum tie-ins. For each provide:
-- Event name
-- Dates and location
-- Purpose/context
-- Audience profile
-- Unique experiential elements
-- Cultural or thought leadership integration
-- Measurable impact
+For experiential initiatives, identify and describe at least 3 named initiatives within the last 3-5 years such as VIP/client-only events, curated experiences, global tours, or museum tie-ins. For each initiative, describe the event name, dates and location, purpose/context, audience profile, unique experiential elements, cultural or thought leadership integration, and measurable impact.
 
-Focus on verifiable information from the company website, press releases, high authority news sources and publishers.Avoid vague statements like 'supports local events'. All examples must reference named events, partners, or programs with verifiable details. `;
+Write this as flowing narrative text that naturally incorporates all the details, not as a structured list or bullet points. Focus on verifiable information from the company website, press releases, high authority news sources and publishers. Avoid vague statements like 'supports local events'. All examples must reference named events, partners, or programs with verifiable details. 
+
+IMPORTANT: Include inline source links using markdown format [Link Text](URL) for all verifiable information.`;
 
               // PASS 5: Social Media & Strategic Focus (shorter, focused searches)
               const socialMediaPrompt = `Research ${companyName}${regionText} social media presence and strategic focus.
@@ -215,6 +198,14 @@ Focus on recent activity and verifiable information from company announcements a
 
               console.log('✅ All search passes completed');
 
+              // DEBUG: Log raw search outputs to see what each section returns
+              console.log('🔍 DEBUG: Raw search outputs:');
+              console.log('📋 Structured Output:', structuredOutput);
+              console.log('📚 Overview Output:', overviewOutput);
+              console.log('📈 Marketing Output:', marketingOutput);
+              console.log('🎯 Sponsorships Output:', sponsorshipsOutput);
+              console.log('📱 Social Media Output:', socialMediaOutput);
+
               // The formatting calls
               const [
                 formattedOverview,
@@ -229,6 +220,11 @@ Focus on recent activity and verifiable information from company announcements a
               ]);
 
               console.log('✅ All formatting passes completed');
+              console.log('🔍 DEBUG: After formatting - what we got back:');
+              console.log('�� Overview formatted:', formattedOverview);
+              console.log('📈 Marketing formatted:', formattedMarketing);
+              console.log('🎯 Sponsorships formatted:', formattedSponsorships);
+              console.log('📱 Social Media formatted:', formattedSocialMedia);
 
               // Create the combined result
               combinedResult = {
@@ -256,7 +252,14 @@ Focus on recent activity and verifiable information from company announcements a
                   formattingPasses: 4
                 }
               };
+
+              // After creating combinedResult, add this debug log:
+              console.log('🔍 DEBUG: combinedResult structure:');
+              console.log('�� Marketing Activity:', combinedResult.detailedAnalysis.marketingActivity);
+              console.log('🎯 Sponsorships:', combinedResult.detailedAnalysis.sponsorshipsExperiential);
+              console.log('📋 Full combinedResult:', JSON.stringify(combinedResult, null, 2));
               
+
               setLlmResult(JSON.stringify(combinedResult, null, 2));
               setStructuredData(combinedResult);
               
@@ -270,7 +273,7 @@ Focus on recent activity and verifiable information from company announcements a
               } else {
                 // FIX: Check if combinedResult exists before using it
                 if (combinedResult) {
-                  onResponse("results", companyName, JSON.stringify(combinedResult));
+                onResponse("results", companyName, JSON.stringify(combinedResult));
                 } else {
                   onResponse("results", companyName, "");
                 }

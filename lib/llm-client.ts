@@ -23,7 +23,7 @@ export async function getLLMResearch(prompt: string, model: string) {
     body: JSON.stringify({ prompt, model }),
   });
   const data = await response.json();
-  console.log("LLM research data: ", data);
+  //console.log("LLM research data: ", data);
   if (!response.ok) throw new Error(data.error || 'LLM error');
   return data.result;
 }
@@ -43,13 +43,13 @@ export async function getStructuredData(prompt: string) {
     }),
   });
   const data = await response.json();
-  console.log("Structured data result: ", data);
+  //console.log("Structured data result: ", data);
   if (!response.ok) throw new Error(data.error || 'LLM error');
   
   // FIX: Clean the response before parsing
   try {
     const cleanedResponse = cleanJsonResponse(data.result);
-    console.log("Cleaned response:", cleanedResponse);
+    //console.log("Cleaned response:", cleanedResponse);
     return JSON.parse(cleanedResponse);
   } catch (e) {
     console.error("Failed to parse structured data as JSON:", e);
@@ -75,7 +75,7 @@ export async function getDetailedAnalysis(prompt: string) {
     });
     
     const data = await response.json();
-    console.log("Detailed analysis result: ", data);
+    //console.log("Detailed analysis result: ", data);
     
     if (!response.ok) {
       console.error("API Error:", data);
@@ -106,13 +106,13 @@ export async function getFormattedData(content: string, schema: any) {
     }),
   });
   const data = await response.json();
-  console.log("Formatted data result: ", data);
+  //console.log("Formatted data result: ", data);
   if (!response.ok) throw new Error(data.error || 'LLM error');
   
   try {
     // ADD: Clean the response before parsing (same as getStructuredData)
     const cleanedResponse = cleanJsonResponse(data.result);
-    console.log("Cleaned response before parsing:", cleanedResponse);
+    //console.log("Cleaned response before parsing:", cleanedResponse);
     return JSON.parse(cleanedResponse);
   } catch (e) {
     console.error("Failed to parse formatted data as JSON:", e);
