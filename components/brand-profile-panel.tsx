@@ -265,9 +265,12 @@ export default function BrandProfilePanel({ company }: BrandProfilePanelProps) {
                 <AccordionItem value="strategic-focus">
                   <AccordionTrigger>Strategic Focus</AccordionTrigger>
                   <AccordionContent>
-                    <p className="text-sm text-muted-foreground">
-                      {company.detailedAnalysis.strategicFocus.content}
-                    </p>
+                    <div 
+                      className="text-sm text-muted-foreground prose prose-sm max-w-none"
+                      dangerouslySetInnerHTML={{ 
+                        __html: renderMarkdownContent(company.detailedAnalysis.strategicFocus.content) 
+                      }}
+                    />
                   </AccordionContent>
                 </AccordionItem>
               )}
