@@ -73,13 +73,22 @@ export default function BrandProfilePanel({ company }: BrandProfilePanelProps) {
         gfm: true,    // GitHub Flavored Markdown
       });
       
-      // Convert markdown to HTML
-      const htmlContent = marked(content);
+      // Convert markdown to HTML - handle both sync and async cases
+      let htmlContent = marked(content);
+      
+      // If it's a Promise, we need to handle it differently
+      if (htmlContent instanceof Promise) {
+        // For now, return the original content if it's async
+        // In a real app, you'd want to make this function async
+        return content;
+      }
+      
+      // Add Tailwind classes to all links for styling and new window behavior
+      htmlContent = htmlContent.replace(/<a /g, '<a target="_blank" rel="noopener noreferrer" class="text-blue-600 underline hover:text-blue-800 hover:no-underline transition-colors" ');
       
       return htmlContent;
     } catch (error) {
       console.error('Markdown parsing error:', error);
-      // Fallback to plain text if markdown parsing fails
       return content.replace(/[<>]/g, '');
     }
   }
