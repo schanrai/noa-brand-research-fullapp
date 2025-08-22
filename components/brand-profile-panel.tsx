@@ -5,6 +5,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 import ContactInfoPanel from "./contact-info-panel"
+import { marked } from 'marked';
 
 interface BrandProfilePanelProps {
   company: any
@@ -66,22 +67,20 @@ export default function BrandProfilePanel({ company }: BrandProfilePanelProps) {
 
   function renderMarkdownContent(content: string) {
     try {
-      // Simple HTML conversion without external library
-      let htmlContent = content;
+      // Configure marked for safe rendering
+      marked.setOptions({
+        breaks: true, // Convert line breaks to <br>
+        gfm: true,    // GitHub Flavored Markdown
+      });
       
-      // Convert markdown links to clickable HTML
-      htmlContent = htmlContent.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" class="text-blue-600 hover:underline">$1</a>');
-      
-      // Add spacing before numbered headings
-      htmlContent = htmlContent.replace(/\*\*(\d+)\./g, '<br><br><strong>$1.</strong>');
-      
-      // Add spacing around bold labels
-      htmlContent = htmlContent.replace(/\*\*([^:]+):\*\*/g, '<br><br><strong>$1:</strong><br>');
+      // Convert markdown to HTML
+      const htmlContent = marked(content);
       
       return htmlContent;
     } catch (error) {
-      console.error('Content parsing error:', error);
-      return content;
+      console.error('Markdown parsing error:', error);
+      // Fallback to plain text if markdown parsing fails
+      return content.replace(/[<>]/g, '');
     }
   }
 
@@ -213,7 +212,7 @@ export default function BrandProfilePanel({ company }: BrandProfilePanelProps) {
                   <AccordionTrigger>Marketing Activity</AccordionTrigger>
                   <AccordionContent>
                     <div 
-                      className="text-sm text-muted-foreground"
+                      className="text-sm text-muted-foreground prose prose-sm max-w-none"
                       dangerouslySetInnerHTML={{ 
                         __html: renderMarkdownContent(company.detailedAnalysis.marketingActivity.content) 
                       }}

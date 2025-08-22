@@ -97,11 +97,18 @@ export async function getFormattedData(content: string, schema: any) {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ 
-      prompt: `Convert the following research into structured JSON format:\n\n${content}`,
+      prompt: `Convert the following research into structured JSON format according to the schema. If input has structured data, convert to readable narrative text that maintains all the key information but maintains a maximum word count of 850 -1000 words. 
+
+IMPORTANT: If there are paragraphs, line breaks or other formatting, preserve it as long as the result is readable and follows the schema requirements.  Preserve all markdown links in the format [Link Text](URL) - do not convert them to plain text.
+
+RESEARCH CONTENT:
+${content}
+
+Format as clean, readable narrative text that follows the schema requirements, keeping all markdown links intact.`,
       model: "openai/gpt-4o-mini",
       temperature: 0.0,
       top_p: 0.1,
-      max_tokens: 5000,
+      max_tokens: 15000,
       response_format: schema
     }),
   });

@@ -75,7 +75,7 @@ export const overviewSchema = {
   }
 };
 
-// Schema for marketing activity (detailed, focused)
+// Revert to the working schema but allow more flexibility:
 export const marketingSchema = {
   type: "json_schema",
   json_schema: {
