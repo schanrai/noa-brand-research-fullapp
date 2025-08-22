@@ -235,9 +235,12 @@ export default function BrandProfilePanel({ company }: BrandProfilePanelProps) {
                 <AccordionItem value="sponsorships-experiential">
                   <AccordionTrigger>Sponsorships & Experiential</AccordionTrigger>
                   <AccordionContent>
-                    <p className="text-sm text-muted-foreground">
-                      {company.detailedAnalysis.sponsorshipsExperiential.content}
-                    </p>
+                    <div 
+                      className="text-sm text-muted-foreground prose prose-sm max-w-none"
+                      dangerouslySetInnerHTML={{ 
+                        __html: renderMarkdownContent(company.detailedAnalysis.sponsorshipsExperiential.content) 
+                      }}
+                    />
                   </AccordionContent>
                 </AccordionItem>
               )}
@@ -247,9 +250,12 @@ export default function BrandProfilePanel({ company }: BrandProfilePanelProps) {
                 <AccordionItem value="social-media-presence">
                   <AccordionTrigger>Social Media Presence</AccordionTrigger>
                   <AccordionContent>
-                    <p className="text-sm text-muted-foreground">
-                      {company.detailedAnalysis.socialMediaPresence.content}
-                    </p>
+                    <div 
+                      className="text-sm text-muted-foreground prose prose-sm max-w-none"
+                      dangerouslySetInnerHTML={{ 
+                        __html: renderMarkdownContent(company.detailedAnalysis.socialMediaPresence.content) 
+                      }}
+                    />
                   </AccordionContent>
                 </AccordionItem>
               )}
