@@ -1,3 +1,25 @@
+
+prompt: `Convert the following research into structured JSON format according to the schema.
+
+IMPORTANT: If the input contains structured data (like campaigns, initiatives, etc.), convert it into a readable, flowing narrative text that maintains all the key information but presents it in a natural, readable format.
+
+For example, if you see structured campaign data, convert it to narrative text like:
+"Dow's Digital Transformation Initiative targets business customers across various industries, emphasizing convenience and efficiency. The campaign achieved a 40% increase in digital channel sales by end of 2023, with a 450% increase in repeat visitors and 200% increase in online orders."
+
+RESEARCH CONTENT:
+${content}
+
+Please format this as clean, readable narrative text that follows the schema requirements.`
+
+
+
+
+
+
+
+
+
+
 `Research ${companyName}${regionText}${focusText} recent and current marketing activities.
 
 Provide detailed analysis of current and recent global marketing activity. Include at least 5 specific named campaigns with:
@@ -89,3 +111,28 @@ Please provide the company data in this exact JSON format:
 }
 
 DO NOT add any explanations, dates, parentheses, or additional context to values.`;
+
+
+
+
+
+
+
+// ADD: New function for formatting (formatting agent - strict JSON schema)
+export async function getFormattedData(content: string, schema: any) {
+  console.log("Formatting content with formatting agent");
+  const response = await fetch('/api/llm', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ 
+      prompt: `Convert the following research into structured JSON format:\n\n${content}`,
+      model: "openai/gpt-4o-mini",
+      temperature: 0.0,
+      top_p: 0.1,
+      max_tokens: 5000,
+      response_format: schema
+    }),
+  });
+  const data = await response.json();
+  //console.log("Formatted data result: ", data);
+  if (!response.ok) throw new Error(data.error || 'LLM error');
