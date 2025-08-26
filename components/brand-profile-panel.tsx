@@ -18,53 +18,6 @@ export default function BrandProfilePanel({ company }: BrandProfilePanelProps) {
   //console.log("🔍 BrandProfilePanel - sources:", company?.detailedAnalysis?.sources);
   //console.log("🔍 BrandProfilePanel - sources length:", company?.detailedAnalysis?.sources?.length);
 
-  const renderSourceWithLinks = (source: string) => {
-    // Check if it's a plain URL
-    const urlRegex = /^https?:\/\/.+/;
-    
-    if (urlRegex.test(source.trim())) {
-      // It's a plain URL, make it clickable
-      return (
-        <a
-          href={source}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-blue-600 hover:underline"
-        >
-          {source}
-        </a>
-      );
-    }
-    
-    // Otherwise, handle markdown links [text](url)
-    const linkRegex = /\[([^\]]+)\]\(([^)]+)\)/g;
-    const parts = [];
-    let lastIndex = 0;
-    let match;
-
-    while ((match = linkRegex.exec(source)) !== null) {
-      if (match.index > lastIndex) {
-        parts.push(source.slice(lastIndex, match.index));
-      }
-      parts.push(
-        <a
-          key={match.index}
-          href={match[2]}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-blue-600 hover:underline"
-        >
-          {match[1]}
-        </a>
-      );
-      lastIndex = match.index + match[0].length;
-    }
-    if (lastIndex < source.length) {
-      parts.push(source.slice(lastIndex));
-    }
-    return parts.length > 0 ? parts : source;
-  };
-
   function renderMarkdownContent(content: string) {
     try {
       // Configure marked for safe rendering
@@ -182,9 +135,12 @@ export default function BrandProfilePanel({ company }: BrandProfilePanelProps) {
                 <AccordionItem value="company-overview">
                   <AccordionTrigger>Company Overview</AccordionTrigger>
                   <AccordionContent>
-                    <p className="text-sm text-muted-foreground">
-                      {company.detailedAnalysis.companyOverview.content}
-                    </p>
+                    <div 
+                      className="text-sm text-muted-foreground prose prose-sm max-w-none"
+                      dangerouslySetInnerHTML={{ 
+                        __html: renderMarkdownContent(company.detailedAnalysis.companyOverview.content) 
+                      }}
+                    />
                   </AccordionContent>
                 </AccordionItem>
               )}
@@ -194,9 +150,12 @@ export default function BrandProfilePanel({ company }: BrandProfilePanelProps) {
                 <AccordionItem value="company-background">
                   <AccordionTrigger>Company Background</AccordionTrigger>
                   <AccordionContent>
-                    <p className="text-sm text-muted-foreground">
-                      {company.detailedAnalysis.companyBackground.content}
-                    </p>
+                    <div 
+                      className="text-sm text-muted-foreground prose prose-sm max-w-none"
+                      dangerouslySetInnerHTML={{ 
+                        __html: renderMarkdownContent(company.detailedAnalysis.companyBackground.content) 
+                      }}
+                    />
                   </AccordionContent>
                 </AccordionItem>
               )}
@@ -206,9 +165,12 @@ export default function BrandProfilePanel({ company }: BrandProfilePanelProps) {
                 <AccordionItem value="financial-overview">
                   <AccordionTrigger>Financial Overview</AccordionTrigger>
                   <AccordionContent>
-                    <p className="text-sm text-muted-foreground">
-                      {company.detailedAnalysis.financialOverview.content}
-                    </p>
+                    <div 
+                      className="text-sm text-muted-foreground prose prose-sm max-w-none"
+                      dangerouslySetInnerHTML={{ 
+                        __html: renderMarkdownContent(company.detailedAnalysis.financialOverview.content) 
+                      }}
+                    />
                   </AccordionContent>
                 </AccordionItem>
               )}
@@ -218,9 +180,12 @@ export default function BrandProfilePanel({ company }: BrandProfilePanelProps) {
                 <AccordionItem value="audience-segmentation">
                   <AccordionTrigger>Target Audience</AccordionTrigger>
                   <AccordionContent>
-                    <p className="text-sm text-muted-foreground">
-                      {company.detailedAnalysis.audienceSegmentation.content}
-                    </p>
+                    <div 
+                      className="text-sm text-muted-foreground prose prose-sm max-w-none"
+                      dangerouslySetInnerHTML={{ 
+                        __html: renderMarkdownContent(company.detailedAnalysis.audienceSegmentation.content) 
+                      }}
+                    />
                   </AccordionContent>
                 </AccordionItem>
               )}
@@ -285,19 +250,6 @@ export default function BrandProfilePanel({ company }: BrandProfilePanelProps) {
                 </AccordionItem>
               )}
             </Accordion>
-
-            {company.detailedAnalysis?.sources && company.detailedAnalysis.sources.length > 0 && (
-              <div className="mt-8 border-t pt-4">
-                <h3 className="text-lg font-semibold mb-2">SOURCES</h3>
-                <ul className="list-disc pl-5 space-y-1">
-                  {company.detailedAnalysis.sources.map((source: string, index: number) => (
-                    <li key={index} className="text-sm text-muted-foreground">
-                      {renderSourceWithLinks(source)}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
           </TabsContent>
 
           <TabsContent value="contacts">
