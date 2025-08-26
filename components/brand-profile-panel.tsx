@@ -12,11 +12,14 @@ interface BrandProfilePanelProps {
 }
 
 export default function BrandProfilePanel({ company }: BrandProfilePanelProps) {
+  // Determine if contacts tab should be shown (only when contacts exist)
+  const hasContacts = company.contacts && company.contacts.length > 0;
+  
+  // Set initial active tab - always start with overview
   const [activeTab, setActiveTab] = useState("overview")
 
-  // REMOVE THESE DEBUG LOGS:
-  //console.log("🔍 BrandProfilePanel - sources:", company?.detailedAnalysis?.sources);
-  //console.log("🔍 BrandProfilePanel - sources length:", company?.detailedAnalysis?.sources?.length);
+  // Ensure activeTab is valid - if contacts tab is selected but no contacts, default to overview
+  const validActiveTab = hasContacts ? activeTab : (activeTab === "contacts" ? "overview" : activeTab);
 
   function renderMarkdownContent(content: string) {
     try {
@@ -49,7 +52,7 @@ export default function BrandProfilePanel({ company }: BrandProfilePanelProps) {
   return (
     <Card>
       <CardContent className="p-6">
-        <Tabs value={activeTab} onValueChange={setActiveTab}>
+        <Tabs value={validActiveTab} onValueChange={setActiveTab}>
           <TabsList className="mb-4 bg-edge border border-gray-200 p-1 rounded-lg">
             <TabsTrigger
               value="overview"
@@ -63,12 +66,15 @@ export default function BrandProfilePanel({ company }: BrandProfilePanelProps) {
             >
               Full Report
             </TabsTrigger>
-            <TabsTrigger
-              value="contacts"
-              className="data-[state=active]:bg-white data-[state=active]:text-black data-[state=active]:shadow-sm text-gray-600 hover:text-black transition-colors"
-            >
-              Contacts
-            </TabsTrigger>
+            {/* Only show contacts tab when there are actual contacts */}
+            {hasContacts && (
+              <TabsTrigger
+                value="contacts"
+                className="data-[state=active]:bg-white data-[state=active]:text-black data-[state=active]:shadow-sm text-gray-600 hover:text-black transition-colors"
+              >
+                Contacts
+              </TabsTrigger>
+            )}
           </TabsList>
 
           <TabsContent value="overview" className="space-y-4">
@@ -257,11 +263,14 @@ export default function BrandProfilePanel({ company }: BrandProfilePanelProps) {
             </Accordion>
           </TabsContent>
 
-          <TabsContent value="contacts">
-            {company.contacts.map((contact: any, index: number) => (
-              <ContactInfoPanel key={index} contact={contact} />
-            ))}
-          </TabsContent>
+          {/* Only render contacts tab content when contacts exist */}
+          {hasContacts && (
+            <TabsContent value="contacts">
+              {company.contacts.map((contact: any, index: number) => (
+                <ContactInfoPanel key={index} contact={contact} />
+              ))}
+            </TabsContent>
+          )}
         </Tabs>
       </CardContent>
     </Card>
