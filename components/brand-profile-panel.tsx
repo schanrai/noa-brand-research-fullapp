@@ -74,7 +74,12 @@ export default function BrandProfilePanel({ company }: BrandProfilePanelProps) {
           <TabsContent value="overview" className="space-y-4">
             <div>
               <h3 className="text-lg font-semibold">Company Overview</h3>
-              <p className="mt-2 text-muted-foreground">{company.description}</p>
+              <div
+                className="mt-2 text-muted-foreground prose prose-sm max-w-none"
+                dangerouslySetInnerHTML={{
+                  __html: renderMarkdownContent(company.description),
+                }}
+              />
             </div>
 
             <div className="grid grid-cols-2 gap-4">
