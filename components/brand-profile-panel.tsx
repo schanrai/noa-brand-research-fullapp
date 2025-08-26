@@ -133,9 +133,19 @@ export default function BrandProfilePanel({ company }: BrandProfilePanelProps) {
                 <h4 className="text-sm font-medium">Founded</h4>
                 <p className="text-sm text-muted-foreground">{new Date(company.foundingDate).toLocaleDateString()}</p>
               </div>
+              {/* Website */}
               <div>
                 <h4 className="text-sm font-medium">Website</h4>
-                <p className="text-sm text-muted-foreground">{company.website}</p>
+                <p className="text-sm text-muted-foreground">
+                  <a 
+                    href={company.website} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-blue-600 underline hover:text-blue-800 hover:no-underline transition-colors"
+                  >
+                    {company.website}
+                  </a>
+                </p>
               </div>
               <div>
                 <h4 className="text-sm font-medium">Headquarters</h4>
