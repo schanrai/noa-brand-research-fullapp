@@ -93,7 +93,7 @@ export default function ConfirmationModal({
             </div>
           </div>
 
-          {/* Contact information preview */}
+          {/* Only show contacts section if contacts exist (CRM data) */}
           {company.contacts && company.contacts.length > 0 && (
             <div className="space-y-3">
               <h4 className="text-sm font-semibold uppercase tracking-wide">
