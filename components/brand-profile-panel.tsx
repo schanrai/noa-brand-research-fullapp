@@ -12,14 +12,11 @@ interface BrandProfilePanelProps {
 }
 
 export default function BrandProfilePanel({ company }: BrandProfilePanelProps) {
-  // Determine if contacts tab should be shown (only when contacts exist)
+  // Simple check for contacts - don't interfere with other logic
   const hasContacts = company.contacts && company.contacts.length > 0;
   
-  // Set initial active tab - always start with overview
+  // Keep the original activeTab logic simple
   const [activeTab, setActiveTab] = useState("overview")
-
-  // Ensure activeTab is valid - if contacts tab is selected but no contacts, default to overview
-  const validActiveTab = hasContacts ? activeTab : (activeTab === "contacts" ? "overview" : activeTab);
 
   function renderMarkdownContent(content: string) {
     try {
@@ -52,7 +49,7 @@ export default function BrandProfilePanel({ company }: BrandProfilePanelProps) {
   return (
     <Card>
       <CardContent className="p-6">
-        <Tabs value={validActiveTab} onValueChange={setActiveTab}>
+        <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="mb-4 bg-edge border border-gray-200 p-1 rounded-lg">
             <TabsTrigger
               value="overview"
@@ -77,6 +74,7 @@ export default function BrandProfilePanel({ company }: BrandProfilePanelProps) {
             )}
           </TabsList>
 
+          {/* Keep all the existing TabsContent exactly as they were */}
           <TabsContent value="overview" className="space-y-4">
             <div>
               <h3 className="text-lg font-semibold">Company Overview</h3>
