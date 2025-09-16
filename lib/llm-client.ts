@@ -1,17 +1,4 @@
-export async function getLLMResearch(prompt: string, model: string) {
-    console.log("Getting LLM research for prompt: ", prompt, " with model: ", model);
-  const response = await fetch('/api/llm', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ prompt, model }),
-  });
-  const data = await response.json();
-  console.log("LLM research data: ", data);
-  if (!response.ok) throw new Error(data.error || 'LLM error');
-  return data.result;
-}
-
-// Helper function to clean JSON response from markdown formatting
+// ADD: Simple JSON cleaning function (move to TOP of file)
 function cleanJsonResponse(responseText: string): string {
   let jsonString = responseText;
   
@@ -22,87 +9,26 @@ function cleanJsonResponse(responseText: string): string {
     jsonString = jsonString.replace(/```\n?/g, '');
   }
   
-  // Remove any trailing commas before closing braces/brackets
-  jsonString = jsonString.replace(/,(\s*[}\]])/g, '$1');
+  // Remove extra quotes around the whole response
+  jsonString = jsonString.replace(/^"|"$/g, '');
   
-  // Try to parse as-is first
-  try {
-    JSON.parse(jsonString);
-    return jsonString.trim();
-  } catch (parseError) {
-    console.warn("Initial JSON parsing failed, attempting to clean response:", parseError);
-    
-    // Fix the main issue: unescaped quotes in content fields
-    let cleanedString = jsonString;
-    
-    // Find and fix content fields with unescaped quotes
-    const contentRegex = /"content":\s*"([^"]*(?:\\"|[^"])*?)"/g;
-    let match;
-    
-    while ((match = contentRegex.exec(jsonString)) !== null) {
-      const originalContent = match[1];
-      // Escape quotes and other problematic characters
-      const escapedContent = originalContent
-        .replace(/"/g, '\\"')
-        .replace(/\n/g, '\\n')
-        .replace(/\r/g, '\\r')
-        .replace(/\t/g, '\\t');
-      
-      cleanedString = cleanedString.replace(originalContent, escapedContent);
-    }
-    
-    // Try parsing again
-    try {
-      JSON.parse(cleanedString);
-      return cleanedString.trim();
-    } catch (secondError) {
-      console.error("Failed to clean JSON response:", secondError);
-      
-      // Last resort: try to extract just the JSON structure
-      return attemptJsonRecovery(jsonString);
-    }
-  }
+  return jsonString.trim();
 }
 
-// Emergency JSON recovery function
-function attemptJsonRecovery(jsonString: string): string {
-  console.log("Attempting JSON recovery...");
-  
-  // Try to find the JSON structure and extract valid parts
-  const startBrace = jsonString.indexOf('{');
-  const endBrace = jsonString.lastIndexOf('}');
-  
-  if (startBrace === -1 || endBrace === -1 || startBrace >= endBrace) {
-    throw new Error("Cannot find valid JSON structure");
-  }
-  
-  // Extract the content between braces
-  let extracted = jsonString.substring(startBrace, endBrace + 1);
-  
-  // Try to fix common issues
-  extracted = extracted
-    .replace(/[\u0000-\u001F\u007F-\u009F]/g, '') // Remove control characters
-    .replace(/,(\s*[}\]])/g, '$1') // Remove trailing commas
-    .replace(/"([^"]*?)(\n|\r|\t)([^"]*?)"/g, '"$1\\n$3"') // Fix newlines in strings
-    .replace(/"([^"]*?)([^\\])"([^"]*?)"/g, '"$1\\"$3"'); // Fix unescaped quotes
-  
-  // Try parsing the recovered JSON
-  try {
-    JSON.parse(extracted);
-    return extracted;
-  } catch (finalError) {
-    console.error("JSON recovery parsing failed:", finalError);
-    
-    // If all else fails, return a minimal valid JSON structure
-    return JSON.stringify({
-      error: "Failed to parse LLM response",
-      originalLength: jsonString.length,
-      timestamp: new Date().toISOString()
-    });
-  }
+export async function getLLMResearch(prompt: string, model: string) {
+    console.log("Getting LLM research for prompt: ", prompt, " with model: ", model);
+  const response = await fetch('/api/llm', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ prompt, model }),
+  });
+  const data = await response.json();
+  //console.log("LLM research data: ", data);
+  if (!response.ok) throw new Error(data.error || 'LLM error');
+  return data.result;
 }
 
-// Function for structured data with strict parameters - returns JSON
+// RESTORE: The working getStructuredData function
 export async function getStructuredData(prompt: string) {
   console.log("Getting structured data with strict parameters");
   const response = await fetch('/api/llm', {
@@ -117,12 +43,13 @@ export async function getStructuredData(prompt: string) {
     }),
   });
   const data = await response.json();
-  console.log("Structured data result: ", data);
+  //console.log("Structured data result: ", data);
   if (!response.ok) throw new Error(data.error || 'LLM error');
   
-  // Parse the JSON response
+  // FIX: Clean the response before parsing
   try {
     const cleanedResponse = cleanJsonResponse(data.result);
+    //console.log("Cleaned response:", cleanedResponse);
     return JSON.parse(cleanedResponse);
   } catch (e) {
     console.error("Failed to parse structured data as JSON:", e);
@@ -131,29 +58,72 @@ export async function getStructuredData(prompt: string) {
   }
 }
 
-// Function for detailed report with JSON format - returns JSON
-export async function getDetailedReport(prompt: string) {
-  console.log("Getting detailed report with JSON format");
+// ADD: New function for detailed analysis (search agent - no JSON constraints)
+export async function getDetailedAnalysis(prompt: string) {
+  console.log("Getting detailed analysis from search agent");
+  try {
+    const response = await fetch('/api/llm', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ 
+        prompt, 
+        model: "openai/gpt-4o-search-preview",
+        temperature: 0.3,
+        top_p: 0.9,
+        max_tokens: 4000
+      }),
+    });
+    
+    const data = await response.json();
+    //console.log("Detailed analysis result: ", data);
+    
+    if (!response.ok) {
+      console.error("API Error:", data);
+      throw new Error(data.error || `HTTP ${response.status}: ${response.statusText}`);
+    }
+    
+    return data.result; // Return raw text, not parsed JSON
+  } catch (e) {
+    console.error("Detailed analysis failed:", e);
+    const errorMessage = e instanceof Error ? e.message : String(e);
+    throw new Error(`LLM request failed: ${errorMessage}`);
+  }
+}
+
+// ADD: New function for formatting (formatting agent - strict JSON schema)
+export async function getFormattedData(content: string, schema: any) {
+  console.log("Formatting content with formatting agent");
   const response = await fetch('/api/llm', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ 
-      prompt, 
-      model: "openai/gpt-4o-search-preview",
-      max_tokens: 4000
+      prompt: `Convert the following research into structured JSON format according to the schema. If input has structured data, convert to readable narrative text that maintains all the key information but maintains a maximum word count of 850 -1000 words. 
+
+IMPORTANT: If there are paragraphs, line breaks or other formatting, preserve it as long as the result is readable and follows the schema requirements.  Preserve all markdown links in the format [Link Text](URL) - do not convert them to plain text.
+
+RESEARCH CONTENT:
+${content}
+
+Format as clean, readable narrative text that follows the schema requirements, keeping all markdown links intact.`,
+      model: "openai/gpt-4o-mini",
+      temperature: 0.0,
+      top_p: 0.1,
+      max_tokens: 15000,
+      response_format: schema
     }),
   });
   const data = await response.json();
-  console.log("Detailed report result: ", data);
+  //console.log("Formatted data result: ", data);
   if (!response.ok) throw new Error(data.error || 'LLM error');
   
-  // Parse the JSON response
   try {
+    // ADD: Clean the response before parsing (same as getStructuredData)
     const cleanedResponse = cleanJsonResponse(data.result);
+    //console.log("Cleaned response before parsing:", cleanedResponse);
     return JSON.parse(cleanedResponse);
   } catch (e) {
-    console.error("Failed to parse detailed report as JSON:", e);
-    console.error("Raw response:", data.result);
-    throw new Error("Failed to parse detailed report response");
+    console.error("Failed to parse formatted data as JSON:", e);
+    console.error("Raw response that failed:", data.result);
+    throw new Error("Failed to parse formatted data response");
   }
 } 

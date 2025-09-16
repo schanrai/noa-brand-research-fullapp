@@ -5,7 +5,8 @@ import type React from "react"
 import { useState, useEffect, useRef } from "react"
 import { Button } from "@/components/ui/button"
 import { Send, Lightbulb, Star, Loader2, Network } from "lucide-react"
-import { getLLMResearch, getStructuredData, getDetailedReport } from "@/lib/llm-client"
+import { getLLMResearch, getStructuredData, getDetailedAnalysis, getFormattedData } from "@/lib/llm-client"
+import { overviewSchema, marketingSchema, sponsorshipsSchema, socialMediaSchema } from "@/lib/schemas"
 
 interface CoPilotInterfaceProps {
   stage: "initial" | "region" | "region-specific" | "division" | "division-specific" | "confirmation" | "results" | "feedback" | "feedback-clarification" | "processing" | "processing-feedback"
@@ -114,10 +115,10 @@ export default function CoPilotInterface({
                 focusText = `, specifically their ${specificDivision} division`;
               }
               
-              // Update the structured data prompt to request JSON format
+              // PASS 1: Basic company info (keep working as-is)
               const structuredPrompt = `I would like to research the company ${companyName}${regionText}${focusText}. 
 
-IMPORTANT: You must respond with ONLY valid JSON. Do not include any other text, explanations, or formatting.
+IMPORTANT: You must respond with ONLY valid JSON. Do not include any other text, explanations, or formatting. Retrieve the information from high quality, verifiable information such as from the company website, press releases, reputable media coverage and high authority publishers
 
 Please provide the company data in this exact JSON format:
 
@@ -128,107 +129,154 @@ Please provide the company data in this exact JSON format:
   "headquarters": "<value>",
   "annualRevenue": "<value>",
   "employees": "<value>"
-}`;
+}
+
+DO NOT add any explanations, dates, parentheses, or additional context to values.`;
+
+              // PASS 2: Company overview sections (shorter, focused searches)
+              const overviewPrompt = `Research ${companyName}${regionText} and provide:
+
+1. Company Overview (100-150 words): Global footprint, core business divisions and brands, primary service lines, main offices
+2. Company Background (150-350 words): Brief history of the company, key milestones, organisational structure, defining values
+3. Financial Overview (100-200 words): Key financial performance with specific datapoints, stability indicators, ownership structure, funding and recent acquisitions
+4. Audience Segmentation (50-75 words): Target audiences, current customer types, emerging segments
+
+Focus on factual information from company press releases, financial reports, and reputable business sources.
+
+SOURCES REQUIREMENTS:
+- Collect ALL sources used in your research
+- Provide full URLs for verification
+- Minimum 5 sources, include as many relevant sources as found`;
+
+              // PASS 3: Marketing Activity (restored detailed structure)
+              const marketingPrompt = `Research ${companyName}${regionText}${focusText} recent and current marketing activities.
+
+Provide a detailed narrative analysis of current and recent global marketing activity within the last 3-5 years. Include at least 5 specific named campaigns For each campaign describe the campaign name, target audience segments, messaging themes, measurable outcomes, creative concepts, channels used, and partnerships or collaborations.
+
+If a region was specified, include regional marketing details with concrete examples of events, digital campaigns, or key channel activations, including timing, format, target audience, and strategic rationale.
+
+Write this as flowing narrative text that naturally incorporates all the details, not as a structured list or bullet points. Focus on high quality, verifiable information from the company website, press releases, reputable media coverage and high authority publishers. Avoid vague descriptions - all examples must reference verifiable sources, initiatives, or announcements.
+
+IMPORTANT: Include inline source links using markdown format [Link Text](URL) for all verifiable information.`;
+
+              // PASS 4: Sponsorships & Experiential (dedicated search for depth)
+              const sponsorshipsPrompt = `Research ${companyName}${regionText}${focusText} recent and current sponsorship portfolio and experiential initiatives.
+
+Provide a detailed narrative analysis of at least 5 specific sponsorships within the last 3-5 years in sports, arts, culture, entertainment, or lifestyle. For each sponsorship, describe the sponsorship name, exact or approximate start/end dates, geographic location, event/partner name, activation channels, budget or scale indicators (if available), strategic fit with brand goals, and measurable outcomes (audience reach, media coverage, ROI, engagement metrics).
+
+For experiential initiatives, identify and describe at least 3 named initiatives within the last 3-5 years such as VIP/client-only events, curated experiences, global tours, or museum tie-ins. For each initiative, describe the event name, dates and location, purpose/context, audience profile, unique experiential elements, cultural or thought leadership integration, and measurable impact.
+
+Write this as flowing narrative text that naturally incorporates all the details, not as a structured list or bullet points. Focus on verifiable information from the company website, press releases, high authority news sources and publishers. Avoid vague statements like 'supports local events'. All examples must reference named events, partners, or programs with verifiable details. 
+
+IMPORTANT: Include inline source links using markdown format [Link Text](URL) for all verifiable information.`;
+
+              // PASS 5: Social Media & Strategic Focus (shorter, focused searches)
+              const socialMediaPrompt = `Research ${companyName}${regionText} social media presence and strategic focus.
+
+Social Media (350-450 words): Recent platform activity, engagement tactics, and brand tone across LinkedIn, Twitter, Instagram, TikTok, YouTube and other relevant platforms.
+
+Strategic Focus (200-350 words): How the company differentiates itself, brand traits, competitive stance, and risk considerations.
+
+Focus on recent activity and verifiable information from company announcements and social media presence.`;
+
+              // Execute all searches in parallel for better performance
+              console.log('🚀 Starting multi-pass research...');
               
-              // Update the detailed analysis prompt to request JSON format
-              const detailedRegionText = regionFocus === "specific" ? `specifically their ${specificRegion} and ` : "";
-              const detailedDivisionText = researchFocus === "comprehensive" ? "overall operations" : 
-                                          researchFocus === "specific" ? `${specificDivision}` : "overall operations";
-              
-              const detailedPrompt = `I would like to research the company ${companyName}, ${detailedRegionText}${detailedDivisionText}.
+              const [
+                structuredOutput,
+                overviewOutput,
+                marketingOutput,
+                sponsorshipsOutput,
+                socialMediaOutput
+              ] = await Promise.all([
+                getStructuredData(structuredPrompt),
+                getDetailedAnalysis(overviewPrompt),
+                getDetailedAnalysis(marketingPrompt),
+                getDetailedAnalysis(sponsorshipsPrompt),
+                getDetailedAnalysis(socialMediaPrompt)
+              ]);
 
-The research should be crafted in a concise, professional and insight-rich style, suitable for displaying onscreen in a dedicated research application for evaluating potential partnership opportunities, and for populating in a CRM thereafter. Use information from at least 8 or more distinct sources.  Use data only from verifiable sources such as company press releases, reputable media coverage, case studies, and event listings.
+              console.log('✅ All search passes completed');
 
-IMPORTANT: You must respond with ONLY valid JSON. Do not include any other text, explanations, or formatting. 
+              // DEBUG: Log raw search outputs to see what each section returns
+              console.log('🔍 DEBUG: Raw search outputs:');
+              console.log('📋 Structured Output:', structuredOutput);
+              console.log('📚 Overview Output:', overviewOutput);
+              console.log('📈 Marketing Output:', marketingOutput);
+              console.log('🎯 Sponsorships Output:', sponsorshipsOutput);
+              console.log('📱 Social Media Output:', socialMediaOutput);
 
-Please provide the research in this exact JSON format:
+              // The formatting calls
+              const [
+                formattedOverview,
+                formattedMarketing,
+                formattedSponsorships,
+                formattedSocialMedia
+              ] = await Promise.all([
+                getFormattedData(overviewOutput, overviewSchema),        
+                getFormattedData(marketingOutput, marketingSchema),     
+                getFormattedData(sponsorshipsOutput, sponsorshipsSchema), 
+                getFormattedData(socialMediaOutput, socialMediaSchema)   
+              ]);
 
-{
-  "companyOverview": {
-    "content": "<100-150 words about company overview including global footprint, core business divisions and primary service lines>"
-  },
-  "companyBackground": {
-    "content": "<150-350 words about core divisions, key milestones, main offices, structure, and defining values>"
-  },
-  "financialOverview": {
-    "content": "<100-200 words about key financial milestones, stability indicators, ownership structure, funding, and recent acquisitions>"
-  },
-  "audienceSegmentation": {
-    "content": "<50-75 words about target audiences, current customer types, and emerging segments>"
-  },
-  "marketingActivity": {
-    "globalMarketing": "<300-450 words about global marketing campaigns, strategies, and initiatives>",
-    "regionalMarketing": "<300-450 words about regional marketing activities, local campaigns, and market-specific strategies>"
-  },
-  "sponsorshipsExperiential": {
-    "sponsorships": "<300-450 words about sponsorship portfolio, partnerships, and brand collaborations>",
-    "experientialEvents": "<300-450 words about experiential initiatives, events, and customer engagement programs>"
-  },
-  "socialMediaPresence": {
-    "content": "<350-450 words about recent platform activity, engagement tactics, and brand tone across LinkedIn, Twitter, Instagram, TikTok, YouTube and other relevant platforms>"
-  },
-  "strategicFocus": {
-    "content": "<200-350 words about how the company differentiates itself, brand traits, competitive stance, and risk considerations>"
-  },
-  "contacts": {
-    "leadership": [
-      {
-        "name": "<name>",
-        "title": "<title>",
-        "email": "<email>",
-        "phone": "<phone>"
-      }
-    ],
-    "marketingContacts": [
-      {
-        "name": "<name>",
-        "title": "<title>",
-        "email": "<email>",
-        "phone": "<phone>"
-      }
-    ],
-    "sponsorshipContacts": [
-      {
-        "name": "<name>",
-        "title": "<title>",
-        "email": "<email>",
-        "phone": "<phone>"
-      }
-      },
-    ]
-  }
-}`;
-              
-              // Update the response handling to work with JSON data
-              const structuredOutput = await getStructuredData(structuredPrompt);
-              const detailedOutput = await getDetailedReport(detailedPrompt);
+              console.log('✅ All formatting passes completed');
+              console.log('🔍 DEBUG: After formatting - what we got back:');
+              console.log('�� Overview formatted:', formattedOverview);
+              console.log('📈 Marketing formatted:', formattedMarketing);
+              console.log('🎯 Sponsorships formatted:', formattedSponsorships);
+              console.log('📱 Social Media formatted:', formattedSocialMedia);
 
-              // Combine both results into a single JSON object
+              // Create the combined result
               combinedResult = {
                 structuredData: structuredOutput,
-                detailedAnalysis: detailedOutput,
+                detailedAnalysis: {
+                  companyOverview: formattedOverview.companyOverview,
+                  companyBackground: formattedOverview.companyBackground,
+                  financialOverview: formattedOverview.financialOverview,
+                  audienceSegmentation: formattedOverview.audienceSegmentation,
+                  marketingActivity: formattedMarketing.marketingActivity,
+                  sponsorshipsExperiential: formattedSponsorships.sponsorshipsExperiential,
+                  socialMediaPresence: formattedSocialMedia.socialMediaPresence,
+                  strategicFocus: formattedSocialMedia.strategicFocus,
+                  // ADD THIS LINE FOR SOURCES:
+                  sources: formattedOverview.sources || []
+                },
                 metadata: {
                   companyName,
                   regionFocus,
                   specificRegion,
                   researchFocus,
                   specificDivision,
-                  timestamp: new Date().toISOString()
+                  timestamp: new Date().toISOString(),
+                  searchPasses: 5,
+                  formattingPasses: 4
                 }
               };
+
+              // After creating combinedResult, add this debug log:
+              console.log('🔍 DEBUG: combinedResult structure:');
+              console.log('�� Marketing Activity:', combinedResult.detailedAnalysis.marketingActivity);
+              console.log('🎯 Sponsorships:', combinedResult.detailedAnalysis.sponsorshipsExperiential);
+              console.log('📋 Full combinedResult:', JSON.stringify(combinedResult, null, 2));
               
+
               setLlmResult(JSON.stringify(combinedResult, null, 2));
               setStructuredData(combinedResult);
               
             } catch (e) {
+              console.error('Research failed:', e);
               setLlmResult("Error: " + (e as Error).message);
             } finally {
               setIsProcessing(false);
               if (currentStage === "processing-feedback") {
                 onFeedbackComplete?.();
               } else {
-                // Pass the structured JSON data to the parent component
+                // FIX: Check if combinedResult exists before using it
+                if (combinedResult) {
                 onResponse("results", companyName, JSON.stringify(combinedResult));
+                } else {
+                  onResponse("results", companyName, "");
+                }
               }
             }
           };
