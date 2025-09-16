@@ -238,15 +238,8 @@ export default function Home() {
         logo: "/placeholder.svg?height=80&width=80",
         inCRM: false,
         source: "research",
-        contacts: [
-          {
-            name: "John Smith",
-            email: `john.smith@${companyName.toLowerCase().replace(/\s+/g, "")}.com`,
-            title: "VP of Strategic Partnerships",
-            source: "AI Research",
-            relationshipNotes: "Generated contact based on company research",
-          },
-        ],
+        // Remove contacts array completely - no contacts for LLM research
+        // contacts: [], // This line should be removed entirely
         // Use the actual LLM data for detailed analysis
         detailedAnalysis: parsedData?.detailedAnalysis || {
           companyOverview: {
@@ -278,7 +271,8 @@ export default function Home() {
           },
           strategicFocus: {
             content: `${companyName} is focused on expanding its global market presence.`
-          }
+          },
+          sources: parsedData?.detailedAnalysis?.sources || []
         },
         // Include the raw LLM data for debugging and future use
         structuredData: parsedData?.structuredData || null,
