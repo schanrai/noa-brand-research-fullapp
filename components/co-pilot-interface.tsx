@@ -135,7 +135,7 @@ DO NOT add any explanations, dates, parentheses, or additional context to values
 
               // PASS 2: Company overview sections (shorter, focused searches)
               const overviewPrompt = `Research ${companyName}${regionText} and provide:
-
+              
 1. Company Overview (100-150 words): Global footprint, core business divisions and brands, primary service lines, main offices
 2. Company Background (150-350 words): Brief history of the company, key milestones, organisational structure, defining values
 3. Financial Overview (100-200 words): Key financial performance with specific datapoints, stability indicators, ownership structure, funding and recent acquisitions
@@ -143,10 +143,20 @@ DO NOT add any explanations, dates, parentheses, or additional context to values
 
 Focus on factual information from company press releases, financial reports, and reputable business sources.
 
-SOURCES REQUIREMENTS:
-- Collect ALL sources used in your research
-- Provide full URLs for verification
-- Minimum 5 sources, include as many relevant sources as found`;
+SOURCES REQUIREMENTS (STRICT):
+- For EACH section, provide a separate list of 2–8 source URLs that were actually used to write THAT section.
+- Include ONLY direct, verifiable URLs (no labels or titles). One URL per line.
+- Do NOT reuse links across sections unless the same source was genuinely used for both.
+- Do NOT include sources that weren't used for the section's content.
+- Prefer primary sources (company filings, newsroom, investor relations) and high-authority media.
+- Place the section's sources immediately after its content as:
+  "Sources:"
+  <URL 1>
+  <URL 2>
+  ...
+- Do not include any additional commentary around the URLs.
+
+Your answer will be reformatted later, so keep each section’s content followed immediately by its own "Sources:" block as specified above.`;
 
               // PASS 3: Marketing Activity (restored detailed structure)
               const marketingPrompt = `Research ${companyName}${regionText}${focusText} recent and current marketing activities.
@@ -237,9 +247,7 @@ Focus on recent activity and verifiable information from company announcements a
                   marketingActivity: formattedMarketing.marketingActivity,
                   sponsorshipsExperiential: formattedSponsorships.sponsorshipsExperiential,
                   socialMediaPresence: formattedSocialMedia.socialMediaPresence,
-                  strategicFocus: formattedSocialMedia.strategicFocus,
-                  // ADD THIS LINE FOR SOURCES:
-                  sources: formattedOverview.sources || []
+                  strategicFocus: formattedSocialMedia.strategicFocus
                 },
                 metadata: {
                   companyName,
