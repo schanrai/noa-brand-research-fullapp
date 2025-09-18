@@ -161,24 +161,32 @@ Your answer will be reformatted later, so keep each section’s content followed
               // PASS 3: Marketing Activity (restored detailed structure)
               const marketingPrompt = `Research ${companyName}${regionText}${focusText} recent and current marketing activities.
 
-Provide a detailed narrative analysis of current and recent global marketing activity within the last 3-5 years. Include at least 5 specific named campaigns For each campaign describe the campaign name, target audience segments, messaging themes, measurable outcomes, creative concepts, channels used, and partnerships or collaborations.
+Provide a detailed narrative analysis of current and recent global marketing activity. Include at least 5 specific named campaigns. For each campaign describe the campaign name, target audience segments, messaging themes, measurable outcomes, creative concepts, channels used, and partnerships or collaborations where possible. Do not make up the details of the campaigns, only use the information you find even if it is not complete.
 
-If a region was specified, include regional marketing details with concrete examples of events, digital campaigns, or key channel activations, including timing, format, target audience, and strategic rationale.
+If a region or division was specified, include regional or division-specific marketing details with concrete examples of events, digital campaigns, or key channel activations, including timing, format, target audience, and strategic rationale.
+
+IMPORTANT: If you cannot find 5 specific campaigns within the last 3-5 years, extend your search beyond this timeframe to find the required 5 campaigns. Do not limit yourself to recent years if insufficient recent examples exist.
 
 Write this as flowing narrative text that naturally incorporates all the details, not as a structured list or bullet points. Focus on high quality, verifiable information from the company website, press releases, reputable media coverage and high authority publishers. Avoid vague descriptions - all examples must reference verifiable sources, initiatives, or announcements.
 
-IMPORTANT: Include inline source links using markdown format [Link Text](URL) for all verifiable information.`;
+IMPORTANT: Include inline source links using markdown format [Link Text](URL) for all verifiable information.
+
+CRITICAL: Do not start your response with phrases like "over the past five years" or similar fixed timeframe statements. Instead, use flexible language that reflects the actual timeframe of the content you found.`;
 
               // PASS 4: Sponsorships & Experiential (dedicated search for depth)
               const sponsorshipsPrompt = `Research ${companyName}${regionText}${focusText} recent and current sponsorship portfolio and experiential initiatives.
 
-Provide a detailed narrative analysis of at least 5 specific sponsorships within the last 3-5 years in sports, arts, culture, entertainment, or lifestyle. For each sponsorship, describe the sponsorship name, exact or approximate start/end dates, geographic location, event/partner name, activation channels, budget or scale indicators (if available), strategic fit with brand goals, and measurable outcomes (audience reach, media coverage, ROI, engagement metrics).
+Provide a detailed narrative analysis of at least 5 specific sponsorships in sports, arts, culture, entertainment, or lifestyle. For each sponsorship, describe the sponsorship name, exact or approximate start/end dates, geographic location, event/partner name, activation channels, budget or scale indicators (if available), strategic fit with brand goals, and measurable outcomes (audience reach, media coverage, ROI, engagement metrics).Do not make up the details of the sponsorships, only use the information you find even if it is not complete.
 
-For experiential initiatives, identify and describe at least 3 named initiatives within the last 3-5 years such as VIP/client-only events, curated experiences, global tours, or museum tie-ins. For each initiative, describe the event name, dates and location, purpose/context, audience profile, unique experiential elements, cultural or thought leadership integration, and measurable impact.
+For experiential initiatives, identify and describe at least 3 named initiatives such as VIP/client-only events, curated experiences, global tours, or museum tie-ins. For each initiative, describe the event name, dates and location, purpose/context, audience profile, unique experiential elements, cultural or thought leadership integration, and measurable impact. Do not make up the details of the initiatives, only use the information you find even if it is not complete.
+
+IMPORTANT: If you cannot find 5 specific sponsorships within the last 3-5 years, extend your search beyond this timeframe to find the required 5 sponsorships. Similarly, if you cannot find 3 experiential initiatives within the last 3-5 years, extend your search to find the required 3 initiatives. Do not limit yourself to recent years if insufficient recent examples exist.
 
 Write this as flowing narrative text that naturally incorporates all the details, not as a structured list or bullet points. Focus on verifiable information from the company website, press releases, high authority news sources and publishers. Avoid vague statements like 'supports local events'. All examples must reference named events, partners, or programs with verifiable details. 
 
-IMPORTANT: Include inline source links using markdown format [Link Text](URL) for all verifiable information.`;
+IMPORTANT: Include inline source links using markdown format [Link Text](URL) for all verifiable information.
+
+CRITICAL: Do not start your response with phrases like "over the past five years" or similar fixed timeframe statements. Instead, use flexible language that reflects the actual timeframe of the content you found.`;
 
               // PASS 5: Social Media & Strategic Focus (shorter, focused searches)
               const socialMediaPrompt = `Research ${companyName}${regionText} social media presence and strategic focus.
