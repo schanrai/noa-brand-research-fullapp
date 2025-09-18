@@ -163,15 +163,15 @@ Your answer will be reformatted later, so keep each section’s content followed
 
 Provide a detailed narrative analysis of current and recent global marketing activity. Include at least 5 specific named campaigns. For each campaign describe the campaign name, target audience segments, messaging themes, measurable outcomes, creative concepts, channels used, and partnerships or collaborations where possible. Do not make up the details of the campaigns, only use the information you find even if it is not complete.
 
-If a region or division was specified, include regional or division-specific marketing details with concrete examples of events, digital campaigns, or key channel activations, including timing, format, target audience, and strategic rationale.
-
-IMPORTANT: If you cannot find 5 specific campaigns within the last 3-5 years, extend your search beyond this timeframe to find the required 5 campaigns. Do not limit yourself to recent years if insufficient recent examples exist.
-
 Write this as flowing narrative text that naturally incorporates all the details, not as a structured list or bullet points. Focus on high quality, verifiable information from the company website, press releases, reputable media coverage and high authority publishers. Avoid vague descriptions - all examples must reference verifiable sources, initiatives, or announcements.
 
-IMPORTANT: Include inline source links using markdown format [Link Text](URL) for all verifiable information.
+IMPORTANT: 
+- If you cannot find 5 specific campaigns within the last 3-5 years, extend your search beyond this timeframe to find the required 5 campaigns. Do not limit yourself to recent years if insufficient recent examples exist.
+- If a region or division was specified, include regional or division-specific marketing details with concrete examples of events, digital campaigns, or key channel activations, including timing, format, target audience, and strategic rationale.
 
-CRITICAL: Do not start your response with phrases like "over the past five years" or similar fixed timeframe statements. Instead, use flexible language that reflects the actual timeframe of the content you found.`;
+CRITICAL: 
+-Include inline source links using markdown format [Link Text](URL) for all verifiable information.
+-Do not start your response with generic time phrases like "over the past five years". Instead, use flexible language that reflects the actual timeframe of the content you found.`;
 
               // PASS 4: Sponsorships & Experiential (dedicated search for depth)
               const sponsorshipsPrompt = `Research ${companyName}${regionText}${focusText} recent and current sponsorship portfolio and experiential initiatives.
@@ -180,22 +180,41 @@ Provide a detailed narrative analysis of at least 5 specific sponsorships in spo
 
 For experiential initiatives, identify and describe at least 3 named initiatives such as VIP/client-only events, curated experiences, global tours, or museum tie-ins. For each initiative, describe the event name, dates and location, purpose/context, audience profile, unique experiential elements, cultural or thought leadership integration, and measurable impact. Do not make up the details of the initiatives, only use the information you find even if it is not complete.
 
-IMPORTANT: If you cannot find 5 specific sponsorships within the last 3-5 years, extend your search beyond this timeframe to find the required 5 sponsorships. Similarly, if you cannot find 3 experiential initiatives within the last 3-5 years, extend your search to find the required 3 initiatives. Do not limit yourself to recent years if insufficient recent examples exist.
-
 Write this as flowing narrative text that naturally incorporates all the details, not as a structured list or bullet points. Focus on verifiable information from the company website, press releases, high authority news sources and publishers. Avoid vague statements like 'supports local events'. All examples must reference named events, partners, or programs with verifiable details. 
 
-IMPORTANT: Include inline source links using markdown format [Link Text](URL) for all verifiable information.
+IMPORTANT: 
+- If you cannot find 5 specific sponsorships within the last 3-5 years, extend your search beyond this timeframe to find the required 5 sponsorships. Similarly, if you cannot find 3 experiential initiatives within the last 3-5 years, extend your search to find the required 3 initiatives. Do not limit yourself to recent years if insufficient recent examples exist.
+- If a region or division was specified, include regional or division-specific sponsorship details with concrete examples of events, partnerships, or initiatives, including timing, format, target audience, and strategic rationale.
 
-CRITICAL: Do not start your response with phrases like "over the past five years" or similar fixed timeframe statements. Instead, use flexible language that reflects the actual timeframe of the content you found.`;
+CRITICAL: 
+-Include inline source links using markdown format [Link Text](URL) for all verifiable information.
+-Do not start your response with generic time phrases like "over the past five years". Use flexible language eflect the actual timeframe found`;
 
               // PASS 5: Social Media & Strategic Focus (shorter, focused searches)
-              const socialMediaPrompt = `Research ${companyName}${regionText} social media presence and strategic focus.
+              const socialMediaPrompt = `Research ${companyName}${regionText} social media and strategic focus.
 
-Social Media (350-450 words): Recent platform activity, engagement tactics, and brand tone across LinkedIn, Twitter, Instagram, TikTok, YouTube and other relevant platforms.
+Social Media (250-350 words):
+- Focus on the last 6–12 months (note year if older).
+- Cover the 2–3 most relevant platforms among LinkedIn, X/Twitter, Instagram, TikTok, YouTube
+- For each platform you mention: link the official handle at first mention using markdown format [Link Text](URL). 
+- Summarize overall content themes, rough posting cadence (approx weekly/monthly), and a brief read on engagement (e.g., “consistently low/medium/high for the category” or “not visible”).
+- Call out one or two concrete patterns (e.g., product launches, exec thought leadership, talent/employer brand, partnerships) grounded in linked examples. Avoid generic claims.
+MANDATORY URL REQUIREMENT:
+-For each platform, you MUST include at least 1 direct post URL inline tied to the specific concrete patterns or themes and using markdown format [Link Text](URL). This is in addition to the official handle link. Format like this:
+  "In [Month YYYY], [platform] post [LinkText][URL] focused on [topic]."
+-Do NOT include URLs that are clearly dead links or redirect to generic pages.
+-If you cannot find a valid post URL, do not make the claim.
 
-Strategic Focus (200-350 words): How the company differentiates itself, brand traits, competitive stance, and risk considerations.
+Strategic Focus (175–250 words):
+- Explain differentiation, brand traits, competitive stance, and 2–3 named growth/communication priorities.
+- MANDATORY: Include at least 2 inline citations using markdown format [Link Text](URL) tied to specific claims. If you cannot find 2 verifiable sources, do not make the claim.
+- Search for: CEO/executive quotes (earnings calls, interviews, press releases), official strategy announcements (IR presentations, annual reports), product/market moves with dates, regulatory filings, or high-authority media coverage (Reuters,FT, WSJ, AP).
+- Avoid SWOT-style boilerplate. Ground every strategic claim in a dated, verifiable source.
 
-Focus on recent activity and verifiable information from company announcements and social media presence.`;
+
+IMPORTANT:
+- Prefer official handles and primary sources; exclude low-quality blogs/AI summaries.
+- Use narrative prose and inline links [Text](URL); avoid vague time phrases. If details are unavailable, write “Not found”.`;
 
               // Execute all searches in parallel for better performance
               console.log('🚀 Starting multi-pass research...');
