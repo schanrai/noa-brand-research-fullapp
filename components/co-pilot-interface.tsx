@@ -135,7 +135,7 @@ DO NOT add any explanations, dates, parentheses, or additional context to values
 
               // PASS 2: Company overview sections (shorter, focused searches)
               const overviewPrompt = `Research ${companyName}${regionText} and provide:
-
+              
 1. Company Overview (100-150 words): Global footprint, core business divisions and brands, primary service lines, main offices
 2. Company Background (150-350 words): Brief history of the company, key milestones, organisational structure, defining values
 3. Financial Overview (100-200 words): Key financial performance with specific datapoints, stability indicators, ownership structure, funding and recent acquisitions
@@ -143,41 +143,77 @@ DO NOT add any explanations, dates, parentheses, or additional context to values
 
 Focus on factual information from company press releases, financial reports, and reputable business sources.
 
-SOURCES REQUIREMENTS:
-- Collect ALL sources used in your research
-- Provide full URLs for verification
-- Minimum 5 sources, include as many relevant sources as found`;
+SOURCES REQUIREMENTS (STRICT):
+- For EACH section, provide a separate list of 2–8 source URLs that were actually used to write THAT section.
+- Include ONLY direct, verifiable URLs (no labels or titles). One URL per line.
+- Do NOT reuse links across sections unless the same source was genuinely used for both.
+- Do NOT include sources that weren't used for the section's content.
+- Prefer primary sources (company filings, newsroom, investor relations) and high-authority media.
+- Place the section's sources immediately after its content as:
+  "Sources:"
+  <URL 1>
+  <URL 2>
+  ...
+- Do not include any additional commentary around the URLs.
+
+Your answer will be reformatted later, so keep each section’s content followed immediately by its own "Sources:" block as specified above.`;
 
               // PASS 3: Marketing Activity (restored detailed structure)
               const marketingPrompt = `Research ${companyName}${regionText}${focusText} recent and current marketing activities.
 
-Provide a detailed narrative analysis of current and recent global marketing activity within the last 3-5 years. Include at least 5 specific named campaigns For each campaign describe the campaign name, target audience segments, messaging themes, measurable outcomes, creative concepts, channels used, and partnerships or collaborations.
-
-If a region was specified, include regional marketing details with concrete examples of events, digital campaigns, or key channel activations, including timing, format, target audience, and strategic rationale.
+Provide a detailed narrative analysis of current and recent global marketing activity. Include at least 5 specific named campaigns. For each campaign describe the campaign name, target audience segments, messaging themes, measurable outcomes, creative concepts, channels used, and partnerships or collaborations where possible. Do not make up the details of the campaigns, only use the information you find even if it is not complete.
 
 Write this as flowing narrative text that naturally incorporates all the details, not as a structured list or bullet points. Focus on high quality, verifiable information from the company website, press releases, reputable media coverage and high authority publishers. Avoid vague descriptions - all examples must reference verifiable sources, initiatives, or announcements.
 
-IMPORTANT: Include inline source links using markdown format [Link Text](URL) for all verifiable information.`;
+IMPORTANT: 
+- If you cannot find 5 specific campaigns within the last 3-5 years, extend your search beyond this timeframe to find the required 5 campaigns. Do not limit yourself to recent years if insufficient recent examples exist.
+- If a region or division was specified, include regional or division-specific marketing details with concrete examples of events, digital campaigns, or key channel activations, including timing, format, target audience, and strategic rationale.
+
+CRITICAL: 
+-Include inline source links using markdown format [Link Text](URL) for all verifiable information.
+-Do not start your response with generic time phrases like "over the past five years". Instead, use flexible language that reflects the actual timeframe of the content you found.`;
 
               // PASS 4: Sponsorships & Experiential (dedicated search for depth)
               const sponsorshipsPrompt = `Research ${companyName}${regionText}${focusText} recent and current sponsorship portfolio and experiential initiatives.
 
-Provide a detailed narrative analysis of at least 5 specific sponsorships within the last 3-5 years in sports, arts, culture, entertainment, or lifestyle. For each sponsorship, describe the sponsorship name, exact or approximate start/end dates, geographic location, event/partner name, activation channels, budget or scale indicators (if available), strategic fit with brand goals, and measurable outcomes (audience reach, media coverage, ROI, engagement metrics).
+Provide a detailed narrative analysis of at least 5 specific sponsorships in sports, arts, culture, entertainment, or lifestyle. For each sponsorship, describe the sponsorship name, exact or approximate start/end dates, geographic location, event/partner name, activation channels, budget or scale indicators (if available), strategic fit with brand goals, and measurable outcomes (audience reach, media coverage, ROI, engagement metrics).Do not make up the details of the sponsorships, only use the information you find even if it is not complete.
 
-For experiential initiatives, identify and describe at least 3 named initiatives within the last 3-5 years such as VIP/client-only events, curated experiences, global tours, or museum tie-ins. For each initiative, describe the event name, dates and location, purpose/context, audience profile, unique experiential elements, cultural or thought leadership integration, and measurable impact.
+For experiential initiatives, identify and describe at least 3 named initiatives such as VIP/client-only events, curated experiences, global tours, or museum tie-ins. For each initiative, describe the event name, dates and location, purpose/context, audience profile, unique experiential elements, cultural or thought leadership integration, and measurable impact. Do not make up the details of the initiatives, only use the information you find even if it is not complete.
 
 Write this as flowing narrative text that naturally incorporates all the details, not as a structured list or bullet points. Focus on verifiable information from the company website, press releases, high authority news sources and publishers. Avoid vague statements like 'supports local events'. All examples must reference named events, partners, or programs with verifiable details. 
 
-IMPORTANT: Include inline source links using markdown format [Link Text](URL) for all verifiable information.`;
+IMPORTANT: 
+- If you cannot find 5 specific sponsorships within the last 3-5 years, extend your search beyond this timeframe to find the required 5 sponsorships. Similarly, if you cannot find 3 experiential initiatives within the last 3-5 years, extend your search to find the required 3 initiatives. Do not limit yourself to recent years if insufficient recent examples exist.
+- If a region or division was specified, include regional or division-specific sponsorship details with concrete examples of events, partnerships, or initiatives, including timing, format, target audience, and strategic rationale.
+
+CRITICAL: 
+-Include inline source links using markdown format [Link Text](URL) for all verifiable information.
+-Do not start your response with generic time phrases like "over the past five years". Use flexible language eflect the actual timeframe found`;
 
               // PASS 5: Social Media & Strategic Focus (shorter, focused searches)
-              const socialMediaPrompt = `Research ${companyName}${regionText} social media presence and strategic focus.
+              const socialMediaPrompt = `Research ${companyName}${regionText} social media and strategic focus.
 
-Social Media (350-450 words): Recent platform activity, engagement tactics, and brand tone across LinkedIn, Twitter, Instagram, TikTok, YouTube and other relevant platforms.
+Social Media (250-350 words):
+- Focus on the last 6–12 months (note year if older).
+- Cover the 2–3 most relevant platforms among LinkedIn, X/Twitter, Instagram, TikTok, YouTube
+- For each platform you mention: link the official handle at first mention using markdown format [Link Text](URL). 
+- Summarize overall content themes, rough posting cadence (approx weekly/monthly), and a brief read on engagement (e.g., “consistently low/medium/high for the category” or “not visible”).
+- Call out one or two concrete patterns (e.g., product launches, exec thought leadership, talent/employer brand, partnerships) grounded in linked examples. Avoid generic claims.
+MANDATORY URL REQUIREMENT:
+-For each platform, you MUST include at least 1 direct post URL inline tied to the specific concrete patterns or themes and using markdown format [Link Text](URL). This is in addition to the official handle link. Format like this:
+  "In [Month YYYY], [platform] post [LinkText][URL] focused on [topic]."
+-Do NOT include URLs that are clearly dead links or redirect to generic pages.
+-If you cannot find a valid post URL, do not make the claim.
 
-Strategic Focus (200-350 words): How the company differentiates itself, brand traits, competitive stance, and risk considerations.
+Strategic Focus (175–250 words):
+- Explain differentiation, brand traits, competitive stance, and 2–3 named growth/communication priorities.
+- MANDATORY: Include at least 2 inline citations from different sources using markdown format [Link Text](URL) to back up specific claims. If you cannot find 2 verifiable sources, do not make the claim.
+- Use only high authority sources for your citations. These include CEO/executive quotes (earnings calls, interviews, press releases), official strategy announcements (IR presentations, annual reports), product/market moves with dates, regulatory filings, or high-authority media coverage (Reuters,FT, WSJ, AP).
+- Avoid SWOT-style boilerplate. Ground every strategic claim in a dated, verifiable source.
 
-Focus on recent activity and verifiable information from company announcements and social media presence.`;
+IMPORTANT:
+- Prefer official handles and primary sources; exclude low-quality, low-authority blogs/AI summaries.
+- Use narrative prose and inline links [Text](URL); avoid vague time phrases. If details are unavailable, write “Not found”.`;
 
               // Execute all searches in parallel for better performance
               console.log('🚀 Starting multi-pass research...');
@@ -237,9 +273,7 @@ Focus on recent activity and verifiable information from company announcements a
                   marketingActivity: formattedMarketing.marketingActivity,
                   sponsorshipsExperiential: formattedSponsorships.sponsorshipsExperiential,
                   socialMediaPresence: formattedSocialMedia.socialMediaPresence,
-                  strategicFocus: formattedSocialMedia.strategicFocus,
-                  // ADD THIS LINE FOR SOURCES:
-                  sources: formattedOverview.sources || []
+                  strategicFocus: formattedSocialMedia.strategicFocus
                 },
                 metadata: {
                   companyName,
