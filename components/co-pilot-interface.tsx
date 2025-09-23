@@ -153,7 +153,7 @@ SOURCES REQUIREMENTS (STRICT):
   "Sources:"
   <URL 1>
   <URL 2>
-  ...
+  ....
 - Do not include any additional commentary around the URLs.
 
 Your answer will be reformatted later, so keep each section’s content followed immediately by its own "Sources:" block as specified above.`;
