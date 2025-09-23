@@ -97,7 +97,7 @@ export async function getFormattedData(content: string, schema: any) {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ 
-      prompt: `Convert the following research into structured JSON format according to the schema. If input has structured data, convert to readable narrative text that maintains all the key information but maintains a maximum word count of 850 -1000 words. 
+      prompt: `Convert the following research into structured JSON format according to the schema. If input has structured data, convert to readable narrative text that maintains all the key information but maintains a maximum word count of 1200-1500 words. 
 
 IMPORTANT: If there are paragraphs, line breaks or other formatting, preserve it as long as the result is readable and follows the schema requirements.  Preserve all markdown links in the format [Link Text](URL) - do not convert them to plain text.
 
