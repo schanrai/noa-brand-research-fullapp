@@ -207,13 +207,12 @@ MANDATORY URL REQUIREMENT:
 
 Strategic Focus (175–250 words):
 - Explain differentiation, brand traits, competitive stance, and 2–3 named growth/communication priorities.
-- MANDATORY: Include at least 2 inline citations using markdown format [Link Text](URL) tied to specific claims. If you cannot find 2 verifiable sources, do not make the claim.
-- Search for: CEO/executive quotes (earnings calls, interviews, press releases), official strategy announcements (IR presentations, annual reports), product/market moves with dates, regulatory filings, or high-authority media coverage (Reuters,FT, WSJ, AP).
+- MANDATORY: Include at least 2 inline citations from different sources using markdown format [Link Text](URL) to back up specific claims. If you cannot find 2 verifiable sources, do not make the claim.
+- Use only high authority sources for your citations. These include CEO/executive quotes (earnings calls, interviews, press releases), official strategy announcements (IR presentations, annual reports), product/market moves with dates, regulatory filings, or high-authority media coverage (Reuters,FT, WSJ, AP).
 - Avoid SWOT-style boilerplate. Ground every strategic claim in a dated, verifiable source.
 
-
 IMPORTANT:
-- Prefer official handles and primary sources; exclude low-quality blogs/AI summaries.
+- Prefer official handles and primary sources; exclude low-quality, low-authority blogs/AI summaries.
 - Use narrative prose and inline links [Text](URL); avoid vague time phrases. If details are unavailable, write “Not found”.`;
 
               // Execute all searches in parallel for better performance
