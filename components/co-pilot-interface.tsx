@@ -176,9 +176,9 @@ CRITICAL:
               // PASS 4: Sponsorships & Experiential (dedicated search for depth)
               const sponsorshipsPrompt = `Research ${companyName}${regionText}${focusText} recent and current sponsorship portfolio and experiential initiatives.
 
-Provide a detailed narrative analysis of at least 5 specific named sponsorships in sports, arts, culture, entertainment, or lifestyle. For each sponsorship, bold the sponsorship name (e.g., **McLaren Racing Partnership**) followed by the sponsorship details (if available) such as exact or approximate start/end dates, geographic location, event/partner name, activation channels, budget or scale indicators , strategic fit with brand goals, and measurable outcomes (audience reach, media coverage, ROI, engagement metrics). Do not make up the details of the sponsorships, only use the information you find even if it is not complete.
+Provide a detailed narrative analysis of at least 5 specific named sponsorships in sports, arts, culture, entertainment, or lifestyle. For each sponsorship, bold the sponsorship name (e.g., **McLaren Racing Partnership:**) followed by the sponsorship details (if available) such as exact or approximate start/end dates, geographic location, event/partner name, activation channels, budget or scale indicators , strategic fit with brand goals, and measurable outcomes (audience reach, media coverage, ROI, engagement metrics). Do not make up the details of the sponsorships, only use the information you find even if it is not complete.
 
-For experiential initiatives, identify and describe at least 3 named initiatives such as VIP/client-only events, curated experiences, global tours, or museum tie-ins. For each initiative, bold the event name (e.g., **Cisco Live**) followed by the initiative details (if available)such as the dates and location, purpose/context, audience profile, unique experiential elements, cultural or thought leadership integration, and measurable impact. Do not make up the details of the initiatives, only use the information you find even if it is not complete.
+For experiential initiatives, identify and describe at least 3 named initiatives such as VIP/client-only events, curated experiences, global tours, or museum tie-ins. For each initiative, bold the event name (e.g., **Cisco Live:**) followed by the initiative details (if available)such as the dates and location, purpose/context, audience profile, unique experiential elements, cultural or thought leadership integration, and measurable impact. Do not make up the details of the initiatives, only use the information you find even if it is not complete.
 
 Write this as flowing narrative text that naturally incorporates all the details about each sponsorship. Use bold formatting only for sponsorship and experiential initiative names. Focus on verifiable information from the company website, press releases, high authority news sources and publishers. Avoid vague statements like 'supports local events'. All examples must reference named events, partners, or programs with verifiable details. 
 
@@ -188,7 +188,7 @@ IMPORTANT:
 
 CRITICAL: 
 -Include inline source links using markdown format [Link Text](URL) for all verifiable information.
--Do not start your response with generic time phrases like "over the past five years". Use flexible language eflect the actual timeframe found`;
+-Do not start your response with generic time phrases like "over the past five years". Use flexible language that reflects the actual timeframe found`;
 
               // PASS 5: Social Media & Strategic Focus (shorter, focused searches)
               const socialMediaPrompt = `Research ${companyName}${regionText} social media and strategic focus.
