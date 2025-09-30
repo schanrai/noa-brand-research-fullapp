@@ -153,7 +153,7 @@ SOURCES REQUIREMENTS (STRICT):
   "Sources:"
   <URL 1>
   <URL 2>
-  ...
+  ....
 - Do not include any additional commentary around the URLs.
 
 Your answer will be reformatted later, so keep each section’s content followed immediately by its own "Sources:" block as specified above.`;
@@ -161,9 +161,9 @@ Your answer will be reformatted later, so keep each section’s content followed
               // PASS 3: Marketing Activity (restored detailed structure)
               const marketingPrompt = `Research ${companyName}${regionText}${focusText} recent and current marketing activities.
 
-Provide a detailed narrative analysis of current and recent global marketing activity. Include at least 5 specific named campaigns. For each campaign describe the campaign name, target audience segments, messaging themes, measurable outcomes, creative concepts, channels used, and partnerships or collaborations where possible. Do not make up the details of the campaigns, only use the information you find even if it is not complete.
+Provide a detailed narrative analysis of current and recent global marketing activity. Include at least 5 specific named campaigns. For each campaign, bold the campaign name (e.g., **Campaign Name:**) followed by the campaign details. For each campaign describe the campaign name, target audiences, messaging themes, measurable outcomes, creative concepts, channels used, and partnerships or collaborations where possible. Do not make up the details of the campaigns, only use the information you find even if it is not complete.
 
-Write this as flowing narrative text that naturally incorporates all the details, not as a structured list or bullet points. Focus on high quality, verifiable information from the company website, press releases, reputable media coverage and high authority publishers. Avoid vague descriptions - all examples must reference verifiable sources, initiatives, or announcements.
+Write this as flowing narrative text that naturally incorporates all the details about each campaign. Use bold formatting only for campaign names. Focus on high quality, verifiable information from the company website, press releases, reputable media coverage and high authority publishers. Avoid vague descriptions - all examples must reference verifiable sources, initiatives, or announcements.
 
 IMPORTANT: 
 - If you cannot find 5 specific campaigns within the last 3-5 years, extend your search beyond this timeframe to find the required 5 campaigns. Do not limit yourself to recent years if insufficient recent examples exist.
@@ -176,11 +176,11 @@ CRITICAL:
               // PASS 4: Sponsorships & Experiential (dedicated search for depth)
               const sponsorshipsPrompt = `Research ${companyName}${regionText}${focusText} recent and current sponsorship portfolio and experiential initiatives.
 
-Provide a detailed narrative analysis of at least 5 specific sponsorships in sports, arts, culture, entertainment, or lifestyle. For each sponsorship, describe the sponsorship name, exact or approximate start/end dates, geographic location, event/partner name, activation channels, budget or scale indicators (if available), strategic fit with brand goals, and measurable outcomes (audience reach, media coverage, ROI, engagement metrics).Do not make up the details of the sponsorships, only use the information you find even if it is not complete.
+Provide a detailed narrative analysis of at least 5 specific named sponsorships in sports, arts, culture, entertainment, or lifestyle. For each sponsorship, bold the sponsorship name (e.g., **McLaren Racing Partnership:**) followed by the sponsorship details (if available) such as exact or approximate start/end dates, geographic location, event/partner name, activation channels, budget or scale indicators , strategic fit with brand goals, and measurable outcomes (audience reach, media coverage, ROI, engagement metrics). Do not make up the details of the sponsorships, only use the information you find even if it is not complete.
 
-For experiential initiatives, identify and describe at least 3 named initiatives such as VIP/client-only events, curated experiences, global tours, or museum tie-ins. For each initiative, describe the event name, dates and location, purpose/context, audience profile, unique experiential elements, cultural or thought leadership integration, and measurable impact. Do not make up the details of the initiatives, only use the information you find even if it is not complete.
+For experiential initiatives, identify and describe at least 3 named initiatives such as VIP/client-only events, curated experiences, global tours, or museum tie-ins. For each initiative, bold the event name (e.g., **Cisco Live:**) followed by the initiative details (if available)such as the dates and location, purpose/context, audience profile, unique experiential elements, cultural or thought leadership integration, and measurable impact. Do not make up the details of the initiatives, only use the information you find even if it is not complete.
 
-Write this as flowing narrative text that naturally incorporates all the details, not as a structured list or bullet points. Focus on verifiable information from the company website, press releases, high authority news sources and publishers. Avoid vague statements like 'supports local events'. All examples must reference named events, partners, or programs with verifiable details. 
+Write this as flowing narrative text that naturally incorporates all the details about each sponsorship. Use bold formatting only for sponsorship and experiential initiative names. Focus on verifiable information from the company website, press releases, high authority news sources and publishers. Avoid vague statements like 'supports local events'. All examples must reference named events, partners, or programs with verifiable details. 
 
 IMPORTANT: 
 - If you cannot find 5 specific sponsorships within the last 3-5 years, extend your search beyond this timeframe to find the required 5 sponsorships. Similarly, if you cannot find 3 experiential initiatives within the last 3-5 years, extend your search to find the required 3 initiatives. Do not limit yourself to recent years if insufficient recent examples exist.
@@ -188,7 +188,7 @@ IMPORTANT:
 
 CRITICAL: 
 -Include inline source links using markdown format [Link Text](URL) for all verifiable information.
--Do not start your response with generic time phrases like "over the past five years". Use flexible language eflect the actual timeframe found`;
+-Do not start your response with generic time phrases like "over the past five years". Use flexible language that reflects the actual timeframe found`;
 
               // PASS 5: Social Media & Strategic Focus (shorter, focused searches)
               const socialMediaPrompt = `Research ${companyName}${regionText} social media and strategic focus.
