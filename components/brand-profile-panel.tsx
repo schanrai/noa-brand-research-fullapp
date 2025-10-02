@@ -150,6 +150,25 @@ export default function BrandProfilePanel({ company }: BrandProfilePanelProps) {
                         __html: renderMarkdownContent(company.detailedAnalysis.companyOverview.content) 
                       }}
                     />
+                    {Array.isArray(company.detailedAnalysis.companyOverview.sources) && company.detailedAnalysis.companyOverview.sources.length > 0 && (
+                      <div className="mt-4">
+                        <h5 className="text-xs font-medium text-muted-foreground">Sources</h5>
+                        <ul className="mt-1 space-y-1">
+                          {company.detailedAnalysis.companyOverview.sources.map((src: string, i: number) => (
+                            <li key={i}>
+                              <a 
+                                href={src} 
+                                target="_blank" 
+                                rel="noopener noreferrer"
+                                className="text-xs text-blue-600 underline hover:text-blue-800 hover:no-underline transition-colors"
+                              >
+                                {src}
+                              </a>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
                   </AccordionContent>
                 </AccordionItem>
               )}
@@ -165,6 +184,25 @@ export default function BrandProfilePanel({ company }: BrandProfilePanelProps) {
                         __html: renderMarkdownContent(company.detailedAnalysis.companyBackground.content) 
                       }}
                     />
+                    {Array.isArray(company.detailedAnalysis.companyBackground.sources) && company.detailedAnalysis.companyBackground.sources.length > 0 && (
+                      <div className="mt-4">
+                        <h5 className="text-xs font-medium text-muted-foreground">Sources</h5>
+                        <ul className="mt-1 space-y-1">
+                          {company.detailedAnalysis.companyBackground.sources.map((src: string, i: number) => (
+                            <li key={i}>
+                              <a 
+                                href={src} 
+                                target="_blank" 
+                                rel="noopener noreferrer"
+                                className="text-xs text-blue-600 underline hover:text-blue-800 hover:no-underline transition-colors"
+                              >
+                                {src}
+                              </a>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
                   </AccordionContent>
                 </AccordionItem>
               )}
@@ -180,6 +218,25 @@ export default function BrandProfilePanel({ company }: BrandProfilePanelProps) {
                         __html: renderMarkdownContent(company.detailedAnalysis.financialOverview.content) 
                       }}
                     />
+                    {Array.isArray(company.detailedAnalysis.financialOverview.sources) && company.detailedAnalysis.financialOverview.sources.length > 0 && (
+                      <div className="mt-4">
+                        <h5 className="text-xs font-medium text-muted-foreground">Sources</h5>
+                        <ul className="mt-1 space-y-1">
+                          {company.detailedAnalysis.financialOverview.sources.map((src: string, i: number) => (
+                            <li key={i}>
+                              <a 
+                                href={src} 
+                                target="_blank" 
+                                rel="noopener noreferrer"
+                                className="text-xs text-blue-600 underline hover:text-blue-800 hover:no-underline transition-colors"
+                              >
+                                {src}
+                              </a>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
                   </AccordionContent>
                 </AccordionItem>
               )}
@@ -195,6 +252,25 @@ export default function BrandProfilePanel({ company }: BrandProfilePanelProps) {
                         __html: renderMarkdownContent(company.detailedAnalysis.audienceSegmentation.content) 
                       }}
                     />
+                    {Array.isArray(company.detailedAnalysis.audienceSegmentation.sources) && company.detailedAnalysis.audienceSegmentation.sources.length > 0 && (
+                      <div className="mt-4">
+                        <h5 className="text-xs font-medium text-muted-foreground">Sources</h5>
+                        <ul className="mt-1 space-y-1">
+                          {company.detailedAnalysis.audienceSegmentation.sources.map((src: string, i: number) => (
+                            <li key={i}>
+                              <a 
+                                href={src} 
+                                target="_blank" 
+                                rel="noopener noreferrer"
+                                className="text-xs text-blue-600 underline hover:text-blue-800 hover:no-underline transition-colors"
+                              >
+                                {src}
+                              </a>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
                   </AccordionContent>
                 </AccordionItem>
               )}

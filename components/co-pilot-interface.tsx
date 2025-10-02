@@ -76,7 +76,7 @@ export default function CoPilotInterface({
       const steps =
         currentStage === "processing-feedback"
           ? [
-              "Processing your feedback...",
+              "Processing your feedback... ",
               "Updating research parameters...",
               "Re-analyzing company data with new criteria...",
               "Refining search results...",
