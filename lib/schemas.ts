@@ -21,7 +21,7 @@ export const companyOverviewSchema = {
   }
 };
 
-// Schema for overview sections - ADD SOURCES
+// Schema for overview sections - section-specific sources
 export const overviewSchema = {
   type: "json_schema",
   json_schema: {
@@ -30,45 +30,59 @@ export const overviewSchema = {
     schema: {
       type: "object",
       additionalProperties: false,
-      required: ["companyOverview", "companyBackground", "financialOverview", "audienceSegmentation", "sources"],  // ADD sources here
+      required: ["companyOverview", "companyBackground", "financialOverview", "audienceSegmentation"],
       properties: {
         companyOverview: {
           type: "object",
           additionalProperties: false,
-          required: ["content"],
+          required: ["content", "sources"],
           properties: {
-            content: { type: "string" }
+            content: { type: "string" },
+            sources: {
+              type: "array",
+              items: { type: "string" },
+              minItems: 1
+            }
           }
         },
         companyBackground: {
           type: "object",
           additionalProperties: false,
-          required: ["content"],
+          required: ["content", "sources"],
           properties: {
-            content: { type: "string" }
+            content: { type: "string" },
+            sources: {
+              type: "array",
+              items: { type: "string" },
+              minItems: 1
+            }
           }
         },
         financialOverview: {
           type: "object",
           additionalProperties: false,
-          required: ["content"],
+          required: ["content", "sources"],
           properties: {
-            content: { type: "string" }
+            content: { type: "string" },
+            sources: {
+              type: "array",
+              items: { type: "string" },
+              minItems: 1
+            }
           }
         },
         audienceSegmentation: {
           type: "object",
           additionalProperties: false,
-          required: ["content"],
+          required: ["content", "sources"],
           properties: {
-            content: { type: "string" }
+            content: { type: "string" },
+            sources: {
+              type: "array",
+              items: { type: "string" },
+              minItems: 1
+            }
           }
-        },
-        // ADD: Sources array
-        sources: {
-          type: "array",
-          items: { type: "string" },
-          minItems: 1
         }
       }
     }
