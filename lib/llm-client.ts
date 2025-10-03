@@ -67,7 +67,7 @@ export async function getDetailedAnalysis(prompt: string) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ 
         prompt, 
-        model: "openai/gpt-4o-search-preview",
+        model: "openai/gpt-4o-search-preview", // ADD :online suffix
         temperature: 0.3,
         top_p: 0.9,
         max_tokens: 4000
@@ -75,7 +75,6 @@ export async function getDetailedAnalysis(prompt: string) {
     });
     
     const data = await response.json();
-    //console.log("Detailed analysis result: ", data);
     
     if (!response.ok) {
       console.error("API Error:", data);
@@ -85,6 +84,42 @@ export async function getDetailedAnalysis(prompt: string) {
     return data.result; // Return raw text, not parsed JSON
   } catch (e) {
     console.error("Detailed analysis failed:", e);
+    const errorMessage = e instanceof Error ? e.message : String(e);
+    throw new Error(`LLM request failed: ${errorMessage}`);
+  }
+}
+
+// ADD: New function for citation-heavy analysis (more search results)
+export async function getDetailedAnalysisWithCitations(prompt: string) {
+  console.log("Getting detailed analysis with enhanced citation search");
+  try {
+    const response = await fetch('/api/llm', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ 
+        prompt, 
+        model: "openai/gpt-4o-search-preview",
+        temperature: 0.3,
+        top_p: 0.9,
+        max_tokens: 4000,
+        plugins: [{
+          id: "web",
+          engine: "exa",
+          max_results: 20 
+        }]
+      }),
+    });
+    
+    const data = await response.json();
+    
+    if (!response.ok) {
+      console.error("API Error:", data);
+      throw new Error(data.error || `HTTP ${response.status}: ${response.statusText}`);
+    }
+    
+    return data.result; // Return raw text, not parsed JSON
+  } catch (e) {
+    console.error("Detailed analysis with citations failed:", e);
     const errorMessage = e instanceof Error ? e.message : String(e);
     throw new Error(`LLM request failed: ${errorMessage}`);
   }
