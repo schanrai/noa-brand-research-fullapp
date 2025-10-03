@@ -5,7 +5,7 @@ import type React from "react"
 import { useState, useEffect, useRef } from "react"
 import { Button } from "@/components/ui/button"
 import { Send, Lightbulb, Star, Loader2, Network } from "lucide-react"
-import { getLLMResearch, getStructuredData, getDetailedAnalysis, getFormattedData } from "@/lib/llm-client"
+import { getLLMResearch, getStructuredData, getDetailedAnalysis, getDetailedAnalysisWithCitations, getFormattedData } from "@/lib/llm-client"
 import { overviewSchema, marketingSchema, sponsorshipsSchema, socialMediaSchema } from "@/lib/schemas"
 
 interface CoPilotInterfaceProps {
@@ -203,7 +203,7 @@ MANDATORY URL REQUIREMENT:
 -For each platform, you MUST include at least 1 direct post URL inline tied to the specific concrete patterns or themes and using markdown format [Link Text](URL). This is in addition to the official handle link. Format like this:
   "In [Month YYYY], [platform] post [LinkText][URL] focused on [topic]."
 -Do NOT include URLs that are clearly dead links or redirect to generic pages.
--If you cannot find a valid post URL, do not make the claim.
+-If you cannot find a valid DIRECT POST URL, state "No specific post URLs found" and do not make claims about posts
 
 Strategic Focus (175–250 words):
 - Explain differentiation, brand traits, competitive stance, and 2–3 named growth/communication priorities.
@@ -226,10 +226,10 @@ IMPORTANT:
                 socialMediaOutput
               ] = await Promise.all([
                 getStructuredData(structuredPrompt),
-                getDetailedAnalysis(overviewPrompt),
-                getDetailedAnalysis(marketingPrompt),
-                getDetailedAnalysis(sponsorshipsPrompt),
-                getDetailedAnalysis(socialMediaPrompt)
+                getDetailedAnalysis(overviewPrompt), // Light search - just company info
+                getDetailedAnalysisWithCitations(marketingPrompt), // Heavy search - needs campaign URLs
+                getDetailedAnalysisWithCitations(sponsorshipsPrompt), // Heavy search - needs sponsorship URLs
+                getDetailedAnalysisWithCitations(socialMediaPrompt) // Heavy search - needs specific post URLs + strategic focus
               ]);
 
               console.log('✅ All search passes completed');
