@@ -26,7 +26,7 @@ export default function BrandProfilePanel({ company }: BrandProfilePanelProps) {
         gfm: true,    // GitHub Flavored Markdown
       });
       
-      // Convert markdown to HTML - handle both sync and async cases
+      // Convert markdown to HTML - handle both sync and async cases 
       let htmlContent = marked(content);
       
       // If it's a Promise, we need to handle it differently
