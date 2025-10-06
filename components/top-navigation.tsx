@@ -30,14 +30,24 @@ export default function TopNavigation({ onTabChange }: TopNavigationProps) {
     }
   }
 
+  const handleLogoClick = () => {
+    // Reload the app by refreshing the page
+    window.location.reload()
+  }
+
   return (
-    <header className="flex h-20 items-center justify-between border-b border-gray-200 bg-white px-6 py-4">
+    <header className="flex h-20 items-center justify-between border-b border-gray-200 bg-white px-24 py-4">
       <div className="flex-shrink-0">
-        <img
-          src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/numbersonlylogo-Black-e1589234691607-k2csAGs4Mj051Qy4vNJ4jKM348sCCc.png"
-          alt="Numbers Only"
-          className="h-14"
-        />
+        <div
+          onClick={handleLogoClick}
+          className="cursor-pointer hover:opacity-80 transition-opacity duration-200"
+        >
+          <img
+            src="/Scova_Logo_Crop.png"
+            alt="Scova"
+            className="h-20 w-auto"
+          />
+        </div>
       </div>
 
       <div className="flex-grow flex justify-center">
