@@ -161,7 +161,7 @@ Your answer will be reformatted later, so keep each section’s content followed
               // PASS 3: Marketing Activity (restored detailed structure)
               const marketingPrompt = `Research ${companyName}${regionText}${focusText} recent and current marketing activities.
 
-Provide a detailed narrative analysis of current and recent global marketing activity. Include at least 5 specific named campaigns. For each campaign, bold the campaign name (e.g., **Campaign Name:**) followed by the campaign details. For each campaign describe the campaign name, target audiences, messaging themes, measurable outcomes, creative concepts, channels used, and partnerships or collaborations where possible. Do not make up the details of the campaigns, only use the information you find even if it is not complete.
+Provide a detailed narrative analysis of current and recent global marketing activity. Include at least 5 specific named campaigns. For each campaign, bold the campaign name (e.g., **Christmas Campaign 2024:**) followed by the campaign details. For each campaign describe (where possible) the campaign name, campaign date or period, target audiences, messaging themes, measurable outcomes, creative concepts, channels used, and partnerships or collaborations. Do not make up the details of the campaigns, only use the information you find even if it is not complete.
 
 Write this as flowing narrative text that naturally incorporates all the details about each campaign. Use bold formatting only for campaign names. Focus on high quality, verifiable information from the company website, press releases, reputable media coverage and high authority publishers. Avoid vague descriptions - all examples must reference verifiable sources, initiatives, or announcements.
 
@@ -188,7 +188,7 @@ IMPORTANT:
 
 CRITICAL: 
 -Include inline source links using markdown format [Link Text](URL) for all verifiable information.
--Do not start your response with generic time phrases like "over the past five years". Use flexible language that reflects the actual timeframe found`;
+-Do not start your response with generic time phrases like "over the past five years". Use flexible language that reflects the actual timeframe found.`;
 
               // PASS 5: Social Media & Strategic Focus (shorter, focused searches)
               const socialMediaPrompt = `Research ${companyName}${regionText} social media and strategic focus.
