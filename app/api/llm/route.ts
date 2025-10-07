@@ -9,7 +9,9 @@ export async function POST(req: NextRequest) {
     top_p,
     max_tokens,
     stop,
-    response_format
+    response_format,
+    plugins, // ADD
+    web_search_options // ADD
    } = await req.json();
 
    const requestBody: any = {
@@ -26,6 +28,8 @@ export async function POST(req: NextRequest) {
   if (max_tokens !== undefined) requestBody.max_tokens = max_tokens;
   if (stop !== undefined) requestBody.stop = stop;
   if (response_format !== undefined) requestBody.response_format = response_format;
+  if (plugins !== undefined) requestBody.plugins = plugins; // ADD
+  if (web_search_options !== undefined) requestBody.web_search_options = web_search_options; // ADD
 
   const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
     method: 'POST',
