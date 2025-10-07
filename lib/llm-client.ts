@@ -105,7 +105,7 @@ export async function getDetailedAnalysisWithCitations(prompt: string) {
         plugins: [{
           id: "web",
           engine: "exa",
-          max_results: 20 
+          max_results: 50 
         }]
       }),
     });
