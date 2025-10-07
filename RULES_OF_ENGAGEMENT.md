@@ -46,5 +46,10 @@ Follow these rules when you write code:
 - Implement accessibility features on elements. For example, a tag should have a tabindex=“0”, aria-label, on:click, and on:keydown, and similar attributes.
 - Use consts instead of functions, for example, “const toggle = () =>”. Also, define a type if possible.
 
-
+### Code Preservation Guidelines
+- **Never modify working components** unless fixing broken functionality
+- **Prefer additive approaches** - create new rather than change existing
+- **Use minimal integration** - event-driven communication over direct coupling
+- **Test existing functionality** before and after any changes
+- **Ask "Is this the simplest solution?"** before implementing
 
