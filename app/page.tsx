@@ -1,7 +1,7 @@
 "use client"
 
 import React from 'react';
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import TopNavigation from "@/components/top-navigation"
 import LeftSidebar from "@/components/left-sidebar"
 import MainContent from "@/components/main-content"
@@ -33,6 +33,26 @@ export default function Home() {
     type: "success",
     message: "",
   })
+
+  // Add event listener for showing recent companies
+  useEffect(() => {
+    const handleShowCompany = (event: CustomEvent) => {
+      const company = event.detail.company
+      setSelectedCompany(company)
+      setSearchResults([company])
+      setSearchStage("results")
+      setSearchMode('crm')
+      
+      // Dispatch event for recently viewed tracking (update timestamp)
+      window.dispatchEvent(new CustomEvent('company-viewed', { detail: { company } }))
+    }
+
+    window.addEventListener('show-company', handleShowCompany as EventListener)
+    
+    return () => {
+      window.removeEventListener('show-company', handleShowCompany as EventListener)
+    }
+  }, [])
 
   const handleSearch = (newFilters: any) => {
     setFilters({ ...filters, ...newFilters })
@@ -117,6 +137,9 @@ export default function Home() {
 
   const handleCompanySelect = (company: any) => {
     setSelectedCompany(company)
+    
+    // Dispatch event for recently viewed tracking
+    window.dispatchEvent(new CustomEvent('company-viewed', { detail: { company } }))
   }
 
   const handleApprove = (companyId: string) => {
