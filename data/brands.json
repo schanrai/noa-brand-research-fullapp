@@ -203,7 +203,7 @@
   "chatHistory": [
     {
       "role": "assistant",
-      "content": "Hey Chris, which company would you like to research today?"
+      "content": "Hey there, which company would you like to research today?"
     },
     {
       "role": "user",
