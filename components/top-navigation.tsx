@@ -12,6 +12,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { isReportOnlyMode } from "@/lib/feature-flags"
 
 interface TopNavigationProps {
   onTabChange?: (stage: string, value: string) => void
@@ -50,30 +51,32 @@ export default function TopNavigation({ onTabChange }: TopNavigationProps) {
         </div>
       </div>
 
-      <div className="flex-grow flex justify-center">
-        <Tabs value={activeTab} onValueChange={handleTabChange} className="w-auto">
-          <TabsList className="bg-edge h-12">
-            <TabsTrigger
-              value="brand-research"
-              className="text-heading text-sm px-6 py-3 h-10 data-[state=active]:bg-white data-[state=active]:text-black"
-            >
-              Brand Research
-            </TabsTrigger>
-            <TabsTrigger
-              value="discovery-agent"
-              className="text-heading text-sm px-6 py-3 h-10 data-[state=active]:bg-white data-[state=active]:text-black"
-            >
-              Discovery Agent
-            </TabsTrigger>
-            <TabsTrigger
-              value="local-signals"
-              className="text-heading text-sm px-6 py-3 h-10 data-[state=active]:bg-white data-[state=active]:text-black"
-            >
-              Local Signals
-            </TabsTrigger>
-          </TabsList>
-        </Tabs>
-      </div>
+      {!isReportOnlyMode() && (
+        <div className="flex-grow flex justify-center">
+          <Tabs value={activeTab} onValueChange={handleTabChange} className="w-auto">
+            <TabsList className="bg-edge h-12">
+              <TabsTrigger
+                value="brand-research"
+                className="text-heading text-sm px-6 py-3 h-10 data-[state=active]:bg-white data-[state=active]:text-black"
+              >
+                Brand Research
+              </TabsTrigger>
+              <TabsTrigger
+                value="discovery-agent"
+                className="text-heading text-sm px-6 py-3 h-10 data-[state=active]:bg-white data-[state=active]:text-black"
+              >
+                Discovery Agent
+              </TabsTrigger>
+              <TabsTrigger
+                value="local-signals"
+                className="text-heading text-sm px-6 py-3 h-10 data-[state=active]:bg-white data-[state=active]:text-black"
+              >
+                Local Signals
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
+        </div>
+      )}
 
       <div className="flex items-center gap-4 flex-shrink-0">
         <DropdownMenu>
