@@ -5,6 +5,7 @@ import CoPilotInterface from "./co-pilot-interface"
 import BrandCard from "./brand-card"
 import BrandProfilePanel from "./brand-profile-panel"
 import { Lightbulb } from "lucide-react"
+import { isReportOnlyMode } from "@/lib/feature-flags"
 
 interface MainContentProps {
   searchResults: any[]
@@ -76,16 +77,20 @@ export default function MainContent({
           {!feedbackMode && (
             <div>
               <h3 className="text-base font-bold uppercase tracking-wide mb-16">
-                {searchMode === 'research' ? 'Brand Research Results' : 'CRM Search Results'}
+                {isReportOnlyMode() 
+                  ? 'Brand Research Results' 
+                  : (searchMode === 'research' ? 'Brand Research Results' : 'CRM Search Results')}
               </h3>
               <div className="flex items-start gap-16 mb-48 p-24 border border-gray-200 rounded-lg bg-white">
                 <div className="flex-shrink-0 w-8 h-8 rounded-full border border-gray-300 flex items-center justify-center bg-white">
                   <Lightbulb className="h-4 w-4 text-gray-600" />
                 </div>
                 <p className="text-body text-gray-800 leading-relaxed">
-                  {searchMode === 'research'
-                    ? `Here are the results of your brand research query. You can approve a company to add it to your CRM, or reject and refine your search.`
-                    : `Here are the companies from your CRM that match your search criteria${filters.query ? ` for "${filters.query}"` : ''}${filters.region ? ` in ${filters.region}` : ''}${filters.industry ? ` in the ${filters.industry} industry` : ''}${filters.sponsorshipType ? ` with ${filters.sponsorshipType} sponsorship experience` : ''}${filters.size ? ` with ${filters.size} employees` : ''}${filters.revenue ? ` in the ${filters.revenue} revenue range` : ''}. You can update any of these records to initiate further research.`}
+                  {isReportOnlyMode()
+                    ? `Here are the results of your brand research query. Review the full report below and download as PDF for your records.`
+                    : (searchMode === 'research'
+                      ? `Here are the results of your brand research query. You can approve a company to add it to your CRM, or reject and refine your search.`
+                      : `Here are the companies from your CRM that match your search criteria${filters.query ? ` for "${filters.query}"` : ''}${filters.region ? ` in ${filters.region}` : ''}${filters.industry ? ` in the ${filters.industry} industry` : ''}${filters.sponsorshipType ? ` with ${filters.sponsorshipType} sponsorship experience` : ''}${filters.size ? ` with ${filters.size} employees` : ''}${filters.revenue ? ` in the ${filters.revenue} revenue range` : ''}. You can update any of these records to initiate further research.`)}
                 </p>
               </div>
             </div>
