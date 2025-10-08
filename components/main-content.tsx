@@ -85,7 +85,7 @@ export default function MainContent({
                 <p className="text-body text-gray-800 leading-relaxed">
                   {searchMode === 'research'
                     ? `Here are the results of your brand research query. You can approve a company to add it to your CRM, or reject and refine your search.`
-                    : `Chris, here are the companies from your CRM that match your search criteria${filters.query ? ` for "${filters.query}"` : ''}${filters.region ? ` in ${filters.region}` : ''}${filters.industry ? ` in the ${filters.industry} industry` : ''}${filters.sponsorshipType ? ` with ${filters.sponsorshipType} sponsorship experience` : ''}${filters.size ? ` with ${filters.size} employees` : ''}${filters.revenue ? ` in the ${filters.revenue} revenue range` : ''}. You can update any of these records to initiate further research.`}
+                    : `Here are the companies from your CRM that match your search criteria${filters.query ? ` for "${filters.query}"` : ''}${filters.region ? ` in ${filters.region}` : ''}${filters.industry ? ` in the ${filters.industry} industry` : ''}${filters.sponsorshipType ? ` with ${filters.sponsorshipType} sponsorship experience` : ''}${filters.size ? ` with ${filters.size} employees` : ''}${filters.revenue ? ` in the ${filters.revenue} revenue range` : ''}. You can update any of these records to initiate further research.`}
                 </p>
               </div>
             </div>
