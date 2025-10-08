@@ -8,6 +8,7 @@ import MainContent from "@/components/main-content"
 import RightSidebar from "@/components/right-sidebar"
 import ConfirmationToast from "@/components/confirmation-toast"
 import brandsData from "@/data/brands.json"
+import { isReportOnlyMode } from "@/lib/feature-flags"
 
 export default function Home() {
   const [searchResults, setSearchResults] = useState<any[]>([])
@@ -311,7 +312,7 @@ export default function Home() {
     <div className="flex h-screen flex-col">
       <TopNavigation onTabChange={handleChatResponse} />
       <div className="flex flex-1 overflow-hidden">
-        <LeftSidebar onSearch={handleSearch} />
+        {!isReportOnlyMode() && <LeftSidebar onSearch={handleSearch} />}
         <MainContent
           searchResults={searchResults}
           selectedCompany={selectedCompany}
