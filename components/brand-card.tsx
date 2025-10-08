@@ -3,12 +3,13 @@
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { ChevronDown, ChevronUp, Check } from "lucide-react"
+import { ChevronDown, ChevronUp, Check, FileDown } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import ConfirmationModal from "./confirmation-modal"
 import { useCRMActions } from "@/hooks/use-crm-actions"
 import { useState } from "react"
 import { isReportOnlyMode } from "@/lib/feature-flags"
+import { exportCompanyToPDF } from "@/lib/pdf-export"
 
 interface BrandCardProps {
   company: any
@@ -43,6 +44,15 @@ export default function BrandCard({
   const handleRejectClick = () => {
     // Call the parent's onReject to trigger the rejection flow
     onReject()
+  }
+
+  const handlePDFDownload = async () => {
+    try {
+      await exportCompanyToPDF(company)
+    } catch (error) {
+      console.error('Failed to generate PDF:', error)
+      alert('Failed to generate PDF. Please try again.')
+    }
   }
 
   return (
@@ -131,6 +141,18 @@ export default function BrandCard({
             >
               <Check className="mr-2 h-4 w-4" />
               <span className="text-xs">Update CRM</span>
+            </Button>
+          </CardFooter>
+        )}
+        {isReportOnlyMode() && (
+          <CardFooter className="flex justify-end gap-16 border-t border-gray-200 bg-edge px-24 py-16">
+            <Button
+              size="sm"
+              onClick={handlePDFDownload}
+              className="btn-premium bg-black text-white hover:bg-gray-800"
+            >
+              <FileDown className="mr-2 h-4 w-4" />
+              <span className="text-xs">Download as PDF</span>
             </Button>
           </CardFooter>
         )}

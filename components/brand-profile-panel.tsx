@@ -2,10 +2,14 @@
 
 import { useState } from "react"
 import { Card, CardContent } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 import ContactInfoPanel from "./contact-info-panel"
-import { marked } from 'marked';
+import { marked } from 'marked'
+import { FileDown } from "lucide-react"
+import { exportCompanyToPDF } from "@/lib/pdf-export"
+import { isReportOnlyMode } from "@/lib/feature-flags"
 
 interface BrandProfilePanelProps {
   company: any
@@ -17,6 +21,15 @@ export default function BrandProfilePanel({ company }: BrandProfilePanelProps) {
   
   // Keep the original activeTab logic simple
   const [activeTab, setActiveTab] = useState("overview")
+
+  const handlePDFDownload = async () => {
+    try {
+      await exportCompanyToPDF(company)
+    } catch (error) {
+      console.error('Failed to generate PDF:', error)
+      alert('Failed to generate PDF. Please try again.')
+    }
+  }
 
   function renderMarkdownContent(content: string) {
     try {
@@ -50,29 +63,42 @@ export default function BrandProfilePanel({ company }: BrandProfilePanelProps) {
     <Card>
       <CardContent className="p-6">
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="mb-4 bg-edge border border-gray-200 p-1 rounded-lg">
-            <TabsTrigger
-              value="overview"
-              className="data-[state=active]:bg-white data-[state=active]:text-black data-[state=active]:shadow-sm text-gray-600 hover:text-black transition-colors"
-            >
-              Overview
-            </TabsTrigger>
-            <TabsTrigger
-              value="report"
-              className="data-[state=active]:bg-white data-[state=active]:text-black data-[state=active]:shadow-sm text-gray-600 hover:text-black transition-colors"
-            >
-              Full Report
-            </TabsTrigger>
-            {/* Only show contacts tab when there are actual contacts */}
-            {hasContacts && (
+          <div className="flex items-center justify-between mb-4">
+            <TabsList className="bg-edge border border-gray-200 p-1 rounded-lg">
               <TabsTrigger
-                value="contacts"
+                value="overview"
                 className="data-[state=active]:bg-white data-[state=active]:text-black data-[state=active]:shadow-sm text-gray-600 hover:text-black transition-colors"
               >
-                Contacts
+                Overview
               </TabsTrigger>
+              <TabsTrigger
+                value="report"
+                className="data-[state=active]:bg-white data-[state=active]:text-black data-[state=active]:shadow-sm text-gray-600 hover:text-black transition-colors"
+              >
+                Full Report
+              </TabsTrigger>
+              {/* Only show contacts tab when there are actual contacts */}
+              {hasContacts && (
+                <TabsTrigger
+                  value="contacts"
+                  className="data-[state=active]:bg-white data-[state=active]:text-black data-[state=active]:shadow-sm text-gray-600 hover:text-black transition-colors"
+                >
+                  Contacts
+                </TabsTrigger>
+              )}
+            </TabsList>
+            
+            {isReportOnlyMode() && (
+              <Button
+                size="sm"
+                onClick={handlePDFDownload}
+                className="bg-black text-white hover:bg-gray-800"
+              >
+                <FileDown className="mr-2 h-4 w-4" />
+                <span className="text-xs">Download as PDF</span>
+              </Button>
             )}
-          </TabsList>
+          </div>
 
           {/* Keep all the existing TabsContent exactly as they were */}
           <TabsContent value="overview" className="space-y-4">
