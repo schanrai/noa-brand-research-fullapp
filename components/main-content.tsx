@@ -62,15 +62,16 @@ export default function MainContent({
   }
 
   return (
-    <div className="flex-1 overflow-auto p-48 bg-main pt-[22px] pb-52">
-      {(searchStage !== "results" || feedbackMode) && (
-        <CoPilotInterface
-          stage={feedbackMode ? "feedback" : searchStage}
-          onResponse={handleChatResponse}
-          feedbackMode={feedbackMode}
-          onFeedbackComplete={() => setFeedbackMode(false)}
-        />
-      )}
+    <div className="flex-1 overflow-auto bg-main pt-[22px] pb-52">
+      <div className="max-w-4xl mx-auto px-48">
+        {(searchStage !== "results" || feedbackMode) && (
+          <CoPilotInterface
+            stage={feedbackMode ? "feedback" : searchStage}
+            onResponse={handleChatResponse}
+            feedbackMode={feedbackMode}
+            onFeedbackComplete={() => setFeedbackMode(false)}
+          />
+        )}
 
       {searchStage === "results" && searchResults.length > 0 && (
         <div className="space-y-48">
@@ -123,6 +124,7 @@ export default function MainContent({
           </div>
         </div>
       )}
+      </div>
     </div>
   )
 }

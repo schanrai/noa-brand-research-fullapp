@@ -46,7 +46,7 @@ export default function TopNavigation({ onTabChange }: TopNavigationProps) {
           <img
             src="/Scova_Logo_Crop.png"
             alt="Scova"
-            className="h-20 w-auto"
+            className="h-32 w-auto"
           />
         </div>
       </div>
