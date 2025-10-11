@@ -69,16 +69,25 @@ export async function exportCompanyToPDF(company: CompanyData): Promise<void> {
     };
 
     const addSection = (title: string, content: string) => {
-      // Section title
+      // Conservative space check: ensure we have enough room for title + gap + at least 2 lines of content
+      const minRequiredSpace = 40; // mm - enough for title (12pt) + gap + 2 lines of content (10pt)
+      
+      // If we don't have enough space, start a new page
+      if (yPosition + minRequiredSpace > pageHeight - margin) {
+        doc.addPage();
+        yPosition = margin;
+      }
+
+      // Now add the title and content normally
       addText(title, 12, true);
       yPosition += 2;
       
-      // Process markdown formatting but preserve URLs
+      // Process content
       let processedContent = content
-        .replace(/\*\*([^*]+)\*\*/g, '$1') // Remove bold markdown
-        .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '$1 ($2)') // Convert [text](url) to text (url)
-        .replace(/#+\s/g, '') // Remove headers
-        .replace(/^[\s-]*$/gm, ''); // Remove empty lines
+        .replace(/\*\*([^*]+)\*\*/g, '$1')
+        .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '$1 ($2)')
+        .replace(/#+\s/g, '')
+        .replace(/^[\s-]*$/gm, '');
       
       addText(processedContent, 10, false);
       yPosition += 5;
