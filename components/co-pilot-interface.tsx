@@ -194,16 +194,27 @@ CRITICAL:
               const socialMediaPrompt = `Research ${companyName}${regionText} social media and strategic focus.
 
 Social Media (250-350 words):
-- Focus on the last 6–12 months (note year if older).
-- Cover the 2–3 most relevant platforms among LinkedIn, X/Twitter, Instagram, TikTok, YouTube
-- For each platform you mention: link the official handle at first mention using markdown format [Link Text](URL). 
-- Summarize overall content themes, rough posting cadence (approx weekly/monthly), and a brief read on engagement (e.g., “consistently low/medium/high for the category” or “not visible”).
-- Call out one or two concrete patterns (e.g., product launches, exec thought leadership, talent/employer brand, partnerships) grounded in linked examples. Avoid generic claims.
-MANDATORY URL REQUIREMENT:
--For each platform, you MUST include at least 1 direct post URL inline tied to the specific concrete patterns or themes and using markdown format [Link Text](URL). This is in addition to the official handle link. Format like this:
-  "In [Month YYYY], [platform] post [LinkText][URL] focused on [topic]."
--Do NOT include URLs that are clearly dead links or redirect to generic pages.
--If you cannot find a valid DIRECT POST URL, state "No specific post URLs found" and do not make claims about posts
+
+MANDATORY FORMAT: You MUST start with this exact bullet list format. Do not skip this step:
+
+- YouTube: [handle or link]
+- Instagram: [handle or link]
+- TikTok: [handle or link]
+- Facebook: [handle or link]
+- LinkedIn: [handle or link]
+- X/Twitter: [handle or link]
+
+CRITICAL: Only include platforms where you can find the official/verified handle. If not found, omit that line entirely.
+
+After the bullet list, write a flowing narrative analysis focusing on the 2-3 MOST ACTIVE platforms (based on follower count). Describe their content style and tone, posting frequency, audience engagement, visual identity and brand voice, and strategic role in their overall social presence. Write this as continuous prose, not bullet points or subheadings.
+
+IMPORTANT RULES:
+- Do NOT include links to third-party blogs or websites
+- Do NOT include specific post URLs
+- Only link to official social media handles in the bullet list
+-Focus on high-level, aggregate insights from the last 6-12 months only. 
+-Do not make up the details of the platforms, only use the information you find even if it is not complete.
+
 
 Strategic Focus (175–250 words):
 - Explain differentiation, brand traits, competitive stance, and 2–3 named growth/communication priorities.
