@@ -136,6 +136,10 @@ export async function getFormattedData(content: string, schema: any) {
 
 IMPORTANT: If there are paragraphs, line breaks or other formatting, preserve it as long as the result is readable and follows the schema requirements.  Preserve all markdown links in the format [Link Text](URL) - do not convert them to plain text.
 
+CRITICAL MAPPING RULES:
+- For social media: If the input begins with a bullet list of official/verified social handles, copy that bullet list VERBATIM into socialMediaPresence.handles (do not alter order or content), and put the subsequent narrative into socialMediaPresence.content. Do not drop, merge, or rewrite the bullet list. Do not add any text before it.
+- For other sections, map narrative into the corresponding content field(s).
+
 RESEARCH CONTENT:
 ${content}
 

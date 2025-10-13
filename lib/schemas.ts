@@ -151,8 +151,9 @@ export const socialMediaSchema = {
         socialMediaPresence: {
           type: "object",
           additionalProperties: false,
-          required: ["content"],
+          required: ["handles", "content"],
           properties: {
+            handles: { type: "string" },
             content: { type: "string" }
           }
         },
