@@ -336,6 +336,16 @@ export default function BrandProfilePanel({ company }: BrandProfilePanelProps) {
                 <AccordionItem value="social-media-presence">
                   <AccordionTrigger>Social Media Presence</AccordionTrigger>
                   <AccordionContent>
+                    {/* Render handles first if they exist (null-safe for older results) */}
+                    {company.detailedAnalysis.socialMediaPresence.handles && (
+                      <div 
+                        className="text-sm text-muted-foreground prose prose-sm max-w-none mb-4"
+                        dangerouslySetInnerHTML={{ 
+                          __html: renderMarkdownContent(company.detailedAnalysis.socialMediaPresence.handles) 
+                        }}
+                      />
+                    )}
+                    {/* Always render content (works for both old and new results) */}
                     <div 
                       className="text-sm text-muted-foreground prose prose-sm max-w-none"
                       dangerouslySetInnerHTML={{ 
