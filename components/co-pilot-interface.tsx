@@ -190,9 +190,9 @@ CRITICAL:
 -Include inline source links using markdown format [Link Text](URL) for all verifiable information.
 -Do not start your response with generic time phrases like "over the past five years". Use flexible language that reflects the actual timeframe found.`;
 
-              // PASS 5: Social Media & Strategic Focus (shorter, focused searches)
-              const socialMediaPrompt = `Research ${companyName}${regionText} social media and strategic focus.
-
+              // --- PASS 5A: Social Media ONLY (keep your last good social prompt here)
+              const socialMediaPrompt = `Research ${companyName}${regionText} social media presence
+              
 Social Media (250-350 words):
 
 MANDATORY FORMAT: You MUST start with this exact bullet list format. Do not skip this step:
@@ -208,23 +208,23 @@ CRITICAL: Only include platforms where you can find the official/verified handle
 
 After the bullet list, write a flowing narrative analysis focusing on the 2-3 MOST ACTIVE platforms (based on follower count). Describe their content style and tone, posting frequency, audience engagement, visual identity and brand voice, and strategic role in their overall social presence. Write this as continuous prose, not bullet points or subheadings.
 
-IMPORTANT RULES:
+MANDATORY:
 - Do NOT include links to third-party blogs or websites
 - Do NOT include specific post URLs
 - Only link to official social media handles in the bullet list
 -Focus on high-level, aggregate insights from the last 6-12 months only. 
--Do not make up the details of the platforms, only use the information you find even if it is not complete.
+-Do not make up the details of the platforms, only use the information you find even if it is not complete.`;
 
+              // --- PASS 5B: Strategic Focus ONLY (separate prompt with links required)
+              const strategicFocusPrompt = `Research the strategic focus of 
+              ${companyName}${regionText} 
 
-Strategic Focus (175–250 words):
+Strategic Focus (175-250 words):
 - Explain differentiation, brand traits, competitive stance, and 2–3 named growth/communication priorities.
-- MANDATORY: Include at least 2 inline citations from different sources using markdown format [Link Text](URL) to back up specific claims. If you cannot find 2 verifiable sources, do not make the claim.
-- Use only high authority sources for your citations. These include CEO/executive quotes (earnings calls, interviews, press releases), official strategy announcements (IR presentations, annual reports), product/market moves with dates, regulatory filings, or high-authority media coverage (Reuters,FT, WSJ, AP).
-- Avoid SWOT-style boilerplate. Ground every strategic claim in a dated, verifiable source.
 
-IMPORTANT:
-- Prefer official handles and primary sources; exclude low-quality, low-authority blogs/AI summaries.
-- Use narrative prose and inline links [Text](URL); avoid vague time phrases. If details are unavailable, write “Not found”.`;
+ MANDATORY:
+- Include at least 2 inline citations using markdown [Text](URL) from high-authority sources (company IR/press releases, earnings-call transcripts, regulatory filings, or Reuters/FT/WSJ/AP).
+- Ground each strategic claim in a dated, verifiable source. Avoid SWOT boilerplate.`;
 
               // Execute all searches in parallel for better performance
               console.log('🚀 Starting multi-pass research...');
@@ -234,14 +234,19 @@ IMPORTANT:
                 overviewOutput,
                 marketingOutput,
                 sponsorshipsOutput,
-                socialMediaOutput
+                socialMediaText,          // NEW
+                strategicFocusText        // NEW
               ] = await Promise.all([
                 getStructuredData(structuredPrompt),
                 getDetailedAnalysis(overviewPrompt), // Light search - just company info
                 getDetailedAnalysisWithCitations(marketingPrompt), // Heavy search - needs campaign URLs
                 getDetailedAnalysisWithCitations(sponsorshipsPrompt), // Heavy search - needs sponsorship URLs
-                getDetailedAnalysisWithCitations(socialMediaPrompt) // Heavy search - needs specific post URLs + strategic focus
+                getDetailedAnalysisWithCitations(socialMediaPrompt),    // Social links OK here
+                getDetailedAnalysisWithCitations(strategicFocusPrompt) // Citations allowed here
               ]);
+
+              // Combine the two sections for the existing formatter/schema
+              const socialMediaOutput = `${socialMediaText}\n\n${strategicFocusText}`;
 
               console.log('✅ All search passes completed');
 
@@ -263,7 +268,7 @@ IMPORTANT:
                 getFormattedData(overviewOutput, overviewSchema),        
                 getFormattedData(marketingOutput, marketingSchema),     
                 getFormattedData(sponsorshipsOutput, sponsorshipsSchema), 
-                getFormattedData(socialMediaOutput, socialMediaSchema)   
+                getFormattedData(socialMediaOutput, socialMediaSchema) // now contains both sections
               ]);
 
               console.log('✅ All formatting passes completed');
