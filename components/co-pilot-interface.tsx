@@ -195,7 +195,7 @@ CRITICAL:
               
 Social Media (250-350 words):
 
-MANDATORY FORMAT: You MUST start with this exact bullet list format. Do not skip this step:
+CRITICAL: Your response MUST begin with this exact bullet list format. Do not skip this step and do not write anything before this list:
 
 - YouTube: [handle or link]
 - Instagram: [handle or link]
@@ -204,7 +204,7 @@ MANDATORY FORMAT: You MUST start with this exact bullet list format. Do not skip
 - LinkedIn: [handle or link]
 - X/Twitter: [handle or link]
 
-CRITICAL: Only include platforms where you can find the official/verified handle. If not found, omit that line entirely.
+ONLY include platforms where you can find the official/verified handle. If not found, omit that line entirely.
 
 After the bullet list, write a flowing narrative analysis focusing on the 2-3 MOST ACTIVE platforms (based on follower count). Describe their content style and tone, posting frequency, audience engagement, visual identity and brand voice, and strategic role in their overall social presence. Write this as continuous prose, not bullet points or subheadings.
 
@@ -220,10 +220,12 @@ MANDATORY:
               ${companyName}${regionText} 
 
 Strategic Focus (175-250 words):
-- Explain differentiation, brand traits, competitive stance, and 2–3 named growth/communication priorities.
+- Explain strategy, differentiation, brand traits, competitive stance, and 2–3 named growth/communication priorities.
 
  MANDATORY:
+ - Write only about the strategic focus of the company, not about the company itself.
 - Include at least 2 inline citations using markdown [Text](URL) from high-authority sources (company IR/press releases, earnings-call transcripts, regulatory filings, or Reuters/FT/WSJ/AP).
+- Prefer official handles and primary sources and exclude low-quality, low-authority blogs/AI summaries for sources.
 - Ground each strategic claim in a dated, verifiable source. Avoid SWOT boilerplate.`;
 
               // Execute all searches in parallel for better performance
