@@ -104,6 +104,7 @@ For each test case, verify:
 - **Actual**: Send goes nowhere, and whitespace is retained
 - **Issues**: The user might not realize they are stuck
 - **Severity**: 2
+PASS
 
 **1.3 Only Tabs/Newlines**
 - **Input**: `"\t\n"` (tabs and newlines)
@@ -115,6 +116,7 @@ For each test case, verify:
 - **Actual**: Send goes nowhere, and new lines and tabs retained
 - **Issues**: 
 - **Severity**: 2
+PASS
 
 #### Test Case 2: Extremely Long Input
 

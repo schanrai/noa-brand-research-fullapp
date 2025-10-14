@@ -148,7 +148,8 @@ Format as clean, readable narrative text that follows the schema requirements, k
       temperature: 0.0,
       top_p: 0.1,
       max_tokens: 15000,
-      response_format: schema
+      response_format: schema,
+      skipValidation: true // Skip validation for LLM-generated content
     }),
   });
   const data = await response.json();
