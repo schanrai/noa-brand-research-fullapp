@@ -7,6 +7,7 @@ import LeftSidebar from "@/components/left-sidebar"
 import MainContent from "@/components/main-content"
 import RightSidebar from "@/components/right-sidebar"
 import ConfirmationToast from "@/components/confirmation-toast"
+import ErrorToast from "@/components/error-toast"
 import brandsData from "@/data/brands.json"
 import { isReportOnlyMode } from "@/lib/feature-flags"
 
@@ -32,6 +33,15 @@ export default function Home() {
   }>({
     show: false,
     type: "success",
+    message: "",
+  })
+
+  // Error toast state (separate from success toast)
+  const [errorToast, setErrorToast] = useState<{
+    show: boolean
+    message: string
+  }>({
+    show: false,
     message: "",
   })
 
@@ -197,6 +207,11 @@ export default function Home() {
     }, 300) // Small delay to allow toast fade-out animation
   }
 
+  const handleErrorToastDismiss = () => {
+    setErrorToast({ show: false, message: "" })
+    window.location.reload() // Reload page for clean state
+  }
+
   const handleChatResponse = (stage: string, value: string, llmResult?: string) => {
     if (stage === "reset-to-initial") {
       // Handle reset from top navigation
@@ -228,6 +243,15 @@ export default function Home() {
         } catch (e) {
           console.error('Failed to parse LLM result:', e)
         }
+      }
+      
+      // Show error toast if no valid data - don't create dummy company
+      if (!parsedData || !parsedData.structuredData) {
+        setErrorToast({
+          show: true,
+          message: "Unable to retrieve company information. Please try a different company name."
+        });
+        return; // Exit early - no company object created
       }
       
       const companyName = value && value.trim() ? value : "Unknown Company"
@@ -332,6 +356,14 @@ export default function Home() {
         <ConfirmationToast
           message={toastNotification.message}
           onDismiss={handleToastDismiss}
+        />
+      )}
+
+      {/* Error Toast Notification */}
+      {errorToast.show && (
+        <ErrorToast
+          message={errorToast.message}
+          onDismiss={handleErrorToastDismiss}
         />
       )}
     </div>
