@@ -215,18 +215,55 @@ MANDATORY:
 -Focus on high-level, aggregate insights from the last 6-12 months only. 
 -Do not make up the details of the platforms, only use the information you find even if it is not complete.`;
 
+
               // --- PASS 5B: Strategic Focus ONLY (separate prompt with links required)
-              const strategicFocusPrompt = `Research the strategic focus of 
-              ${companyName}${regionText} 
+              const strategicFocusPrompt = ` 
+Mode: show sources — every paragraph must contain at least one inline markdown citation [SourceName](URL).        
+              
+Research the strategic focus of ${companyName}${regionText}.
 
 Strategic Focus (175-250 words):
-- Explain strategy, differentiation, brand traits, competitive stance, and 2–3 named growth/communication priorities.
+- Explain core strategy and differentiation, brand traits and positioning, competitive stance, and 2–3 named growth/communication priorities.
 
- MANDATORY:
- - Write only about the strategic focus of the company, not about the company itself.
-- Include at least 2 inline citations using markdown [Text](URL) from high-authority sources (company IR/press releases, earnings-call transcripts, regulatory filings, or Reuters/FT/WSJ/AP).
-- Prefer official handles and primary sources and exclude low-quality, low-authority blogs/AI summaries for sources.
-- Ground each strategic claim in a dated, verifiable source. Avoid SWOT boilerplate.`;
+Each factual or strategic statement must include a markdown citation exactly like this:
+Apple emphasizes privacy and seamless integration [Reuters](https://www.reuters.com)
+
+Citation Rules (Hard Requirements):
+1. Every factual or strategic claim must end with an inline citation [SourceName](URL).
+2. No claim may appear without a citation. 
+3. Include a minimum of two distinct high-authority sources - more if multiple claims are made.
+4. If fewer than two valid sources are found, run another search before generating the summary.
+5. Before writing, search again if you cannot locate verifiable sources.
+
+Example pattern (follow exactly):  
+ Nike invests in sustainability initiatives [Reuters](https://www.reuters.com) and expands direct-to-consumer channels [Company Press Release](https://news.nike.com). 
+
+Source Quality - Hard Constraints:
+-Never use student essays, personal blogs, AI-generated summaries, content farms, or SEO spam.
+-Use only the following for citations and factual grounding:
+1.The official ${companyName} website
+2.Verified press releases from ${companyName} or recognized newswires
+3.Major business and news outlets (e.g., bloomberg.com, reuters.com, wsj.com, ft.com, cnbc.com, apnews.com)
+4.Trade or industry publications with editorial oversight (e.g., adweek.com, campaignlive.com, techcrunch.com)
+
+Domain Exclusions:
+Do not use or cite any source whose domain includes:
+scribd, panmore, accelingo, latterly, blogspot, medium.com (unless the official ${companyName} account), wordpress, quora, fandom, slideshare, essay, ai-summary, contentfarm.
+
+If retrieved results include any of these excluded domains, discard them and repeat the search until at least two valid, high-authority sources are found.
+
+Output Format:
+- Output only the Strategic Focus section.
+- Each factual or strategic sentence must end with an inline citation
+
+Self-Check Before Finalizing:
+If any sentence lacks a [SourceName](URL) citation, regenerate that sentence with one.
+The final output must contain at least two distinct citations.
+
+Example output:
+Nike emphasizes digital transformation to deepen consumer relationships [Reuters](https://www.reuters.com).  
+The company invests in sustainable materials and circular-design innovation [Nike Press Release](https://news.nike.com). 
+`;
 
               // Execute all searches in parallel for better performance
               console.log('🚀 Starting multi-pass research...');
@@ -258,7 +295,8 @@ Strategic Focus (175-250 words):
               console.log('📚 Overview Output:', overviewOutput);
               console.log('📈 Marketing Output:', marketingOutput);
               console.log('🎯 Sponsorships Output:', sponsorshipsOutput);
-              console.log('📱 Social Media Output:', socialMediaOutput);
+              console.log('📱 Social Media Output:', socialMediaText);
+              console.log('📈 Strategic Focus Output:', strategicFocusText);
 
               // The formatting calls
               const [
