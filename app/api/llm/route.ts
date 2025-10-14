@@ -1,5 +1,6 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
+import { validatePrompt, isInputSafe } from '@/lib/input-validator';
 
 export async function POST(req: NextRequest) {
   const { 
@@ -13,6 +14,15 @@ export async function POST(req: NextRequest) {
     plugins, // ADD
     web_search_options // ADD
    } = await req.json();
+
+  // Validate prompt for security threats
+  if (!isInputSafe(prompt)) {
+    console.warn('Blocked potentially malicious input:', prompt.substring(0, 100));
+    return NextResponse.json(
+      { error: 'Invalid input detected' },
+      { status: 400 }
+    );
+  }
 
    const requestBody: any = {
     model,
