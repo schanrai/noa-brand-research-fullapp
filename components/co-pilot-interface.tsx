@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Send, Lightbulb, Star, Loader2, Network } from "lucide-react"
 import { getLLMResearch, getStructuredData, getDetailedAnalysis, getDetailedAnalysisWithCitations, getFormattedData } from "@/lib/llm-client"
 import { overviewSchema, marketingSchema, sponsorshipsSchema, socialMediaSchema } from "@/lib/schemas"
+import { validateCompanyName, validateRegionName, validateDivisionName, validateNumericChoice } from "@/lib/input-validator"
 
 interface CoPilotInterfaceProps {
   stage: "initial" | "region" | "region-specific" | "division" | "division-specific" | "confirmation" | "results" | "feedback" | "feedback-clarification" | "processing" | "processing-feedback"
@@ -400,10 +401,38 @@ The company invests in sustainable materials and circular-design innovation [Nik
     e.preventDefault()
     if (!userInput.trim()) return
 
-    // Add user message to conversation
+    // Validate input based on current stage
+    const trimmedInput = userInput.trim();
+    let validationResult;
+    let validatedInput = trimmedInput;
+
+    if (currentStage === "initial") {
+      validationResult = validateCompanyName(trimmedInput);
+      validatedInput = validationResult.sanitized;
+    } else if (currentStage === "region-specific") {
+      validationResult = validateRegionName(trimmedInput);
+      validatedInput = validationResult.sanitized;
+    } else if (currentStage === "division-specific") {
+      validationResult = validateDivisionName(trimmedInput);
+      validatedInput = validationResult.sanitized;
+    } else if (currentStage === "region" || currentStage === "division") {
+      validationResult = validateNumericChoice(trimmedInput, ["1", "2"]);
+      validatedInput = validationResult.sanitized;
+    } else {
+      // For other stages, just use trimmed input
+      validationResult = { isValid: true, sanitized: trimmedInput, issues: [], blocked: false };
+      validatedInput = trimmedInput;
+    }
+
+    // If input was completely blocked (only malicious content), silently reject
+    if (validationResult.blocked || (!validationResult.isValid && validatedInput === "")) {
+      return; // Silent rejection - input field just doesn't respond
+    }
+
+    // Add user message to conversation (use original input for display, validated for processing)
     const newUserMessage = {
       role: "user",
-      content: userInput,
+      content: validatedInput, // Use validated/sanitized input for display
       timestamp: new Date(),
     }
 
@@ -411,8 +440,8 @@ The company invests in sustainable materials and circular-design innovation [Nik
     let nextStage = ""
 
     if (currentStage === "initial") {
-      setCompanyName(userInput)
-      assistantResponse = `Great! How would you like me to focus the research on ${userInput}?
+      setCompanyName(validatedInput) // Use validated input for state
+      assistantResponse = `Great! How would you like me to focus the research on ${validatedInput}?
 
 1. Global overview (worldwide operations)
 2. Specific region or market
@@ -421,7 +450,7 @@ Please choose 1 or 2, or describe your preference.`
       nextStage = "region"
       setCurrentStage("region")
     } else if (currentStage === "region") {
-      const userResponse = userInput.trim();
+      const userResponse = validatedInput; // Use validated input
       
       if (userResponse === "1") {
         setRegionFocus("global");
@@ -446,8 +475,8 @@ Please choose 1 or 2.`
         setCurrentStage("region")
       }
     } else if (currentStage === "region-specific") {
-      setSpecificRegion(userInput);
-      assistantResponse = `Perfect! Now how would you like me to focus the research on ${companyName} in ${userInput}?
+      setSpecificRegion(validatedInput);
+      assistantResponse = `Perfect! Now how would you like me to focus the research on ${companyName} in ${validatedInput}?
 
 1. Comprehensive overview (all business areas)
 2. Specific division or business unit
@@ -456,7 +485,7 @@ Please choose 1 or 2.`
       nextStage = "division"
       setCurrentStage("division")
     } else if (currentStage === "division") {
-      const userResponse = userInput.trim();
+      const userResponse = validatedInput; // Use validated input
       
       if (userResponse === "1") {
         setResearchFocus("comprehensive");
@@ -476,8 +505,8 @@ Please choose 1 or 2.`
         setCurrentStage("division")
       }
     } else if (currentStage === "division-specific") {
-      setSpecificDivision(userInput);
-      assistantResponse = `Perfect! I'll provide a research report for ${companyName}${regionFocus === "specific" ? ` in ${specificRegion}` : " globally"}, focusing on their ${userInput} division. Sound good?`
+      setSpecificDivision(validatedInput);
+      assistantResponse = `Perfect! I'll provide a research report for ${companyName}${regionFocus === "specific" ? ` in ${specificRegion}` : " globally"}, focusing on their ${validatedInput} division. Sound good?`
       nextStage = "confirmation"
       setCurrentStage("confirmation")
     } else if (currentStage === "confirmation") {
@@ -488,7 +517,7 @@ Please choose 1 or 2.`
       setCurrentStage("processing")
     } else if (currentStage === "feedback") {
       // Analyze feedback and potentially ask clarifying questions
-      const feedback = userInput.toLowerCase()
+      const feedback = validatedInput.toLowerCase()
 
       if (feedback.includes("industry") || feedback.includes("sector")) {
         assistantResponse =
@@ -532,7 +561,7 @@ Please choose 1 or 2.`
           contextualSuggestions.push("detail their strategic partnerships and collaborations")
         }
 
-        const baseMessage = `Thanks for the feedback! Based on your input "${userInput}", I can help you refine the research.`
+        const baseMessage = `Thanks for the feedback! Based on your input "${validatedInput}", I can help you refine the research.`
 
         if (contextualSuggestions.length > 0) {
           assistantResponse = `${baseMessage} Would you like me to ${contextualSuggestions.join(", or ")}? Please let me know which specific aspects you'd like me to adjust.`
@@ -559,7 +588,7 @@ Please choose 1 or 2.`
     setConversationHistory((prev) => [...prev, newUserMessage, newAssistantMessage])
 
     if (currentStage !== "confirmation" && currentStage !== "processing") {
-      onResponse(nextStage, userInput)
+      onResponse(nextStage, validatedInput)
     }
 
     setUserInput("")
@@ -707,6 +736,7 @@ Please choose 1 or 2.`
                   }
                   value={userInput}
                   onChange={(e) => setUserInput(e.target.value)}
+                  maxLength={200}
                   className="flex-1 bg-white border-gray-200 rounded-md px-3 py-2 h-20 resize-none border text-sm focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
                   onKeyDown={(e) => {
                     if (e.key === "Enter" && !e.shiftKey) {
