@@ -32,11 +32,6 @@ export default function BrandProfilePanel({ company }: BrandProfilePanelProps) {
   }
 
   function renderMarkdownContent(content: string) {
-    // Add null check to prevent crashes
-    if (!content) {
-      return '<p>No content available</p>';
-    }
-
     try {
       // Configure marked for safe rendering
       marked.setOptions({
