@@ -67,6 +67,84 @@ export function detectXSS(input: string): boolean {
     /<embed[\s\S]*?>/i,
     // Form tags that could be used for CSRF
     /<form[\s\S]*?>[\s\S]*?<\/form>/i,
+    
+    // ENHANCED: Additional XSS patterns to match DOMPurify coverage
+    // Event handlers with quotes
+    /onclick\s*=\s*["'][^"']*["']/i,
+    /onload\s*=\s*["'][^"']*["']/i,
+    /onerror\s*=\s*["'][^"']*["']/i,
+    /onfocus\s*=\s*["'][^"']*["']/i,
+    /onblur\s*=\s*["'][^"']*["']/i,
+    /onchange\s*=\s*["'][^"']*["']/i,
+    /onsubmit\s*=\s*["'][^"']*["']/i,
+    /onreset\s*=\s*["'][^"']*["']/i,
+    /onselect\s*=\s*["'][^"']*["']/i,
+    /onkeydown\s*=\s*["'][^"']*["']/i,
+    /onkeyup\s*=\s*["'][^"']*["']/i,
+    /onkeypress\s*=\s*["'][^"']*["']/i,
+    /onmousedown\s*=\s*["'][^"']*["']/i,
+    /onmouseup\s*=\s*["'][^"']*["']/i,
+    /onmouseover\s*=\s*["'][^"']*["']/i,
+    /onmouseout\s*=\s*["'][^"']*["']/i,
+    /onmousemove\s*=\s*["'][^"']*["']/i,
+    /onmouseenter\s*=\s*["'][^"']*["']/i,
+    /onmouseleave\s*=\s*["'][^"']*["']/i,
+    /ondblclick\s*=\s*["'][^"']*["']/i,
+    /oncontextmenu\s*=\s*["'][^"']*["']/i,
+    /onwheel\s*=\s*["'][^"']*["']/i,
+    /oninput\s*=\s*["'][^"']*["']/i,
+    /oninvalid\s*=\s*["'][^"']*["']/i,
+    /onsearch\s*=\s*["'][^"']*["']/i,
+    
+    // CSS injection patterns
+    /style\s*=\s*["'][^"']*javascript[^"']*["']/i,
+    /style\s*=\s*["'][^"']*expression\s*\([^"']*["']/i,
+    /style\s*=\s*["'][^"']*url\s*\([^"']*javascript[^"']*["']/i,
+    
+    // SVG injection patterns
+    /<svg[\s\S]*?onload[\s\S]*?>/i,
+    /<svg[\s\S]*?onerror[\s\S]*?>/i,
+    /<svg[\s\S]*?onclick[\s\S]*?>/i,
+    
+    // IMG injection patterns
+    /<img[\s\S]*?onerror[\s\S]*?>/i,
+    /<img[\s\S]*?onload[\s\S]*?>/i,
+    
+    // LINK injection patterns
+    /<link[\s\S]*?onload[\s\S]*?>/i,
+    /<link[\s\S]*?onerror[\s\S]*?>/i,
+    
+    // META injection patterns
+    /<meta[\s\S]*?onload[\s\S]*?>/i,
+    /<meta[\s\S]*?onerror[\s\S]*?>/i,
+    
+    // Input injection patterns
+    /<input[\s\S]*?onfocus[\s\S]*?>/i,
+    /<input[\s\S]*?onblur[\s\S]*?>/i,
+    /<input[\s\S]*?onchange[\s\S]*?>/i,
+    
+    // Body injection patterns
+    /<body[\s\S]*?onload[\s\S]*?>/i,
+    /<body[\s\S]*?onunload[\s\S]*?>/i,
+    
+    // Anchor injection patterns
+    /<a[\s\S]*?href\s*=\s*["']?javascript:/i,
+    /<a[\s\S]*?onclick[\s\S]*?>/i,
+    
+    // Protocol handlers
+    /vbscript\s*:/i,
+    /data\s*:\s*text\/plain/i,
+    /data\s*:\s*application\/javascript/i,
+    
+    // Expression injection
+    /expression\s*\(/i,
+    /eval\s*\(/i,
+    /setTimeout\s*\(/i,
+    /setInterval\s*\(/i,
+    
+    // HTML entities that could be decoded to scripts
+    /&#x?[0-9a-f]+;.*script/i,
+    /&[a-z]+;.*script/i,
   ];
 
   return xssPatterns.some(pattern => pattern.test(input));
@@ -138,6 +216,54 @@ export function detectPromptInjection(input: string): boolean {
 }
 
 // =============================================================================
+// PATTERN DETECTION (NEW)
+// =============================================================================
+
+/**
+ * Detects repeated characters (e.g., "aaaaaaaaaa") that could cause LLM hallucinations
+ */
+export function detectRepeatedCharacters(input: string): boolean {
+  // Detect 3+ same characters in a row
+  return /(.)\1{2,}/.test(input);
+}
+
+/**
+ * Detects gibberish patterns that could cause LLM hallucinations
+ */
+export function detectGibberish(input: string): boolean {
+  const trimmed = input.trim();
+  
+  // Too short to be meaningful
+  if (trimmed.length < 2) return true;
+  
+  // Numbers only
+  if (/^\d+$/.test(trimmed)) return true;
+  
+  // Repeated characters (already handled by detectRepeatedCharacters, but included for completeness)
+  if (/(.)\1{2,}/.test(trimmed)) return true;
+  
+  // Random character sequences (very basic detection)
+  if (/^[a-z]{3,}$/i.test(trimmed) && !containsVowels(trimmed)) return true;
+  
+  return false;
+}
+
+/**
+ * Helper function to check if input contains vowels (basic gibberish detection)
+ */
+function containsVowels(input: string): boolean {
+  return /[aeiou]/i.test(input);
+}
+
+/**
+ * Detects if input is only whitespace or very short
+ */
+export function detectInvalidLength(input: string): boolean {
+  const trimmed = input.trim();
+  return trimmed.length === 0 || trimmed.length < 2;
+}
+
+// =============================================================================
 // CONTEXT-AWARE VALIDATION
 // =============================================================================
 
@@ -152,6 +278,21 @@ export function validateCompanyName(input: string): ValidationResult {
   // Check for empty input
   if (!sanitized) {
     return { isValid: false, sanitized: '', issues: ['Company name cannot be empty'], blocked: false };
+  }
+
+  // Check for invalid length
+  if (detectInvalidLength(sanitized)) {
+    return { isValid: false, sanitized: '', issues: ['Company name too short'], blocked: true };
+  }
+
+  // Check for gibberish patterns
+  if (detectGibberish(sanitized)) {
+    return { isValid: false, sanitized: '', issues: ['Please enter a valid company name'], blocked: true };
+  }
+
+  // Check for repeated characters
+  if (detectRepeatedCharacters(sanitized)) {
+    return { isValid: false, sanitized: '', issues: ['Please enter a valid company name'], blocked: true };
   }
 
   // Check for SQL injection
@@ -204,6 +345,21 @@ export function validateRegionName(input: string): ValidationResult {
     return { isValid: false, sanitized: '', issues: ['Region name cannot be empty'], blocked: false };
   }
 
+  // Check for invalid length
+  if (detectInvalidLength(sanitized)) {
+    return { isValid: false, sanitized: '', issues: ['Region name too short'], blocked: true };
+  }
+
+  // Check for gibberish patterns
+  if (detectGibberish(sanitized)) {
+    return { isValid: false, sanitized: '', issues: ['Please enter a valid region name'], blocked: true };
+  }
+
+  // Check for repeated characters
+  if (detectRepeatedCharacters(sanitized)) {
+    return { isValid: false, sanitized: '', issues: ['Please enter a valid region name'], blocked: true };
+  }
+
   // Check for injections
   if (detectSQLInjection(sanitized) || detectXSS(sanitized) || detectTemplateInjection(sanitized) || detectPromptInjection(sanitized)) {
     issues.push('Invalid characters detected');
@@ -233,6 +389,21 @@ export function validateDivisionName(input: string): ValidationResult {
   // Check for empty input
   if (!sanitized) {
     return { isValid: false, sanitized: '', issues: ['Division name cannot be empty'], blocked: false };
+  }
+
+  // Check for invalid length
+  if (detectInvalidLength(sanitized)) {
+    return { isValid: false, sanitized: '', issues: ['Division name too short'], blocked: true };
+  }
+
+  // Check for gibberish patterns
+  if (detectGibberish(sanitized)) {
+    return { isValid: false, sanitized: '', issues: ['Please enter a valid division name'], blocked: true };
+  }
+
+  // Check for repeated characters
+  if (detectRepeatedCharacters(sanitized)) {
+    return { isValid: false, sanitized: '', issues: ['Please enter a valid division name'], blocked: true };
   }
 
   // Check for injections
@@ -392,6 +563,9 @@ export function isInputSafe(input: string): boolean {
     detectSQLInjection(input) ||
     detectXSS(input) ||
     detectTemplateInjection(input) ||
-    detectPromptInjection(input)
+    detectPromptInjection(input) ||
+    detectRepeatedCharacters(input) ||
+    detectGibberish(input) ||
+    detectInvalidLength(input)
   );
 }
