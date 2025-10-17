@@ -241,7 +241,7 @@ For each test case, verify:
   2. Enter SQL-like injection attempt
   3. Click Send or press Enter
 - **Expected**: System should sanitize or reject
-- **Actual**: System rejects and error toast shown to user, page reload on close of toast
+- **Actual**: 
 - **Issues**: 
 - **Severity**: PASS
 
