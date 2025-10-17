@@ -103,7 +103,7 @@ For each test case, verify:
 - **Expected**: System should prompt for valid input
 - **Actual**: Send goes nowhere, and whitespace is retained
 - **Issues**: The user might not realize they are stuck
-- **Severity**: PASS - but not optimal 
+- **Severity**: PASS - but not optimal UX
 
 
 **1.3 Only Tabs/Newlines**
@@ -115,7 +115,7 @@ For each test case, verify:
 - **Expected**: System should prompt for valid input
 - **Actual**: Send goes nowhere, and new lines and tabs retained
 - **Issues**: 
-- **Severity**: PASS - but not optimal 
+- **Severity**: PASS - but not optimal UX
 
 
 #### Test Case 2: Extremely Long Input
@@ -129,7 +129,7 @@ For each test case, verify:
 - **Expected**: System should handle gracefully or limit input
 - **Actual**: 
 - **Issues**: 
-- **Severity**: 
+- **Severity**: PASS Not optimal UX
 
 **2.2 10,000 Characters**
 - **Input**: `"A".repeat(10000)` (10,000 'A' characters)
@@ -140,7 +140,7 @@ For each test case, verify:
 - **Expected**: System should handle gracefully or limit input
 - **Actual**: 
 - **Issues**: 
-- **Severity**: 
+- **Severity**: PASS Not optimal UX
 
 **2.3 100,000 Characters**
 - **Input**: `"A".repeat(100000)` (100,000 'A' characters)
@@ -151,7 +151,7 @@ For each test case, verify:
 - **Expected**: System should handle gracefully or limit input
 - **Actual**: 
 - **Issues**: 
-- **Severity**: 
+- **Severity**: PASS Not optimal UX
 
 #### Test Case 3: Special Characters
 
@@ -164,7 +164,7 @@ For each test case, verify:
 - **Expected**: System should handle quotes properly
 - **Actual**: Company name with double quotes is retained on search result, but LLM makes the correct inference about which company it is
 - **Issues**: 
-- **Severity**: 2
+- **Severity**: PASS but we need to clean up the title
 
 **3.2 Single Quotes**
 - **Input**: `'Comp'any'`
@@ -175,7 +175,7 @@ For each test case, verify:
 - **Expected**: System should handle quotes properly
 - **Actual**: Company name with single quotes is retained on search result, but LLM makes the correct inference about which company it is
 - **Issues**: 
-- **Severity**: PASS 
+- **Severity**: PASS but we need to clean up the title
 
 **3.3 Backticks**
 - **Input**: `` `Company` ``
@@ -186,7 +186,7 @@ For each test case, verify:
 - **Expected**: System should handle backticks properly
 - **Actual**: 
 - **Issues**: 
-- **Severity**: 
+- **Severity**: PASS but we need to clean up the title
 
 **3.4 Backslashes**
 - **Input**: `Company\\Test`
@@ -197,7 +197,7 @@ For each test case, verify:
 - **Expected**: System should handle backslashes properly
 - **Actual**: 
 - **Issues**: 
-- **Severity**: 
+- **Severity**: PASS but we need to clean up the title
 
 **3.5 Newlines in Name**
 - **Input**: `Company\nTest`
@@ -219,7 +219,7 @@ For each test case, verify:
 - **Expected**: System should handle unicode properly
 - **Actual**: 
 - **Issues**: 
-- **Severity**: 
+- **Severity**: PASS but we need to clean up the title
 
 **3.7 Cyrillic Characters**
 - **Input**: `Компания`
@@ -230,7 +230,7 @@ For each test case, verify:
 - **Expected**: System should handle unicode properly
 - **Actual**: 
 - **Issues**: 
-- **Severity**: 
+- **Severity**: PASS - returns legitimate company 
 
 #### Test Case 4: Injection Attempts
 
