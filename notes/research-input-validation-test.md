@@ -300,9 +300,9 @@ System rejects and error toast shown to user, page reload on close of toast
   2. Enter URL as company name
   3. Click Send or press Enter
 - **Expected**: System should handle gracefully
-- **Actual**: 
+- **Actual**: System blocks send or enter
 - **Issues**: 
-- **Severity**: 
+- **Severity**: PASS - but not optimal UX
 
 
 Add validation for 
@@ -320,7 +320,7 @@ Numbers-only inputs
 - **Expected**: System should handle gracefully
 - **Actual**: searches for companies with 12345 and pull back examples of them (for sponsorship and experiential sections just pull sback best practice examples)
 - **Issues**: 
-- **Severity**: PASS 
+- **Severity**: PASS - but not optimal UX
 
 **5.3 Repeated Characters**
 - **Input**: `aaaaaaaaaaaaaaaa`
@@ -329,9 +329,9 @@ Numbers-only inputs
   2. Enter repeated characters
   3. Click Send or press Enter
 - **Expected**: System should handle gracefully
-- **Actual**: 
+- **Actual**: System blocks send or enter
 - **Issues**: 
-- **Severity**: SEMI-FAIL - pulled back Target? 
+- **Severity**: PASS - but not optimal UX
 
 **5.4 Mixed Case/Spacing**
 - **Input**: `  CoMpAnY   NaMe  `

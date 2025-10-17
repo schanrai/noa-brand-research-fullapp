@@ -39,7 +39,8 @@ export async function getStructuredData(prompt: string) {
       model: "openai/gpt-4o-mini-search-preview",
       temperature: 0.0,
       top_p: 0.0,
-      max_tokens: 300
+      max_tokens: 300,
+      skipValidation: true // Skip validation for LLM-generated content
     }),
   });
   const data = await response.json();
@@ -70,7 +71,8 @@ export async function getDetailedAnalysis(prompt: string) {
         model: "openai/gpt-4o-search-preview", // ADD :online suffix
         temperature: 0.3,
         top_p: 0.9,
-        max_tokens: 4000
+        max_tokens: 4000,
+        skipValidation: true // Skip validation for LLM-generated content
       }),
     });
     
@@ -106,7 +108,8 @@ export async function getDetailedAnalysisWithCitations(prompt: string) {
           id: "web",
           engine: "exa",
           max_results: 50 
-        }]
+        }],
+        skipValidation: true // Skip validation for LLM-generated content
       }),
     });
     
