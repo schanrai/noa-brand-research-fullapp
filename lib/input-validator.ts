@@ -301,26 +301,22 @@ export function validateCompanyName(input: string): ValidationResult {
 
   // Check for SQL injection
   if (detectSQLInjection(sanitized)) {
-    issues.push('Invalid characters detected');
-    sanitized = sanitizeInput(sanitized, 'company');
+    return { isValid: false, sanitized: '', issues: ['Invalid input detected'], blocked: true };
   }
 
   // Check for XSS
   if (detectXSS(sanitized)) {
-    issues.push('Invalid characters detected');
-    sanitized = sanitizeInput(sanitized, 'company');
+    return { isValid: false, sanitized: '', issues: ['Invalid input detected'], blocked: true };
   }
 
   // Check for template injection
   if (detectTemplateInjection(sanitized)) {
-    issues.push('Invalid characters detected');
-    sanitized = sanitizeInput(sanitized, 'company');
+    return { isValid: false, sanitized: '', issues: ['Invalid input detected'], blocked: true };
   }
 
   // Check for prompt injection
   if (detectPromptInjection(sanitized)) {
-    issues.push('Invalid characters detected');
-    sanitized = sanitizeInput(sanitized, 'company');
+    return { isValid: false, sanitized: '', issues: ['Invalid input detected'], blocked: true };
   }
 
   // Length check
