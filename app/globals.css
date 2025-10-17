@@ -129,3 +129,9 @@ button, a, [role="button"] {
   transform: scale(1.05);
 }
 
+/* Dynamic viewport height for DevTools compatibility */
+.h-screen-dynamic {
+  height: 100vh; /* Fallback for older browsers */
+  height: 100dvh; /* Dynamic viewport height */
+}
+

@@ -333,7 +333,7 @@ export default function Home() {
   }
 
   return (
-    <div className="flex h-screen flex-col">
+    <div className="flex h-screen-dynamic flex-col">
       <TopNavigation onTabChange={handleChatResponse} />
       <div className="flex flex-1 overflow-hidden">
         {!isReportOnlyMode() && <LeftSidebar onSearch={handleSearch} />}
