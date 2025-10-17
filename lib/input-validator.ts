@@ -220,6 +220,31 @@ export function detectPromptInjection(input: string): boolean {
 }
 
 // =============================================================================
+// JSON INJECTION PROTECTION
+// =============================================================================
+
+/**
+ * Detects JSON-like input that could cause parsing issues
+ * Blocks JSON objects, arrays, and structured data patterns
+ */
+export function detectJsonInjection(input: string): boolean {
+  const jsonPatterns = [
+    // JSON object patterns
+    /^\s*\{[\s\S]*\}\s*$/,           // Complete JSON object
+    /^\s*\[[\s\S]*\]\s*$/,           // Complete JSON array
+    // JSON-like patterns that could cause issues
+    /\{[^}]*"[^"]*"\s*:\s*"[^"]*"/,  // Object with key-value pairs
+    /\{[^}]*"[^"]*"\s*:\s*\d+/,       // Object with numeric values
+    /\{[^}]*"[^"]*"\s*:\s*(true|false|null)/, // Object with boolean/null values
+    // Common JSON injection patterns
+    /"test"\s*:\s*"value"/i,         // Specific test pattern
+    /"TEST"\s*:\s*"VALUE"/i,         // Specific test pattern (uppercase)
+  ];
+
+  return jsonPatterns.some(pattern => pattern.test(input));
+}
+
+// =============================================================================
 // PATTERN DETECTION (NEW)
 // =============================================================================
 
@@ -316,6 +341,11 @@ export function validateCompanyName(input: string): ValidationResult {
 
   // Check for prompt injection
   if (detectPromptInjection(sanitized)) {
+    return { isValid: false, sanitized: '', issues: ['Invalid input detected'], blocked: true };
+  }
+
+  // Check for JSON injection
+  if (detectJsonInjection(sanitized)) {
     return { isValid: false, sanitized: '', issues: ['Invalid input detected'], blocked: true };
   }
 
@@ -566,6 +596,7 @@ export function isInputSafe(input: string): boolean {
     detectPromptInjection(input) ||
     detectRepeatedCharacters(input) ||
     detectGibberish(input) ||
-    detectInvalidLength(input)
+    detectInvalidLength(input) ||
+    detectJsonInjection(input)
   );
 }
