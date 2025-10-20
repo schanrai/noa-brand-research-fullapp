@@ -20,7 +20,10 @@ export async function POST(req: NextRequest) {
   if (!skipValidation && !isInputSafe(prompt)) {
     console.warn('Blocked potentially malicious input:', prompt.substring(0, 100));
     return NextResponse.json(
-      { error: 'Invalid input detected' },
+      { 
+        error: 'Invalid input detected',
+        details: 'Input contains potentially malicious patterns'
+      },
       { status: 400 }
     );
   }
@@ -42,29 +45,60 @@ export async function POST(req: NextRequest) {
   if (plugins !== undefined) requestBody.plugins = plugins; // ADD
   if (web_search_options !== undefined) requestBody.web_search_options = web_search_options; // ADD
 
-  const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${process.env.OPENROUTER_API_KEY}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(requestBody),
-  });
+  try {
+    const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${process.env.OPENROUTER_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(requestBody),
+    });
 
-  if (!response.ok) {
-    // Get the actual error response from OpenRouter
-    let errorDetails = {};
-    try {
-        errorDetails = await response.json();
-    } catch {
-        errorDetails = { text: await response.text() };
+    if (!response.ok) {
+      // Handle specific error types
+      if (response.status === 429) {
+        return NextResponse.json(
+          { 
+            error: 'Rate limit exceeded',
+            details: 'Too many requests to the LLM service'
+          },
+          { status: 429 }
+        );
+      }
+      
+      // Get the actual error response from OpenRouter
+      let errorDetails = {};
+      try {
+          errorDetails = await response.json();
+      } catch {
+          errorDetails = { text: await response.text() };
+      }
+      
+      // Log to server console for debugging
+      console.error('OpenRouter error:', errorDetails);
+      
+      // Return the error details in the API response
+      return NextResponse.json(
+        { 
+          error: 'LLM service error',
+          details: `HTTP ${response.status}: ${response.statusText}`
+        }, 
+        { status: response.status }
+      );
     }
-    // Log to server console for debugging
-    console.error('OpenRouter error:', errorDetails);
-    // Return the error details in the API response
-    return NextResponse.json({ error: 'LLM request failed', response: errorDetails}, { status: 500 });
-  }
 
-  const data = await response.json();
-  return NextResponse.json({ result: data.choices[0].message.content });
-} 
+    const data = await response.json();
+    return NextResponse.json({ result: data.choices[0].message.content });
+    
+  } catch (error) {
+    console.error('LLM API error:', error);
+    return NextResponse.json(
+      { 
+        error: 'Network connection failed',
+        details: 'Unable to connect to LLM service'
+      },
+      { status: 500 }
+    );
+  }
+}

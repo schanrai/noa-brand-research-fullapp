@@ -45,6 +45,37 @@ export default function Home() {
     message: "",
   })
 
+  // Enhanced error message function
+  const getErrorMessage = (companyName: string, error?: any): string => {
+    // 500 Server errors
+    if (error?.status === 500 || error?.message?.includes('500')) {
+      return `Error 500: Our research service is temporarily unavailable. Please try again in a few moments.`
+    }
+    
+    // Network/connection errors
+    if (error?.message?.includes('network') || error?.code === 'NETWORK_ERROR') {
+      return `Network Error: Unable to connect to our research service. Please check your internet connection and try again.`
+    }
+    
+    // LLM service errors (from the client)
+    if (error?.message?.includes('LLM request failed')) {
+      return `Service Error: The research service encountered an error. Please try again or contact support if the problem persists.`
+    }
+    
+    // Validation errors (400 status)
+    if (error?.status === 400) {
+      return `Error 400: "${companyName}" is not valid for our search. Please check the company name and try again.`
+    }
+    
+    // Rate limiting
+    if (error?.status === 429) {
+      return `Error 429: Too many requests. Please wait a moment before trying again.`
+    }
+    
+    // No data found (current case)
+    return `No Data Found: We couldn't find reliable information about "${companyName}". Try using the company's official legal name or check for typos.`
+  }
+
   // Add event listener for showing recent companies
   useEffect(() => {
     const handleShowCompany = (event: CustomEvent) => {
@@ -245,16 +276,16 @@ export default function Home() {
         }
       }
       
+      const companyName = value && value.trim() ? value : "Unknown Company"
+      
       // Show error toast if no valid data - don't create dummy company
       if (!parsedData || !parsedData.structuredData) {
         setErrorToast({
           show: true,
-          message: "Unable to retrieve company information. Please try a different company name."
+          message: getErrorMessage(companyName) // Use enhanced message
         });
         return; // Exit early - no company object created
       }
-      
-      const companyName = value && value.trim() ? value : "Unknown Company"
       
       // Generate a company based on the search query and LLM data
       const companyResult = {
@@ -364,6 +395,12 @@ export default function Home() {
         <ErrorToast
           message={errorToast.message}
           onDismiss={handleErrorToastDismiss}
+          showRetry={errorToast.message.includes('Error 500') || errorToast.message.includes('Error 429') || errorToast.message.includes('Network Error') || errorToast.message.includes('Service Error')}
+          onRetry={() => {
+            setErrorToast({ show: false, message: "" });
+            // Trigger a retry - reload page for clean state
+            window.location.reload();
+          }}
         />
       )}
     </div>
