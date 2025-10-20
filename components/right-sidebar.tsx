@@ -29,7 +29,7 @@ export default function RightSidebar() {
     const updated = [
       company,
       ...recent.filter(c => c.id !== company.id)
-    ].slice(0, 2) // Keep only last 2
+    ].slice(0, 5) // Keep only last 5
     
     try {
       sessionStorage.setItem(STORAGE_KEY, JSON.stringify(updated))

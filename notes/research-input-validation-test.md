@@ -206,9 +206,9 @@ For each test case, verify:
   2. Enter company name with newlines
   3. Click Send or press Enter
 - **Expected**: System should handle newlines properly
-- **Actual**: 
+- **Actual**: System puts concatentates company names on different lines 
 - **Issues**: 
-- **Severity**: 
+- **Severity**: PASS
 
 **3.6 Unicode/Emojis**
 - **Input**: `🚀Company💡`
