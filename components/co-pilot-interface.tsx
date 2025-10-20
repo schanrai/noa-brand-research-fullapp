@@ -23,6 +23,7 @@ export default function CoPilotInterface({
   onFeedbackComplete,
 }: CoPilotInterfaceProps) {
   const [userInput, setUserInput] = useState("")
+  const [validationError, setValidationError] = useState("")
   const [conversationHistory, setConversationHistory] = useState([
     {
       role: "assistant",
@@ -424,8 +425,14 @@ The company invests in sustainable materials and circular-design innovation [Nik
       validatedInput = trimmedInput;
     }
 
-    // If input was completely blocked (only malicious content), silently reject
+    // Debug: Log validation results
+    console.log('Validation result:', validationResult, 'Validated input:', validatedInput);
+
+    // If input was completely blocked (only malicious content), show error message and reject
     if (validationResult.blocked || (!validationResult.isValid && validatedInput === "")) {
+      console.log('Setting validation error');
+      setValidationError("Invalid input detected");
+      setTimeout(() => setValidationError(""), 3000);
       return; // Silent rejection - input field just doesn't respond
     }
 
@@ -750,6 +757,11 @@ Please choose 1 or 2.`
                   <span className="sr-only">Send</span>
                 </Button>
               </form>
+              {validationError && (
+                <div className="text-red-600 text-sm mt-2 px-3 py-2 bg-red-50 border border-red-200 rounded-md">
+                  {validationError}
+                </div>
+              )}
             </div>
           </>
         )}
