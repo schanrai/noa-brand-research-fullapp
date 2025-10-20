@@ -54,42 +54,73 @@ export async function exportCompanyToPDF(company: CompanyData): Promise<void> {
       doc.setFont('helvetica', isBold ? 'bold' : 'normal');
       
       const lines = doc.splitTextToSize(text, contentWidth);
-      
-      // Calculate proper line height (increased from 0.35 to 0.5 for better spacing)
-      const lineHeight = fontSize * 0.5;
-      
-      // Check if we need a new page
-      if (yPosition + (lines.length * lineHeight) > pageHeight - margin) {
-        doc.addPage();
-        yPosition = margin;
+      const lineHeight = fontSize * 0.5; // keep spacing consistent everywhere
+
+      let index = 0;
+      while (index < lines.length) {
+        // Lines that can fit on the current page
+        const availableHeight = (pageHeight - margin) - yPosition;
+        let availableLines = Math.floor(availableHeight / lineHeight);
+
+        // If no space left, go to a new page
+        if (availableLines <= 0) {
+          doc.addPage();
+          yPosition = margin;
+          continue;
+        }
+
+        const end = Math.min(index + availableLines, lines.length);
+        const slice = lines.slice(index, end);
+        doc.text(slice, margin, yPosition);
+        yPosition += slice.length * lineHeight + 3;
+        index = end;
       }
-      
-      doc.text(lines, margin, yPosition);
-      yPosition += lines.length * lineHeight + 3;
     };
 
     const addSection = (title: string, content: string) => {
-      // Conservative space check: ensure we have enough room for title + gap + at least 2 lines of content
-      const minRequiredSpace = 40; // mm - enough for title (12pt) + gap + 2 lines of content (10pt)
-      
-      // If we don't have enough space, start a new page
-      if (yPosition + minRequiredSpace > pageHeight - margin) {
-        doc.addPage();
-        yPosition = margin;
-      }
-
-      // Now add the title and content normally
-      addText(title, 12, true);
-      yPosition += 2;
-      
-      // Process content
+      // Normalize content (remove markdown formatting while keeping URLs visible)
       let processedContent = content
         .replace(/\*\*([^*]+)\*\*/g, '$1')
         .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '$1 ($2)')
         .replace(/#+\s/g, '')
         .replace(/^[\s-]*$/gm, '');
-      
-      addText(processedContent, 10, false);
+
+      // Split text upfront to control the first N lines precisely
+      const contentLineHeight = 10 * 0.5; // must match addText spacing
+      const titleLineHeight = 12 * 0.5;
+      const titleLines = doc.splitTextToSize(title, contentWidth);
+      const allContentLines = doc.splitTextToSize(processedContent, contentWidth);
+      const pinnedLinesCount = Math.min(3, allContentLines.length); // keep 2-3 lines with the title
+
+      // Ensure there is room for: title block + pinned lines
+      const requiredSpace = (titleLines.length * titleLineHeight) + 2 + (pinnedLinesCount * contentLineHeight);
+      if (yPosition + requiredSpace > pageHeight - margin) {
+        doc.addPage();
+        yPosition = margin;
+      }
+
+      // Render title directly to avoid any internal page-break decisions
+      doc.setFontSize(12);
+      doc.setFont('helvetica', 'bold');
+      doc.text(titleLines, margin, yPosition);
+      yPosition += (titleLines.length * titleLineHeight) + 2;
+
+      // Render the first N content lines directly so they stay with the title
+      if (pinnedLinesCount > 0) {
+        const pinned = allContentLines.slice(0, pinnedLinesCount);
+        doc.setFontSize(10);
+        doc.setFont('helvetica', 'normal');
+        doc.text(pinned, margin, yPosition);
+        yPosition += (pinned.length * contentLineHeight) + 3;
+      }
+
+      // Flow the remaining lines using addText so normal page breaks and margins apply
+      const remaining = allContentLines.slice(pinnedLinesCount).join('\n');
+      if (remaining.trim().length > 0) {
+        addText(remaining, 10, false);
+      }
+
+      // Section spacing
       yPosition += 5;
     };
 
