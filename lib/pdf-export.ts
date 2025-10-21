@@ -24,7 +24,7 @@ interface CompanyData {
     audienceSegmentation?: { content: string; sources?: string[] };
     marketingActivity?: { content: string };
     sponsorshipsExperiential?: { content: string };
-    socialMediaPresence?: { content: string };
+    socialMediaPresence?: { handles: string; content: string };
     strategicFocus?: { content: string };
   };
 }
@@ -209,6 +209,13 @@ export async function exportCompanyToPDF(company: CompanyData): Promise<void> {
 
     if (analysis?.socialMediaPresence?.content) {
       addSection('Social Media Presence', analysis.socialMediaPresence.content);
+      
+      // Add social media handles if they exist
+      if (analysis.socialMediaPresence.handles) {
+        addText('Social Media Handles:', 10, true);
+        addText(analysis.socialMediaPresence.handles, 10, false);
+        yPosition += 3;
+      }
     }
 
     if (analysis?.strategicFocus?.content) {
