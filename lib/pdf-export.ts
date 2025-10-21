@@ -7,6 +7,7 @@
  */
 
 import { jsPDF } from 'jspdf';
+import { normalizeCurrencyFormat } from '@/lib/utils';
 
 interface CompanyData {
   companyName: string;
@@ -161,7 +162,7 @@ export async function exportCompanyToPDF(company: CompanyData): Promise<void> {
       company.hqLocation && `Headquarters: ${company.hqLocation}`,
       company.foundingDate && `Founded: ${new Date(company.foundingDate).getFullYear()}`,
       company.employees && `Employees: ${company.employees.toLocaleString()}`,
-      company.annualRevenue && `Annual Revenue: ${company.annualRevenue}`,
+      company.annualRevenue && `Annual Revenue: ${normalizeCurrencyFormat(company.annualRevenue)}`,
       company.website && `Website: ${company.website}`,
     ].filter(Boolean) as string[];
 
