@@ -10,6 +10,7 @@ import { marked } from 'marked'
 import { FileDown } from "lucide-react"
 import { exportCompanyToPDF } from "@/lib/pdf-export"
 import { isReportOnlyMode } from "@/lib/feature-flags"
+import { normalizeCurrencyFormat } from "@/lib/utils"
 
 interface BrandProfilePanelProps {
   company: any
@@ -141,7 +142,7 @@ export default function BrandProfilePanel({ company }: BrandProfilePanelProps) {
               </div>
               <div>
                 <h4 className="text-sm font-medium">Annual Revenue</h4>
-                <p className="text-sm text-muted-foreground">{company.annualRevenue}</p>
+                <p className="text-sm text-muted-foreground">{normalizeCurrencyFormat(company?.annualRevenue)}</p>
               </div>
               <div>
                 <h4 className="text-sm font-medium">Employees</h4>

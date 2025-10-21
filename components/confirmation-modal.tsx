@@ -15,6 +15,7 @@ import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Separator } from "@/components/ui/separator"
 import { Building2, Users, MapPin, DollarSign, Calendar, AlertTriangle } from "lucide-react"
+import { normalizeCurrencyFormat } from "@/lib/utils"
 
 interface ConfirmationModalProps {
   isOpen: boolean
@@ -110,7 +111,7 @@ export default function ConfirmationModal({
               </div>
               <div className="flex items-center gap-3">
                 <DollarSign className="h-5 w-5 text-gray-500" />
-                <span className="text-gray-700">{company.annualRevenue}</span>
+                <span className="text-gray-700">{normalizeCurrencyFormat(company?.annualRevenue)}</span>
               </div>
               <div className="flex items-center gap-3">
                 <MapPin className="h-5 w-5 text-gray-500" />

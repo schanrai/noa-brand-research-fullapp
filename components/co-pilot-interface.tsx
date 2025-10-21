@@ -129,7 +129,7 @@ Please provide the company data in this exact JSON format:
   "founded": "<value>",
   "website": "<value>",
   "headquarters": "<value>",
-  "annualRevenue": "<value>",
+  "annualRevenue": "<value with appropriate currency symbol for company's primary market>",
   "employees": "<value>"
 }
 
