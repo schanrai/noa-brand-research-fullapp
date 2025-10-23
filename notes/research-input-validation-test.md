@@ -386,9 +386,9 @@ Numbers-only inputs
   3. Leave region input empty
   4. Click Send
 - **Expected**: System should prompt for valid region
-- **Actual**: 
+- **Actual**: System doesn't let you input blank
 - **Issues**: 
-- **Severity**: 
+- **Severity**: PASS could be better UX
 
 **7.2 Region with Special Characters**
 - **Input**: `North "America"`
@@ -400,7 +400,7 @@ Numbers-only inputs
 - **Expected**: System should handle gracefully
 - **Actual**: 
 - **Issues**: 
-- **Severity**: 
+- **Severity**: PASS
 
 **7.3 Extremely Long Region Name**
 - **Input**: `"A".repeat(1000)`
@@ -412,7 +412,7 @@ Numbers-only inputs
 - **Expected**: System should handle gracefully
 - **Actual**: 
 - **Issues**: 
-- **Severity**: 
+- **Severity**: PASS
 
 **7.4 Region Injection Attempt**
 - **Input**: `Europe<script>alert('test')</script>`
@@ -422,9 +422,9 @@ Numbers-only inputs
   3. Enter region with injection attempt
   4. Click Send
 - **Expected**: System should sanitize or reject
-- **Actual**: 
+- **Actual**: Stripped the syntax but pushed through the whole phrase
 - **Issues**: 
-- **Severity**: 
+- **Severity**: PASS
 
 ### 3.3 Division Name Input (Division-Specific Stage)
 
@@ -539,9 +539,9 @@ Numbers-only inputs
   2. When asked to choose 1 or 2, enter injection attempt
   3. Click Send
 - **Expected**: System should prompt for valid choice
-- **Actual**: 
+- **Actual**: system strips out the punctuation which renders the script ineffective
 - **Issues**: 
-- **Severity**: 
+- **Severity**: PASS but not ideal, system should block
 
 **9.6 Empty Choice**
 - **Input**: `""`
