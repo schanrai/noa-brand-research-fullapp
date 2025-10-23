@@ -9,6 +9,18 @@
 import { jsPDF } from 'jspdf';
 import { normalizeCurrencyFormat } from '@/lib/utils';
 
+// === UI-MATCHING COLOR SCHEME ===
+const colors = {
+  primary: [0, 0, 0],           // Black
+  background: [248, 245, 240],  // #f8f5f0 - More visible cream
+  cardBackground: [255, 255, 255], // White (card background)
+  accent: [242, 239, 234],      // #f2efea (accent background)
+  textPrimary: [0, 0, 0],       // Black text
+  textSecondary: [82, 82, 82],  // #525252 (gray-600)
+  textMuted: [163, 163, 163],   // #a3a3a3 (gray-400)
+  border: [229, 229, 229],      // #e5e5e5 (gray-200)
+};
+
 interface CompanyData {
   companyName: string;
   industry?: string;
@@ -64,6 +76,36 @@ export async function exportCompanyToPDF(company: CompanyData): Promise<void> {
         let availableLines = Math.floor(availableHeight / lineHeight);
 
         // If no space left, go to a new page
+        if (availableLines <= 0) {
+          doc.addPage();
+          yPosition = margin;
+          continue;
+        }
+
+        const end = Math.min(index + availableLines, lines.length);
+        const slice = lines.slice(index, end);
+        doc.text(slice, margin, yPosition);
+        yPosition += slice.length * lineHeight + 3;
+        index = end;
+      }
+    };
+
+    // Enhanced typography helper matching UI styling
+    const addStyledText = (text: string, fontSize: number = 10, isBold: boolean = false, color: number[] = colors.textPrimary, isUppercase: boolean = false) => {
+      doc.setFontSize(fontSize);
+      doc.setFont('helvetica', isBold ? 'bold' : 'normal');
+      doc.setTextColor(color[0], color[1], color[2]);
+      
+      const processedText = isUppercase ? text.toUpperCase() : text;
+      
+      const lines = doc.splitTextToSize(processedText, contentWidth);
+      const lineHeight = fontSize * 0.5;
+
+      let index = 0;
+      while (index < lines.length) {
+        const availableHeight = (pageHeight - margin) - yPosition;
+        let availableLines = Math.floor(availableHeight / lineHeight);
+
         if (availableLines <= 0) {
           doc.addPage();
           yPosition = margin;
