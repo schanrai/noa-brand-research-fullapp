@@ -2,6 +2,10 @@ import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { validatePrompt, isInputSafe } from '@/lib/input-validator';
 
+
+
+
+
 export async function POST(req: NextRequest) {
   const { 
     prompt, 
@@ -15,6 +19,16 @@ export async function POST(req: NextRequest) {
     web_search_options, // ADD
     skipValidation = false // Add skipValidation flag
    } = await req.json();
+
+   // Add this for testing - remove after testing
+ /*  
+if (prompt.includes('TEST_ERROR')) {
+  return NextResponse.json(
+    { error: 'Test error', details: 'Simulated error' },
+    { status: 500 }
+  );
+}
+*/
 
   // Validate prompt for security threats (skip for LLM-generated content)
   if (!skipValidation && !isInputSafe(prompt)) {
