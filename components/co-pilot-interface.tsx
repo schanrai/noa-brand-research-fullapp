@@ -425,12 +425,8 @@ The company invests in sustainable materials and circular-design innovation [Nik
       validatedInput = trimmedInput;
     }
 
-    // Debug: Log validation results
-    console.log('Validation result:', validationResult, 'Validated input:', validatedInput);
-
     // If input was completely blocked (only malicious content), show error message and reject
     if (validationResult.blocked || (!validationResult.isValid && validatedInput === "")) {
-      console.log('Setting validation error');
       setValidationError("Invalid input detected");
       setTimeout(() => setValidationError(""), 3000);
       return; // Silent rejection - input field just doesn't respond

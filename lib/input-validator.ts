@@ -157,7 +157,6 @@ export function detectXSS(input: string): boolean {
  * Blocks template syntax from various frameworks
  */
 export function detectTemplateInjection(input: string): boolean {
-  console.log('DEBUG detectTemplateInjection input:', JSON.stringify(input));
   const templatePatterns = [
     // JavaScript template literals
     /\$\{[^}]*\}/,
@@ -178,9 +177,7 @@ export function detectTemplateInjection(input: string): boolean {
     /#\{[\s\S]*?\}/,
   ];
 
-  const result = templatePatterns.some(pattern => pattern.test(input));
-  console.log('DEBUG detectTemplateInjection result:', result);
-  return result;
+  return templatePatterns.some(pattern => pattern.test(input));
 }
 
 // =============================================================================
@@ -192,7 +189,6 @@ export function detectTemplateInjection(input: string): boolean {
  * Blocks attempts to override system instructions or extract prompts
  */
 export function detectPromptInjection(input: string): boolean {
-  console.log('DEBUG detectPromptInjection input:', JSON.stringify(input));
   const promptInjectionPatterns = [
     // Instruction override attempts
     /ignore\s+(previous\s+)?instructions/i,
@@ -214,9 +210,7 @@ export function detectPromptInjection(input: string): boolean {
     /(leak|extract|reveal)\s+(the\s+)?(prompt|instructions?)/i,
   ];
 
-  const result = promptInjectionPatterns.some(pattern => pattern.test(input));
-  console.log('DEBUG detectPromptInjection result:', result);
-  return result;
+  return promptInjectionPatterns.some(pattern => pattern.test(input));
 }
 
 // =============================================================================
