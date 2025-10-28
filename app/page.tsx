@@ -11,6 +11,7 @@ import ErrorToast from "@/components/error-toast"
 import brandsData from "@/data/brands.json"
 import { isReportOnlyMode } from "@/lib/feature-flags"
 import { SupabaseConnectionTest } from "@/components/supabase-connection-test"
+import { AuthProviderTest } from "@/components/auth-provider-test"
 
 export default function Home() {
   const [searchResults, setSearchResults] = useState<any[]>([])
@@ -383,8 +384,9 @@ export default function Home() {
         <RightSidebar />
       </div>
 
-      {/* Temporary test component - remove after testing */}
+      {/* Temporary test components - remove after testing */}
       <SupabaseConnectionTest />
+      <AuthProviderTest />
 
       {/* Success Banner Notification */}
       {toastNotification.show && (
