@@ -43,7 +43,7 @@ export default function LoginPage() {
         <div className="w-full max-w-md">
           {/* Header */}
           <div className="mb-8">
-            <h1 className="text-3xl font-semibold tracking-tight">
+            <h1 className="text-3xl font-semibold tracking-tight normal-case">
               Get started with Scova
             </h1>
             <p className="mt-2 text-muted-foreground">
