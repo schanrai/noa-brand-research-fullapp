@@ -57,7 +57,7 @@ export function EmailSignInForm() {
     <div>
       <form onSubmit={handleSubmit} className="flex flex-col">
         {/* Email field */}
-        <div className="space-y-2">
+        <div className="space-y-3">
           <label htmlFor="email" className="text-sm font-medium">
             Email address
           </label>
@@ -72,11 +72,11 @@ export function EmailSignInForm() {
           />
         </div>
 
-        {/* 12px spacing between Email and Password */}
-        <div className="h-3" />
+        {/* 16px spacing between Email and Password */}
+        <div className="h-4" />
 
         {/* Password field */}
-        <div className="space-y-2">
+        <div className="space-y-3">
           <label htmlFor="password" className="text-sm font-medium">
             Password
           </label>
@@ -121,8 +121,8 @@ export function EmailSignInForm() {
           </div>
         )}
 
-        {/* 12px spacing before Primary button (to maintain ~20px total from password) */}
-        <div className="h-3" />
+        {/* 20px spacing before Primary button */}
+        <div className="h-5" />
 
         {/* Primary Sign in button */}
         <Button
@@ -138,7 +138,7 @@ export function EmailSignInForm() {
               {mode === 'signin' ? 'Signing in...' : 'Creating account...'}
             </>
           ) : (
-            mode === 'signin' ? 'Sign in' : 'Create account'
+            mode === 'signin' ? 'Sign in' : 'Sign up'
           )}
         </Button>
       </form>
