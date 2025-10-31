@@ -82,7 +82,14 @@ export default function LoginPage() {
 
         {/* Footer */}
         <p className="mt-8 text-center text-xs text-muted-foreground">
-          By signing in, you agree to our Terms of Service and Privacy Policy
+          By signing in, you agree to our{' '}
+          <a href="/terms" className="text-blue-600 underline hover:text-blue-800 hover:no-underline transition-colors">
+            Terms of Service
+          </a>{' '}
+          and{' '}
+          <a href="/privacy" className="text-blue-600 underline hover:text-blue-800 hover:no-underline transition-colors">
+            Privacy Policy
+          </a>
         </p>
       </div>
     </div>
