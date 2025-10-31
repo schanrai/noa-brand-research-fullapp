@@ -124,15 +124,21 @@ export function EmailSignInForm() {
             setError(null)
             setSuccess(null)
           }}
-          className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+          className="text-sm text-muted-foreground transition-colors"
         >
           {mode === 'signin' ? (
             <>
-              Don't have an account? <span className="font-medium">Sign up</span>
+              Don't have an account?{' '}
+              <span className="text-blue-600 underline hover:text-blue-800 hover:no-underline transition-colors">
+                Sign up
+              </span>
             </>
           ) : (
             <>
-              Already have an account? <span className="font-medium">Sign in</span>
+              Already have an account?{' '}
+              <span className="text-blue-600 underline hover:text-blue-800 hover:no-underline transition-colors">
+                Sign in
+              </span>
             </>
           )}
         </button>
