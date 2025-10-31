@@ -59,7 +59,7 @@ export default function LoginPage() {
               Choose your preferred sign-in method
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-6">
+          <CardContent className="p-6 space-y-6">
             {/* Google OAuth */}
             <GoogleSignInButton />
 
@@ -68,9 +68,9 @@ export default function LoginPage() {
               <div className="absolute inset-0 flex items-center">
                 <Separator />
               </div>
-              <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-card px-2 text-muted-foreground">
-                  Or continue with
+              <div className="relative flex justify-center text-sm font-medium">
+                <span className="bg-card px-4 text-muted-foreground">
+                  OR
                 </span>
               </div>
             </div>

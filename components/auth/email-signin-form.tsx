@@ -54,8 +54,9 @@ export function EmailSignInForm() {
   }
 
   return (
-    <div className="space-y-4">
-      <form onSubmit={handleSubmit} className="space-y-3">
+    <div>
+      <form onSubmit={handleSubmit} className="flex flex-col">
+        {/* Email field */}
         <div className="space-y-2">
           <label htmlFor="email" className="text-sm font-medium">
             Email address
@@ -71,6 +72,10 @@ export function EmailSignInForm() {
           />
         </div>
 
+        {/* 12px spacing between Email and Password */}
+        <div className="h-3" />
+
+        {/* Password field */}
         <div className="space-y-2">
           <label htmlFor="password" className="text-sm font-medium">
             Password
@@ -87,23 +92,45 @@ export function EmailSignInForm() {
           />
         </div>
 
+        {/* 8px spacing after password input */}
+        <div className="h-2" />
+
+        {/* Forgot password link - right aligned */}
+        {mode === 'signin' && (
+          <div className="text-right">
+            <a 
+              href="/forgot-password" 
+              className="text-sm text-blue-600 underline hover:text-blue-800 hover:no-underline transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded"
+              style={{ fontSize: '14px' }}
+            >
+              Forgot password?
+            </a>
+          </div>
+        )}
+
+        {/* Error/Success messages */}
         {error && (
-          <div className="rounded-md bg-destructive/10 border border-destructive/20 px-3 py-2 text-sm text-destructive">
+          <div className="mt-3 rounded-md bg-destructive/10 border border-destructive/20 px-3 py-2 text-sm text-destructive">
             {error}
           </div>
         )}
 
         {success && (
-          <div className="rounded-md bg-green-500/10 border border-green-500/20 px-3 py-2 text-sm text-green-600 dark:text-green-400">
+          <div className="mt-3 rounded-md bg-green-500/10 border border-green-500/20 px-3 py-2 text-sm text-green-600 dark:text-green-400">
             {success}
           </div>
         )}
 
+        {/* 12px spacing before Primary button (to maintain ~20px total from password) */}
+        <div className="h-3" />
+
+        {/* Primary Sign in button */}
         <Button
           type="submit"
           disabled={loading}
+          variant="default"
           size="lg"
-          className="w-full"
+          className="w-full bg-black text-white hover:bg-black/90"
         >
           {loading ? (
             <>
@@ -116,6 +143,10 @@ export function EmailSignInForm() {
         </Button>
       </form>
 
+      {/* 16px spacing before account toggle */}
+      <div className="h-4" />
+
+      {/* Account toggle link */}
       <div className="text-center">
         <button
           type="button"
