@@ -26,7 +26,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       try {
         const { data: { session } } = await supabase.auth.getSession()
         setUser(session?.user ?? null)
-        console.log('🔐 Auth initialized:', session?.user ? 'User logged in' : 'No user')
       } catch (error) {
         console.error('Auth initialization error:', error)
       } finally {
@@ -39,7 +38,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null)
-      console.log('🔐 Auth state changed:', _event, session?.user ? 'User logged in' : 'No user')
     })
 
     return () => {
