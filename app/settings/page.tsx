@@ -5,8 +5,8 @@ import { useAuth } from '@/components/auth-provider'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
-import { Switch } from '@/components/ui/switch'
-import { Settings as SettingsIcon, Bell, Shield, CreditCard } from 'lucide-react'
+// import { Switch } from '@/components/ui/switch' // Commented out - will be used when Notifications section is enabled
+import { Settings as SettingsIcon, Shield, CreditCard } from 'lucide-react'
 
 export default function SettingsPage() {
   const { user, loading } = useAuth()
@@ -24,8 +24,8 @@ export default function SettingsPage() {
             <div className="h-5 w-80 bg-gray-200 rounded" />
           </div>
 
-          {/* Settings Cards Skeleton */}
-          {[1, 2, 3, 4].map((i) => (
+          {/* Settings Cards Skeleton - 3 sections (Notifications hidden) */}
+          {[1, 2, 3].map((i) => (
             <Card key={i} className={i > 1 ? 'mt-6' : ''}>
               <CardHeader>
                 <div className="h-6 w-48 bg-gray-200 rounded mb-2" />
@@ -74,7 +74,7 @@ export default function SettingsPage() {
           </p>
         </div>
 
-        {/* Notifications */}
+        {/* Notifications - Hidden until functionality is ready for release
         <Card className="mb-6">
           <CardHeader>
             <div className="flex items-center gap-3">
@@ -106,6 +106,7 @@ export default function SettingsPage() {
             </div>
           </CardContent>
         </Card>
+        */}
 
         {/* Privacy & Security */}
         <Card className="mb-6">
