@@ -1,6 +1,5 @@
 'use client'
 
-import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/components/auth-provider'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -11,23 +10,76 @@ export default function ProfilePage() {
   const { user, loading } = useAuth()
   const router = useRouter()
 
-  // Redirect to login if not authenticated
-  useEffect(() => {
-    if (!loading && !user) {
-      router.push('/login')
-    }
-  }, [user, loading, router])
-
-  if (loading) {
+  // Skeleton UI while loading (middleware already protects this route)
+  if (loading || !user) {
     return (
-      <div className="flex min-h-screen items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+      <div className="min-h-screen bg-background">
+        <div className="container max-w-4xl mx-auto py-12 px-4 animate-pulse">
+          {/* Header Skeleton */}
+          <div className="mb-8">
+            <div className="h-10 w-32 bg-gray-200 rounded mb-4" />
+            <div className="h-9 w-48 bg-gray-200 rounded mb-2" />
+            <div className="h-5 w-64 bg-gray-200 rounded" />
+          </div>
+
+          {/* Profile Card Skeleton */}
+          <Card>
+            <CardHeader>
+              <div className="h-6 w-48 bg-gray-200 rounded mb-2" />
+              <div className="h-4 w-64 bg-gray-200 rounded" />
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {/* Email Skeleton */}
+              <div className="flex items-start gap-4">
+                <div className="rounded-full bg-gray-200 w-12 h-12" />
+                <div className="flex-1 space-y-2">
+                  <div className="h-4 w-24 bg-gray-200 rounded" />
+                  <div className="h-4 w-48 bg-gray-200 rounded" />
+                </div>
+              </div>
+              {/* User ID Skeleton */}
+              <div className="flex items-start gap-4">
+                <div className="rounded-full bg-gray-200 w-12 h-12" />
+                <div className="flex-1 space-y-2">
+                  <div className="h-4 w-20 bg-gray-200 rounded" />
+                  <div className="h-4 w-64 bg-gray-200 rounded" />
+                </div>
+              </div>
+              {/* Date Skeleton */}
+              <div className="flex items-start gap-4">
+                <div className="rounded-full bg-gray-200 w-12 h-12" />
+                <div className="flex-1 space-y-2">
+                  <div className="h-4 w-32 bg-gray-200 rounded" />
+                  <div className="h-4 w-40 bg-gray-200 rounded" />
+                </div>
+              </div>
+              {/* Auth Method Skeleton */}
+              <div className="flex items-start gap-4">
+                <div className="rounded-full bg-gray-200 w-12 h-12" />
+                <div className="flex-1 space-y-2">
+                  <div className="h-4 w-40 bg-gray-200 rounded" />
+                  <div className="h-4 w-32 bg-gray-200 rounded" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Additional Card Skeleton */}
+          <Card className="mt-6">
+            <CardHeader>
+              <div className="h-6 w-40 bg-gray-200 rounded mb-2" />
+              <div className="h-4 w-64 bg-gray-200 rounded" />
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2">
+                <div className="h-4 w-full bg-gray-200 rounded" />
+                <div className="h-4 w-3/4 bg-gray-200 rounded" />
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     )
-  }
-
-  if (!user) {
-    return null
   }
 
   const formatDate = (dateString: string) => {

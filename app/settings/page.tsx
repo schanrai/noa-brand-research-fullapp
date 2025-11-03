@@ -1,6 +1,5 @@
 'use client'
 
-import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/components/auth-provider'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -13,23 +12,46 @@ export default function SettingsPage() {
   const { user, loading } = useAuth()
   const router = useRouter()
 
-  // Redirect to login if not authenticated
-  useEffect(() => {
-    if (!loading && !user) {
-      router.push('/login')
-    }
-  }, [user, loading, router])
-
-  if (loading) {
+  // Skeleton UI while loading (middleware already protects this route)
+  if (loading || !user) {
     return (
-      <div className="flex min-h-screen items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+      <div className="min-h-screen bg-background">
+        <div className="container max-w-4xl mx-auto py-12 px-4 animate-pulse">
+          {/* Header Skeleton */}
+          <div className="mb-8">
+            <div className="h-10 w-32 bg-gray-200 rounded mb-4" />
+            <div className="h-9 w-32 bg-gray-200 rounded mb-2" />
+            <div className="h-5 w-80 bg-gray-200 rounded" />
+          </div>
+
+          {/* Settings Cards Skeleton */}
+          {[1, 2, 3, 4].map((i) => (
+            <Card key={i} className={i > 1 ? 'mt-6' : ''}>
+              <CardHeader>
+                <div className="h-6 w-48 bg-gray-200 rounded mb-2" />
+                <div className="h-4 w-64 bg-gray-200 rounded" />
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="space-y-2 flex-1">
+                    <div className="h-4 w-40 bg-gray-200 rounded" />
+                    <div className="h-3 w-64 bg-gray-200 rounded" />
+                  </div>
+                  <div className="h-6 w-11 bg-gray-200 rounded-full" />
+                </div>
+                <div className="flex items-center justify-between">
+                  <div className="space-y-2 flex-1">
+                    <div className="h-4 w-36 bg-gray-200 rounded" />
+                    <div className="h-3 w-56 bg-gray-200 rounded" />
+                  </div>
+                  <div className="h-6 w-11 bg-gray-200 rounded-full" />
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
       </div>
     )
-  }
-
-  if (!user) {
-    return null
   }
 
   return (

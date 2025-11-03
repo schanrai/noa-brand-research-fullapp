@@ -159,6 +159,8 @@ All pages follow the existing app design system:
 
 ### Profile Page
 - [ ] Page loads without errors
+- [ ] Skeleton UI shows immediately on load ⚡ (NEW)
+- [ ] Content swaps in smoothly after ~0.8s (NEW)
 - [ ] User email displays correctly
 - [ ] User ID is shown (UUID format)
 - [ ] Account creation date is formatted correctly
@@ -166,14 +168,20 @@ All pages follow the existing app design system:
 - [ ] "Back to Dashboard" button returns to homepage
 - [ ] Page is protected (redirects if not logged in)
 
+**Performance Note**: Optimized with Route 1 + 4 - removed redundant auth check and added skeleton UI. See `performance-optimization-profile-settings.md` for details.
+
 ### Settings Page
 - [ ] Page loads without errors
+- [ ] Skeleton UI shows immediately on load ⚡ (NEW)
+- [ ] Content swaps in smoothly after ~0.8s (NEW)
 - [ ] All sections render correctly
 - [ ] Toggle switches work (even if functionality is placeholder)
 - [ ] Password section shows appropriate message based on auth method
 - [ ] "Back to Dashboard" button works
 - [ ] Disabled buttons show "Coming Soon" state
 - [ ] Page is protected (redirects if not logged in)
+
+**Performance Note**: Same optimization applied as Profile page for consistent UX.
 
 ### Sign Out Flow
 - [ ] Click "Sign out" in user menu
