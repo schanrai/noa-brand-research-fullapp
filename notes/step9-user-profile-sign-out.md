@@ -151,44 +151,44 @@ All pages follow the existing app design system:
 ### Navigation Menu
 - [✅] User menu dropdown opens on click
 - [✅] User email displays correctly in dropdown
-- [ ] Profile menu item navigates to `/profile`
+- [Y] Profile menu item navigates to `/profile`
 - [✅] Settings button (right side) navigates to `/settings`
-- [ ] Sign out button logs user out and redirects to `/login`
+- [Y] Sign out button logs user out and redirects to `/login`
 
 **Note**: Settings menu item removed from dropdown (✅ complete) - avoiding duplication with dedicated Settings button.
 
 ### Profile Page
-- [ ] Page loads without errors
-- [ ] Skeleton UI shows immediately on load ⚡ (NEW)
-- [ ] Content swaps in smoothly after ~0.8s (NEW)
-- [ ] User email displays correctly
-- [ ] User ID is shown (UUID format)
-- [ ] Account creation date is formatted correctly
-- [ ] Authentication method is accurate (Google vs Email)
-- [ ] "Back to Dashboard" button returns to homepage
-- [ ] Page is protected (redirects if not logged in)
+- [Y] Page loads without errors
+- [Y] Skeleton UI shows immediately on load ⚡ (NEW)
+- [Y] Content swaps in smoothly after ~0.8s (NEW)
+- [Y] User email displays correctly
+- [Y] User ID is shown (UUID format)
+- [Y] Account creation date is formatted correctly
+- [Y] Authentication method is accurate (Google vs Email)
+- [Y] "Back to Dashboard" button returns to homepage
+- [Y] Page is protected (redirects if not logged in)
 
 **Performance Note**: Optimized with Route 1 + 4 - removed redundant auth check and added skeleton UI. See `performance-optimization-profile-settings.md` for details.
 
 ### Settings Page
-- [ ] Page loads without errors
-- [ ] Skeleton UI shows immediately on load ⚡ (NEW)
-- [ ] Content swaps in smoothly after ~0.8s (NEW)
-- [ ] All sections render correctly
-- [ ] Toggle switches work (even if functionality is placeholder)
-- [ ] Password section shows appropriate message based on auth method
-- [ ] "Back to Dashboard" button works
-- [ ] Disabled buttons show "Coming Soon" state
-- [ ] Page is protected (redirects if not logged in)
+- [Y] Page loads without errors
+- [Y ] Skeleton UI shows immediately on load ⚡ (NEW)
+- [Y ] Content swaps in smoothly after ~0.8s (NEW)
+- [Y] All sections render correctly
+- [ ] Toggle switches work (even if functionality is placeholder) -not sure what this means
+- [Y] Password section shows appropriate message based on auth method
+- [Y] "Back to Dashboard" button works
+- [Y] Disabled buttons show "Coming Soon" state
+- [Y] Page is protected (redirects if not logged in)
 
 **Performance Note**: Same optimization applied as Profile page for consistent UX.
 
 ### Sign Out Flow
-- [ ] Click "Sign out" in user menu
-- [ ] User is redirected to `/login`
-- [ ] Session cookie is cleared
-- [ ] Attempting to access protected pages redirects to login
-- [ ] User can sign back in successfully
+- [Y] Click "Sign out" in user menu
+- [Y] User is redirected to `/login`
+- [Y] Session cookie is cleared
+- [Y] Attempting to access protected pages redirects to login
+- [Y] User can sign back in successfully
 
 ---
 
