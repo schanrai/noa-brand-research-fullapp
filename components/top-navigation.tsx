@@ -1,9 +1,10 @@
 "use client"
 
 import { useState } from "react"
+import { useRouter } from "next/navigation"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
-import { Settings, User } from "lucide-react"
+import { Settings, User, LogOut } from "lucide-react"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,6 +14,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { isReportOnlyMode } from "@/lib/feature-flags"
+import { useAuth } from "@/components/auth-provider"
 
 interface TopNavigationProps {
   onTabChange?: (stage: string, value: string) => void
@@ -20,6 +22,8 @@ interface TopNavigationProps {
 
 export default function TopNavigation({ onTabChange }: TopNavigationProps) {
   const [activeTab, setActiveTab] = useState("brand-research")
+  const { user, signOut } = useAuth()
+  const router = useRouter()
 
   const handleTabChange = (value: string) => {
     setActiveTab(value)
@@ -34,6 +38,15 @@ export default function TopNavigation({ onTabChange }: TopNavigationProps) {
   const handleLogoClick = () => {
     // Reload the app by refreshing the page
     window.location.reload()
+  }
+
+  const handleSignOut = async () => {
+    const { error } = await signOut()
+    if (!error) {
+      router.push('/login')
+    } else {
+      console.error('Sign out error:', error)
+    }
   }
 
   return (
@@ -83,15 +96,34 @@ export default function TopNavigation({ onTabChange }: TopNavigationProps) {
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="icon" className="rounded-full hover-scale h-10 w-10">
               <User className="h-5 w-5" />
-              <span className="sr-only">User</span>
+              <span className="sr-only">User menu</span>
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="bg-white border-gray-200">
-            <DropdownMenuLabel className="text-heading text-xs">My Account</DropdownMenuLabel>
+          <DropdownMenuContent align="end" className="bg-white border-gray-200 w-56">
+            <DropdownMenuLabel className="text-heading text-xs">
+              My Account
+              {user?.email && (
+                <div className="text-xs font-normal text-muted-foreground mt-1 truncate">
+                  {user.email}
+                </div>
+              )}
+            </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem className="text-body">Profile</DropdownMenuItem>
-            <DropdownMenuItem className="text-body">Settings</DropdownMenuItem>
-            <DropdownMenuItem className="text-body">Sign out</DropdownMenuItem>
+            <DropdownMenuItem 
+              className="text-body cursor-pointer"
+              onClick={() => router.push('/profile')}
+            >
+              <User className="mr-2 h-4 w-4" />
+              Profile
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem 
+              className="text-body cursor-pointer text-red-600 focus:text-red-600"
+              onClick={handleSignOut}
+            >
+              <LogOut className="mr-2 h-4 w-4" />
+              Sign out
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
 
@@ -99,6 +131,7 @@ export default function TopNavigation({ onTabChange }: TopNavigationProps) {
           variant="outline"
           size="default"
           className="hover-scale flex items-center gap-2 px-4 py-2 h-10 border-gray-200"
+          onClick={() => router.push('/settings')}
         >
           <Settings className="h-4 w-4" />
           <span className="text-xs uppercase tracking-wide">Settings</span>

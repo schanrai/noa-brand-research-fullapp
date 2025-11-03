@@ -209,15 +209,18 @@ If you haven't set up Google OAuth yet, you need to do this first:
 2. Open DevTools → **Application** tab (Chrome) or **Storage** tab (Firefox)
 3. Go to **Cookies** → `http://localhost:3000`
 
-**Expected cookies**:
-- `sb-[project-ref]-auth-token`
-- `sb-[project-ref]-auth-token.0`
-- `sb-[project-ref]-auth-token.1`
+**Expected cookies** (1-3 cookies depending on token size):
+- `sb-mqacaohhpioouyvdlvyu-auth-token` ← **Always present**
+- `sb-mqacaohhpioouyvdlvyu-auth-token.0` ← Only if token is large
+- `sb-mqacaohhpioouyvdlvyu-auth-token.1` ← Only if token is large
+
+> **Note:** Seeing only 1 cookie is normal! Supabase only splits cookies when the JWT token exceeds ~4KB. Most users will only see the main auth-token cookie.
 
 **What to check**:
-- [ ] Supabase cookies present
-- [ ] Not expired
-- [ ] HttpOnly flag set (security)
+- [ ] At least one Supabase auth cookie present (`sb-mqacaohhpioouyvdlvyu-auth-token`)
+- [ ] Cookie has a value (long string of characters)
+- [ ] Not expired (check Expires/Max-Age column)
+- [ ] HttpOnly flag set (security feature)
 
 ---
 
