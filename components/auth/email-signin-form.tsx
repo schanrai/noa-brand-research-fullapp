@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { useAuth } from '@/components/auth-provider'
+import { AlertCircle, CheckCircle } from 'lucide-react'
 
 export function EmailSignInForm() {
   const [mode, setMode] = useState<'signin' | 'signup'>('signin')
@@ -110,14 +111,32 @@ export function EmailSignInForm() {
 
         {/* Error/Success messages */}
         {error && (
-          <div className="mt-3 rounded-md bg-destructive/10 border border-destructive/20 px-3 py-2 text-sm text-destructive">
-            {error}
+          <div 
+            role="alert"
+            aria-live="polite"
+            className="mt-3 rounded-md bg-red-50 border border-red-300 px-4 py-3 shadow-sm"
+          >
+            <div className="flex items-start gap-3">
+              <AlertCircle className="text-red-600 w-5 h-5 mt-0.5 flex-shrink-0" />
+              <p className="text-red-800 font-semibold text-sm leading-relaxed">
+                {error}
+              </p>
+            </div>
           </div>
         )}
 
         {success && (
-          <div className="mt-3 rounded-md bg-green-500/10 border border-green-500/20 px-3 py-2 text-sm text-green-600 dark:text-green-400">
-            {success}
+          <div 
+            role="status"
+            aria-live="polite"
+            className="mt-3 rounded-md bg-green-50 border border-green-300 px-4 py-3 shadow-sm"
+          >
+            <div className="flex items-start gap-3">
+              <CheckCircle className="text-green-600 w-5 h-5 mt-0.5 flex-shrink-0" />
+              <p className="text-green-800 font-semibold text-sm leading-relaxed">
+                {success}
+              </p>
+            </div>
           </div>
         )}
 
