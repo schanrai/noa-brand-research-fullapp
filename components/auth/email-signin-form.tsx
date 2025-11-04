@@ -4,10 +4,11 @@ import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { useAuth } from '@/components/auth-provider'
-import { AlertCircle, CheckCircle } from 'lucide-react'
+import { createClient } from '@/lib/supabase/client'
+import { AlertCircle, CheckCircle, Mail } from 'lucide-react'
 
 export function EmailSignInForm() {
-  const [mode, setMode] = useState<'signin' | 'signup'>('signin')
+  const [mode, setMode] = useState<'signin' | 'signup' | 'forgot'>('signin')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
@@ -16,8 +17,43 @@ export function EmailSignInForm() {
   
   const { signInWithEmail, signUpWithEmail } = useAuth()
 
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setLoading(true)
+    setError(null)
+    setSuccess(null)
+
+    if (!email) {
+      setError('Please enter your email address')
+      setLoading(false)
+      return
+    }
+
+    try {
+      const supabase = createClient()
+      await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/auth/callback?next=/reset-password`,
+      })
+
+      // Always show success (non-enumeration security)
+      setSuccess('If an account exists with that email, you will receive password reset instructions.')
+      setEmail('')
+    } catch (err) {
+      // Even on error, show success (don't reveal if email exists)
+      setSuccess('If an account exists with that email, you will receive password reset instructions.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    
+    // Handle forgot password separately
+    if (mode === 'forgot') {
+      return handleForgotPassword(e)
+    }
+
     setLoading(true)
     setError(null)
     setSuccess(null)
@@ -74,39 +110,49 @@ export function EmailSignInForm() {
         </div>
 
         {/* 16px spacing between Email and Password */}
-        <div className="h-4" />
+        {mode !== 'forgot' && <div className="h-4" />}
 
-        {/* Password field */}
-        <div className="space-y-3">
-          <label htmlFor="password" className="text-sm font-medium">
-            Password
-          </label>
-          <Input
-            id="password"
-            type="password"
-            placeholder="••••••••"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            disabled={loading}
-            required
-            minLength={6}
-          />
-        </div>
+        {/* Password field - hidden in forgot mode */}
+        {mode !== 'forgot' && (
+          <>
+            <div className="space-y-3">
+              <label htmlFor="password" className="text-sm font-medium">
+                Password
+              </label>
+              <Input
+                id="password"
+                type="password"
+                placeholder="••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                disabled={loading}
+                required
+                minLength={6}
+              />
+            </div>
 
-        {/* 8px spacing after password input */}
-        <div className="h-2" />
+            {/* 8px spacing after password input */}
+            <div className="h-2" />
 
-        {/* Forgot password link - right aligned */}
-        {mode === 'signin' && (
-          <div className="text-right">
-            <a 
-              href="/forgot-password" 
-              className="text-sm text-blue-600 underline hover:text-blue-800 hover:no-underline transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded"
-              style={{ fontSize: '14px' }}
-            >
-              Forgot password?
-            </a>
-          </div>
+            {/* Forgot password link - right aligned */}
+            {mode === 'signin' && (
+              <div className="text-right">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMode('forgot')
+                    setError(null)
+                    setSuccess(null)
+                    setPassword('')
+                  }}
+                  className="text-sm text-blue-600 underline hover:text-blue-800 hover:no-underline transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded"
+                  style={{ fontSize: '14px' }}
+                >
+                  Forgot password?
+                </button>
+              </div>
+            )}
+          </>
         )}
 
         {/* Error/Success messages */}
@@ -143,7 +189,7 @@ export function EmailSignInForm() {
         {/* 20px spacing before Primary button */}
         <div className="h-5" />
 
-        {/* Primary Sign in button */}
+        {/* Primary button */}
         <Button
           type="submit"
           disabled={loading}
@@ -154,10 +200,10 @@ export function EmailSignInForm() {
           {loading ? (
             <>
               <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-              {mode === 'signin' ? 'Signing in...' : 'Creating account...'}
+              {mode === 'signin' ? 'Signing in...' : mode === 'signup' ? 'Creating account...' : 'Sending instructions...'}
             </>
           ) : (
-            mode === 'signin' ? 'Sign in' : 'Sign up'
+            mode === 'signin' ? 'Sign in' : mode === 'signup' ? 'Sign up' : 'Send Reset Link'
           )}
         </Button>
       </form>
@@ -170,13 +216,24 @@ export function EmailSignInForm() {
         <button
           type="button"
           onClick={() => {
-            setMode(mode === 'signin' ? 'signup' : 'signin')
+            if (mode === 'forgot') {
+              setMode('signin')
+            } else {
+              setMode(mode === 'signin' ? 'signup' : 'signin')
+            }
             setError(null)
             setSuccess(null)
           }}
           className="text-sm text-muted-foreground transition-colors"
         >
-          {mode === 'signin' ? (
+          {mode === 'forgot' ? (
+            <>
+              Remember your password?{' '}
+              <span className="text-blue-600 underline hover:text-blue-800 hover:no-underline transition-colors">
+                Sign in
+              </span>
+            </>
+          ) : mode === 'signin' ? (
             <>
               Don't have an account?{' '}
               <span className="text-blue-600 underline hover:text-blue-800 hover:no-underline transition-colors">
