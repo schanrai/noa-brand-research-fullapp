@@ -150,13 +150,6 @@ export default function BrandProfilePanel({ company }: BrandProfilePanelProps) {
               </div>
             </div>
 
-            <div>
-              <h4 className="text-sm font-medium">Sponsorship Type</h4>
-              <p className="text-sm text-muted-foreground">
-                {company.sponsorshipTypes?.join(", ") || "Sports event, Conference, Non-profit"}
-              </p>
-            </div>
-
             <div className="flex justify-end pt-2">
               <p className="text-xs text-muted-foreground">
                 <span className="font-medium">Last Updated:</span> {new Date(company.lastUpdated).toLocaleDateString()}
