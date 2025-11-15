@@ -160,8 +160,9 @@ export async function exportCompanyToPDF(company: CompanyData): Promise<void> {
       const titleLines = doc.splitTextToSize(title, contentWidth);
       const allContentLines = doc.splitTextToSize(processedContent, contentWidth);
 
-      // Ensure there is room for: title block + at least 1 line of content
-      const requiredSpace = (titleLines.length * titleLineHeight) + 2 + contentLineHeight;
+      // Ensure there is room for: title block + at least 3 lines of content (to avoid orphans)
+      const minContentLines = Math.min(3, allContentLines.length);
+      const requiredSpace = (titleLines.length * titleLineHeight) + 2 + (minContentLines * contentLineHeight);
       if (yPosition + requiredSpace > pageHeight - margin) {
         doc.addPage();
         yPosition = margin;
