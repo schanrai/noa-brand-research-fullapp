@@ -720,9 +720,9 @@ export async function exportCompanyToPDF(company: CompanyData): Promise<void> {
      */
     const addCampaignSection = (title: string, content: string) => {
       // Step 1: Parse campaign blocks from content
-      // Pattern matches: **bold text** (with/without colon) OR plain text WITH colon
-      // This prevents matching random capitalized sentences
-      const campaignPattern = /\*\*([A-Z][A-Za-z0-9\s\-&']{14,79})\*\*:?\s*|([A-Z][A-Za-z0-9\s\-&']{14,79}):\s*/g;
+      // Pattern matches: **bold text WITH colon** OR plain text WITH colon
+      // This prevents matching random capitalized sentences or inline bold emphasis
+      const campaignPattern = /\*\*([A-Z][A-Za-z0-9\s\-&']{10,79})\*\*:\s*|([A-Z][A-Za-z0-9\s\-&']{10,79}):\s*/g;
       const campaigns: Array<{ name: string; content: string }> = [];
       
       const matches: Array<{ name: string; startIndex: number; endIndex: number }> = [];
@@ -770,6 +770,8 @@ export async function exportCompanyToPDF(company: CompanyData): Promise<void> {
           blockContent = blockContent.replace(/^\d+\.\s*/, '');
           // Remove trailing patterns like "))2." or ")) 3." from end of content
           blockContent = blockContent.replace(/\)\s*\)?\s*\d+\.\s*$/, ')');
+          // Remove orphaned bold markers at start of content
+          blockContent = blockContent.replace(/^\*\*\s*/, '');
           
           campaigns.push({
             name: match.name,
