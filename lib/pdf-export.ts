@@ -1063,9 +1063,41 @@ export async function exportCompanyToPDF(company: CompanyData): Promise<void> {
       
       // Add social media handles if they exist
       if (analysis.socialMediaPresence.handles) {
-        addText('Social Media Handles:', 10, true);
-        addText(analysis.socialMediaPresence.handles, 10, false);
-        yPosition += 3;
+        // Render title
+        doc.setFontSize(12);
+        doc.setFont('helvetica', 'bold');
+        doc.setTextColor(colors.textPrimary[0], colors.textPrimary[1], colors.textPrimary[2]);
+        
+        const titleLines = doc.splitTextToSize('Social Media Handles', contentWidth);
+        if (yPosition + titleLines.length * (12 * 0.5) + 5 > pageHeight - margin) {
+          doc.addPage();
+          yPosition = margin;
+        }
+        doc.text(titleLines, margin, yPosition);
+        yPosition += titleLines.length * (12 * 0.5) + 5;
+        
+        // Split handles by newline to preserve line-by-line structure
+        const handleLines = analysis.socialMediaPresence.handles.split('\n').filter(line => line.trim());
+        
+        handleLines.forEach(line => {
+          // Find URLs for this line
+          const lineUrls = findURLsInContent(line);
+          
+          // Check if we need a new page
+          if (yPosition > pageHeight - margin) {
+            doc.addPage();
+            yPosition = margin;
+          }
+          
+          // Render line with URL styling
+          doc.setFontSize(10);
+          doc.setFont('helvetica', 'normal');
+          doc.setTextColor(colors.textPrimary[0], colors.textPrimary[1], colors.textPrimary[2]);
+          renderLineWithURLs(line.trim(), margin, yPosition, 10, undefined, lineUrls);
+          yPosition += 10 * 0.5 + 2;
+        });
+        
+        yPosition += 5;
       }
     }
 
