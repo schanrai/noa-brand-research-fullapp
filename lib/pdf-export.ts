@@ -696,6 +696,204 @@ export async function exportCompanyToPDF(company: CompanyData): Promise<void> {
       doc.setTextColor(0, 0, 0);
     };
 
+    /**
+     * Measures the height a campaign block would take up (without rendering)
+     * @returns height in mm
+     */
+    const measureCampaignBlockHeight = (campaignName: string, content: string): number => {
+      const titleFontSize = 10; // Changed to 10pt for proper hierarchy
+      const contentFontSize = 10;
+      const titleLineHeight = titleFontSize * 0.5;
+      const contentLineHeight = contentFontSize * 0.5;
+      
+      // Measure title (no "Campaign:" prefix)
+      doc.setFontSize(titleFontSize);
+      const titleLines = doc.splitTextToSize(campaignName, contentWidth);
+      const titleHeight = titleLines.length * titleLineHeight + 3; // +3mm spacing after title
+      
+      // Measure content (no indent, full width)
+      doc.setFontSize(contentFontSize);
+      const contentLines = doc.splitTextToSize(content, contentWidth);
+      const contentHeight = contentLines.length * contentLineHeight;
+      
+      // Total: title + content + bottom spacing
+      return titleHeight + contentHeight + 10; // +10mm spacing after block
+    };
+
+    /**
+     * Renders Marketing/Sponsorship sections with campaign block detection
+     * and keep-together pagination
+     */
+    const addCampaignSection = (title: string, content: string) => {
+      // Step 1: Parse campaign blocks from content
+      // Pattern matches campaign titles like "ESL Sponsorship:", "Music Tour Sponsorships:", etc.
+      // Looks for: optional ** markers, capitalized text (15-80 chars), colon
+      const campaignPattern = /(?:\*\*)?([A-Z][A-Za-z0-9\s\-&']{14,79})(?:\*\*)?:\s*/g;
+      const campaigns: Array<{ name: string; content: string }> = [];
+      
+      const matches: Array<{ name: string; startIndex: number; endIndex: number }> = [];
+      let match: RegExpExecArray | null;
+      
+      // Find all campaign markers
+      while ((match = campaignPattern.exec(content)) !== null) {
+        matches.push({
+          name: match[1].trim(),
+          startIndex: match.index,
+          endIndex: match.index + match[0].length
+        });
+      }
+      
+      // Extract campaign blocks
+      if (matches.length > 0) {
+        matches.forEach((match, index) => {
+          const contentStart = match.endIndex;
+          const contentEnd = index < matches.length - 1 
+            ? matches[index + 1].startIndex 
+            : content.length;
+          
+          campaigns.push({
+            name: match.name,
+            content: content.substring(contentStart, contentEnd).trim()
+          });
+        });
+      }
+      
+      // Fallback: If no campaigns detected, use standard section rendering
+      if (campaigns.length === 0) {
+        console.warn(`No campaigns detected in "${title}". Using standard rendering.`);
+        addSection(title, content);
+        return;
+      }
+      
+      // Step 2: Render section title (with keep-together for first campaign)
+      const titleLineHeight = 12 * 0.5;
+      doc.setFontSize(12);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(colors.textPrimary[0], colors.textPrimary[1], colors.textPrimary[2]);
+      
+      const titleLines = doc.splitTextToSize(title, contentWidth);
+      const titleHeight = titleLines.length * titleLineHeight + 2;
+      
+      // Measure first campaign block to keep title + first campaign together
+      let firstCampaignHeight = 0;
+      if (campaigns.length > 0) {
+        const firstCampaign = campaigns[0];
+        const firstOriginalUrls = findURLsInContent(firstCampaign.content);
+        let firstProcessedContent = firstCampaign.content;
+        
+        const firstSortedUrls = [...firstOriginalUrls].sort((a, b) => b.start - a.start);
+        for (const urlInfo of firstSortedUrls) {
+          let replacement: string;
+          if (urlInfo.hasNested && urlInfo.domainText) {
+            replacement = `(${urlInfo.domainText} (${urlInfo.cleaned}))`;
+          } else if (urlInfo.original.startsWith('(') && urlInfo.original.endsWith(')')) {
+            replacement = `(${urlInfo.cleaned})`;
+          } else {
+            replacement = urlInfo.cleaned;
+          }
+          
+          firstProcessedContent = 
+            firstProcessedContent.substring(0, urlInfo.start) + 
+            replacement + 
+            firstProcessedContent.substring(urlInfo.end);
+        }
+        
+        firstProcessedContent = firstProcessedContent
+          .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '$1 ($2)')
+          .replace(/\n+/g, ' ')
+          .replace(/\s+/g, ' ')
+          .trim();
+        
+        firstCampaignHeight = measureCampaignBlockHeight(firstCampaign.name, firstProcessedContent);
+      }
+      
+      // Reset font for section title rendering (measureCampaignBlockHeight changes it to 10pt)
+      doc.setFontSize(12);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(colors.textPrimary[0], colors.textPrimary[1], colors.textPrimary[2]);
+      
+      // Ensure space for title + first campaign block
+      const requiredSpace = titleHeight + firstCampaignHeight + 10; // +10mm buffer
+      if (yPosition + requiredSpace > pageHeight - margin) {
+        doc.addPage();
+        yPosition = margin;
+      }
+      
+      doc.text(titleLines, margin, yPosition);
+      yPosition += titleHeight + 3;
+      
+      // Step 3: Render each campaign block
+      campaigns.forEach((campaign, campaignIndex) => {
+        // Process content for this campaign
+        const originalUrls = findURLsInContent(campaign.content);
+        let processedContent = campaign.content;
+        
+        // Replace URLs with cleaned versions
+        const sortedUrls = [...originalUrls].sort((a, b) => b.start - a.start);
+        for (const urlInfo of sortedUrls) {
+          let replacement: string;
+          if (urlInfo.hasNested && urlInfo.domainText) {
+            replacement = `(${urlInfo.domainText} (${urlInfo.cleaned}))`;
+          } else if (urlInfo.original.startsWith('(') && urlInfo.original.endsWith(')')) {
+            replacement = `(${urlInfo.cleaned})`;
+          } else {
+            replacement = urlInfo.cleaned;
+          }
+          
+          processedContent = 
+            processedContent.substring(0, urlInfo.start) + 
+            replacement + 
+            processedContent.substring(urlInfo.end);
+        }
+        
+        // Clean up content
+        processedContent = processedContent
+          .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '$1 ($2)')
+          .replace(/\n+/g, ' ')
+          .replace(/\s+/g, ' ')
+          .trim();
+        
+        // Measure this campaign block
+        const blockHeight = measureCampaignBlockHeight(campaign.name, processedContent);
+        const safetyBuffer = 10; // 10mm buffer for safety
+        
+        // Keep-together pagination: if block won't fit, move to next page
+        if (yPosition + blockHeight + safetyBuffer > pageHeight - margin) {
+          doc.addPage();
+          yPosition = margin;
+        }
+        
+        // Render campaign title (bold body text, same size as content for proper hierarchy)
+        doc.setFontSize(10);
+        doc.setFont('helvetica', 'bold');
+        doc.setTextColor(colors.textPrimary[0], colors.textPrimary[1], colors.textPrimary[2]);
+        
+        // Just use the campaign name without "Campaign:" prefix
+        const campaignTitleLines = doc.splitTextToSize(campaign.name, contentWidth);
+        doc.text(campaignTitleLines, margin, yPosition);
+        yPosition += campaignTitleLines.length * (10 * 0.5) + 3; // +3mm for spacing after title
+        
+        // Render campaign content with URL styling (no indent for better readability)
+        const contentLineHeight = 10 * 0.5;
+        const contentLines = doc.splitTextToSize(processedContent, contentWidth);
+        
+        // Reset to normal font for content
+        doc.setFontSize(10);
+        doc.setFont('helvetica', 'normal');
+        
+        contentLines.forEach((line: string) => {
+          renderLineWithURLs(line, margin, yPosition, 10, undefined, originalUrls);
+          yPosition += contentLineHeight;
+        });
+        
+        // Add paragraph spacing between campaigns (larger gap for clear separation)
+        yPosition += (campaignIndex < campaigns.length - 1) ? 10 : 5;
+      });
+      
+      // Section spacing
+      yPosition += 5;
+    };
+
     const addSourcesList = (sources: string[] | undefined) => {
       if (!sources || sources.length === 0) return;
       
@@ -816,11 +1014,11 @@ export async function exportCompanyToPDF(company: CompanyData): Promise<void> {
     }
 
     if (analysis?.marketingActivity?.content) {
-      addSection('Marketing Activity', analysis.marketingActivity.content);
+      addCampaignSection('Marketing Activity', analysis.marketingActivity.content);
     }
 
     if (analysis?.sponsorshipsExperiential?.content) {
-      addSection('Sponsorships & Experiential', analysis.sponsorshipsExperiential.content);
+      addCampaignSection('Sponsorships & Experiential', analysis.sponsorshipsExperiential.content);
     }
 
     if (analysis?.socialMediaPresence?.content) {
