@@ -121,9 +121,37 @@ export async function exportCompanyToPDF(company: CompanyData): Promise<void> {
     };
 
     const addSection = (title: string, content: string) => {
-      // Normalize content (remove markdown formatting while keeping URLs visible)
-      // IMPORTANT: Replace newlines with spaces to ensure proper word wrapping
-      let processedContent = content
+      // Step 1: Find all URLs in original content (before any processing)
+      const originalUrls = findURLsInContent(content);
+      
+      // Step 2: Replace original URLs with cleaned versions BEFORE processing
+      // Sort by start position (descending) to preserve indices during replacement
+      let processedContent = content;
+      const sortedUrls = [...originalUrls].sort((a, b) => b.start - a.start);
+      
+      for (const urlInfo of sortedUrls) {
+        // Build replacement text with cleaned URL
+        let replacement: string;
+        if (urlInfo.hasNested && urlInfo.domainText) {
+          // Nested format: (domain.com (cleanedURL))
+          replacement = `(${urlInfo.domainText} (${urlInfo.cleaned}))`;
+        } else if (urlInfo.original.startsWith('(') && urlInfo.original.endsWith(')')) {
+          // Simple parentheses: (cleanedURL)
+          replacement = `(${urlInfo.cleaned})`;
+        } else {
+          // Standalone: cleanedURL
+          replacement = urlInfo.cleaned;
+        }
+        
+        // Replace in content
+        processedContent = 
+          processedContent.substring(0, urlInfo.start) + 
+          replacement + 
+          processedContent.substring(urlInfo.end);
+      }
+      
+      // Step 3: Now process content normally (markdown, newlines, etc.)
+      processedContent = processedContent
         .replace(/\*\*([^*]+)\*\*/g, '$1')
         .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '$1 ($2)')
         .replace(/#+\s/g, '')
@@ -153,9 +181,6 @@ export async function exportCompanyToPDF(company: CompanyData): Promise<void> {
 
       // Render ALL content lines together (no pinned/remaining split to avoid gaps)
       if (allContentLines.length > 0) {
-        doc.setFontSize(10);
-        doc.setFont('helvetica', 'normal');
-        
         let idx = 0;
         while (idx < allContentLines.length) {
           const availableHeight = (pageHeight - margin) - yPosition;
@@ -170,9 +195,10 @@ export async function exportCompanyToPDF(company: CompanyData): Promise<void> {
           const end = Math.min(idx + availableLines, allContentLines.length);
           const slice = allContentLines.slice(idx, end);
           
-          // Render each line with URL styling
+          // Render lines - URLs are already cleaned in processedContent
+          // Just detect and style them normally
           slice.forEach((line: string) => {
-            renderLineWithURLs(line, margin, yPosition, 10);
+            renderLineWithURLs(line, margin, yPosition, 10, undefined, originalUrls);
             yPosition += contentLineHeight;
           });
           
@@ -195,11 +221,15 @@ export async function exportCompanyToPDF(company: CompanyData): Promise<void> {
       }
     };
 
-    // Helper function to clean and truncate URLs
-    const cleanURL = (url: string, maxLength: number = 70): string => {
+    // Helper function to clean and optionally truncate URLs
+    const cleanURL = (url: string, maxLength: number = 70, truncate: boolean = true): string => {
       try {
+        // Remove spaces that might have been introduced from line breaks
+        // URLs shouldn't have spaces - they should be URL-encoded
+        const urlWithoutSpaces = url.replace(/\s+/g, '');
+        
         // Remove tracking parameters (utm_source, utm_medium, etc.)
-        const urlObj = new URL(url);
+        const urlObj = new URL(urlWithoutSpaces);
         
         // Remove common tracking parameters
         const trackingParams = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content', 'ref', 'source'];
@@ -215,32 +245,326 @@ export async function exportCompanyToPDF(company: CompanyData): Promise<void> {
           cleaned = cleaned.slice(0, -1);
         }
         
-        // Truncate if too long
-        if (cleaned.length > maxLength) {
+        // Truncate if too long (only if truncate is true)
+        if (truncate && cleaned.length > maxLength) {
           return cleaned.substring(0, maxLength - 3) + '...';
         }
         
         return cleaned;
       } catch {
-        // If URL parsing fails, just truncate the original
-        return url.length > maxLength ? url.substring(0, maxLength - 3) + '...' : url;
+        // If URL parsing fails, try removing spaces and truncate
+        const urlWithoutSpaces = url.replace(/\s+/g, '');
+        if (truncate && urlWithoutSpaces.length > maxLength) {
+          return urlWithoutSpaces.substring(0, maxLength - 3) + '...';
+        }
+        return urlWithoutSpaces;
       }
     };
 
-    // Helper function to render a single line with styled URLs
-    const renderLineWithURLs = (line: string, x: number, y: number, fontSize: number = 10): void => {
+    // Helper function to find all URLs in content, handling multi-line URLs
+    const findURLsInContent = (content: string): Array<{ start: number; end: number; original: string; cleaned: string; fullCleaned: string; hasNested: boolean; domainText?: string }> => {
+      const urls: Array<{ start: number; end: number; original: string; cleaned: string; fullCleaned: string; hasNested: boolean; domainText?: string }> = [];
+      
+      // Pattern 1: Nested format with multi-line support: (domain.com (https://...))
+      // This pattern uses [\s\S] to match any character including newlines, until we find ))
+      const nestedPattern = /\(([^)]+)\s*\((https?:\/\/[\s\S]*?)\)\)/gi;
+      let match: RegExpExecArray | null;
+      
+      while ((match = nestedPattern.exec(content)) !== null) {
+        const domainText = match[1].trim();
+        let url = match[2];
+        
+        // Remove all whitespace (including newlines and spaces) from URL
+        // URLs shouldn't have whitespace - it's likely from line breaks
+        url = url.replace(/\s+/g, '').trim();
+        
+        const cleanedURL = cleanURL(url); // Truncated for display
+        const fullCleanedURL = cleanURL(url, 70, false); // Full for link target
+        
+        urls.push({
+          start: match.index,
+          end: match.index + match[0].length,
+          original: match[0],
+          cleaned: cleanedURL,
+          fullCleaned: fullCleanedURL,
+          hasNested: true,
+          domainText: domainText
+        });
+      }
+      
+      // Pattern 2: Simple parentheses format with multi-line support: (https://...)
+      // Reset regex lastIndex
+      nestedPattern.lastIndex = 0;
+      const simpleParenPattern = /\((https?:\/\/[\s\S]*?)\)/gi;
+      
+      while ((match = simpleParenPattern.exec(content)) !== null) {
+        // Skip if this was already captured as part of a nested format
+        const isPartOfNested = urls.some(u => 
+          match!.index >= u.start && match!.index < u.end
+        );
+        
+        if (!isPartOfNested) {
+          let url = match![1];
+          // Remove all whitespace (including newlines and spaces) from URL
+          url = url.replace(/\s+/g, '').trim();
+          
+          const cleanedURL = cleanURL(url); // Truncated for display
+          const fullCleanedURL = cleanURL(url, 70, false); // Full for link target
+          
+          urls.push({
+            start: match!.index,
+            end: match!.index + match![0].length,
+            original: match![0],
+            cleaned: cleanedURL,
+            fullCleaned: fullCleanedURL,
+            hasNested: false,
+            domainText: undefined
+          });
+        }
+      }
+      
+      // Pattern 3: Standalone URLs: https://... (no parentheses)
+      // Reset regex lastIndex
+      simpleParenPattern.lastIndex = 0;
+      const standalonePattern = /(https?:\/\/[^\s)]+)/gi;
+      
+      while ((match = standalonePattern.exec(content)) !== null) {
+        // Skip if this was already captured as part of a nested or simple format
+        const isPartOfOther = urls.some(u => 
+          match!.index >= u.start && match!.index < u.end
+        );
+        
+        if (!isPartOfOther) {
+          let url = match[1];
+          const cleanedURL = cleanURL(url); // Truncated for display
+          const fullCleanedURL = cleanURL(url, 70, false); // Full for link target
+          
+          urls.push({
+            start: match!.index,
+            end: match!.index + match![0].length,
+            original: match![0],
+            cleaned: cleanedURL,
+            fullCleaned: fullCleanedURL,
+            hasNested: false,
+            domainText: undefined
+          });
+        }
+      }
+      
+      return urls;
+    };
+
+    // Helper function to reconstruct URLs that span multiple lines
+    const reconstructMultiLineURL = (lines: string[], startIndex: number, urlInfo: { original: string; cleaned: string; hasNested: boolean; domainText?: string }): { endIndex: number; reconstructedText: string } | null => {
+      // Look for URL start patterns
+      const startPatterns = [
+        urlInfo.hasNested && urlInfo.domainText ? new RegExp(`\\(${urlInfo.domainText.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*\\(https?://`, 'i') : null,
+        /\(https?:\/\//i,
+        /https?:\/\//i
+      ].filter(Boolean) as RegExp[];
+      
+      let startLine = lines[startIndex];
+      let urlStartIndex = -1;
+      
+      // Find where URL starts in the first line
+      for (const pattern of startPatterns) {
+        const match = startLine.match(pattern);
+        if (match && match.index !== undefined) {
+          urlStartIndex = match.index;
+          break;
+        }
+      }
+      
+      if (urlStartIndex === -1) return null;
+      
+      // Reconstruct URL by looking ahead through lines
+      let reconstructed = startLine.substring(urlStartIndex);
+      let endIndex = startIndex;
+      
+      // Check if URL is complete in first line
+      const completePattern = /(\([^)]*\s*\(https?:\/\/[^\s)]+\)\)|\(https?:\/\/[^\s)]+\)|https?:\/\/[^\s)]+)/i;
+      if (completePattern.test(reconstructed)) {
+        return { endIndex: startIndex, reconstructedText: reconstructed };
+      }
+      
+      // URL spans multiple lines - reconstruct it
+      for (let i = startIndex + 1; i < lines.length; i++) {
+        const nextLine = lines[i];
+        reconstructed += ' ' + nextLine;
+        endIndex = i;
+        
+        // Check if we've found the end of the URL
+        // For nested format: look for double closing parens ))
+        // For simple format: look for single closing paren )
+        // Also check if we have a complete URL pattern now
+        const hasDoubleClose = reconstructed.match(/\)\s*\)/);
+        const hasSingleClose = reconstructed.match(/\)(?!\s*\()/);
+        const isComplete = completePattern.test(reconstructed);
+        
+        if (hasDoubleClose || (hasSingleClose && !urlInfo.hasNested) || isComplete) {
+          // Check if this line ends with the closing paren(s)
+          if (nextLine.match(/\)\s*\)$/) || (nextLine.match(/\)$/) && !urlInfo.hasNested)) {
+            break;
+          }
+        }
+        
+        // Safety limit to prevent infinite loops
+        if (i - startIndex > 10) break;
+      }
+      
+      return { endIndex, reconstructedText: reconstructed };
+    };
+
+    // Helper function to render content with multi-line URL awareness
+    const renderContentWithURLs = (originalContent: string, lines: string[], fontSize: number = 10, preFoundUrls?: Array<{ start: number; end: number; original: string; cleaned: string; fullCleaned: string; hasNested: boolean; domainText?: string }>): void => {
       doc.setFontSize(fontSize);
       doc.setFont('helvetica', 'normal');
       
-      // Pattern to match URLs in various formats:
-      // 1. (https://...) - URL in parentheses
-      // 2. https://... - Standalone URL
-      // 3. (text (https://...)) - Text followed by URL in nested parentheses
-      const urlPattern = /(\([^)]*\s*\(https?:\/\/[^\s)]+\)\)|\(https?:\/\/[^\s)]+\)|https?:\/\/[^\s)]+)/gi;
+      // Use pre-found URLs if provided, otherwise find them in the content
+      const urls = preFoundUrls || findURLsInContent(originalContent);
+      
+      if (urls.length === 0) {
+        // No URLs, render normally
+        lines.forEach((line: string) => {
+          doc.setTextColor(0, 0, 0);
+          doc.text(line, margin, yPosition);
+          yPosition += fontSize * 0.5;
+        });
+        return;
+      }
+      
+      // Track which lines have been processed (for multi-line URLs)
+      const processedLines = new Set<number>();
+      
+      // For each line, check if it contains any URL patterns
+      lines.forEach((line: string, lineIndex: number) => {
+        if (processedLines.has(lineIndex)) {
+          // This line was already processed as part of a multi-line URL
+          return;
+        }
+        
+        // Check if this line contains any URL (by checking against found URLs)
+        let matchedUrl: typeof urls[0] | null = null;
+        
+        for (const urlInfo of urls) {
+          // Check multiple ways the URL might appear in the line:
+          const lineLower = line.toLowerCase();
+          const hasUrlPattern = 
+            lineLower.includes(urlInfo.cleaned.toLowerCase()) ||
+            (urlInfo.domainText && lineLower.includes(urlInfo.domainText.toLowerCase())) ||
+            /https?:\/\//i.test(line) ||
+            (urlInfo.hasNested && /\([^)]+\s*\(https?:\/\//i.test(line));
+          
+          if (hasUrlPattern) {
+            matchedUrl = urlInfo;
+            break;
+          }
+        }
+        
+        if (matchedUrl) {
+          // Try to reconstruct multi-line URL
+          const multiLineResult = reconstructMultiLineURL(lines, lineIndex, matchedUrl);
+          
+          if (multiLineResult && multiLineResult.endIndex > lineIndex) {
+            // URL spans multiple lines - render preserving original line structure
+            const urlStartInLine = line.match(/(\([^)]*\s*\(https?:\/\/|\(https?:\/\/|https?:\/\/)/i);
+            const urlStartIndex = urlStartInLine ? (urlStartInLine.index || 0) : 0;
+            
+            // Render first line: text before URL + URL start
+            let currentX = margin;
+            if (urlStartIndex > 0) {
+              const textBefore = line.substring(0, urlStartIndex);
+              doc.setTextColor(0, 0, 0);
+              doc.text(textBefore, currentX, yPosition);
+              currentX += doc.getTextWidth(textBefore);
+            }
+            
+            // Render URL part from first line in blue
+            doc.setTextColor(37, 99, 235);
+            const firstLineUrlPart = line.substring(urlStartIndex);
+            doc.textWithLink(firstLineUrlPart, currentX, yPosition, { url: matchedUrl.fullCleaned });
+            yPosition += fontSize * 0.5;
+            
+            // Render middle lines (if any) - these are all URL
+            for (let i = lineIndex + 1; i < multiLineResult.endIndex; i++) {
+              doc.setTextColor(37, 99, 235);
+              doc.textWithLink(lines[i], margin, yPosition, { url: matchedUrl.fullCleaned });
+              processedLines.add(i);
+              yPosition += fontSize * 0.5;
+            }
+            
+            // Render last line: URL end + text after (if any)
+            const lastLine = lines[multiLineResult.endIndex];
+            // Check if there's text after the URL
+            // For nested format, look for double closing parens ))
+            // For simple format, look for single closing paren )
+            let urlEndIndex = lastLine.length;
+            if (matchedUrl.hasNested) {
+              const doubleCloseMatch = lastLine.match(/\)\s*\)/);
+              if (doubleCloseMatch && doubleCloseMatch.index !== undefined) {
+                urlEndIndex = doubleCloseMatch.index + doubleCloseMatch[0].length;
+              }
+            } else {
+              const singleCloseMatch = lastLine.match(/\)(?!\s*\()/);
+              if (singleCloseMatch && singleCloseMatch.index !== undefined) {
+                urlEndIndex = singleCloseMatch.index + singleCloseMatch[0].length;
+              }
+            }
+            
+            currentX = margin;
+            if (urlEndIndex < lastLine.length) {
+              // Has text after URL
+              const urlPart = lastLine.substring(0, urlEndIndex);
+              const textAfter = lastLine.substring(urlEndIndex);
+              
+              doc.setTextColor(37, 99, 235);
+              doc.textWithLink(urlPart, currentX, yPosition, { url: matchedUrl.fullCleaned });
+              currentX += doc.getTextWidth(urlPart);
+              doc.setTextColor(0, 0, 0);
+              doc.text(textAfter, currentX, yPosition);
+            } else {
+              // Entire line is URL
+              doc.setTextColor(37, 99, 235);
+              doc.textWithLink(lastLine, currentX, yPosition, { url: matchedUrl.fullCleaned });
+            }
+            
+            // Mark all processed lines
+            for (let i = lineIndex; i <= multiLineResult.endIndex; i++) {
+              processedLines.add(i);
+            }
+            
+            // Reset text color
+            doc.setTextColor(0, 0, 0);
+            yPosition += fontSize * 0.5;
+          } else {
+            // Single line URL - render normally
+            renderLineWithURLs(line, margin, yPosition, fontSize, matchedUrl);
+            yPosition += fontSize * 0.5;
+          }
+        } else {
+          // No URL in this line, render normally
+          doc.setTextColor(0, 0, 0);
+          doc.text(line, margin, yPosition);
+          yPosition += fontSize * 0.5;
+        }
+      });
+    };
+
+    // Helper function to render a single line with styled URLs
+    const renderLineWithURLs = (line: string, x: number, y: number, fontSize: number = 10, knownUrl?: { original: string; cleaned: string; fullCleaned: string; hasNested: boolean; domainText?: string }, urlLookup?: Array<{ cleaned: string; fullCleaned: string; domainText?: string }>): void => {
+      doc.setFontSize(fontSize);
+      doc.setFont('helvetica', 'normal');
+      
+      // Pattern to match URLs in various formats (URLs are already cleaned, may have spaces from line breaks):
+      // 1. (https://...) - URL in parentheses (may have spaces)
+      // 2. https://... - Standalone URL (may have spaces)
+      // 3. (text (https://...)) - Text followed by URL in nested parentheses (may have spaces)
+      // Note: We allow spaces in URLs because splitTextToSize may break them across lines
+      const urlPattern = /(\([^)]*\s*\(https?:\/\/[^)]+\)\)|\(https?:\/\/[^)]+\)|https?:\/\/[^\s)]+)/gi;
       
       let currentX = x;
       let lastIndex = 0;
-      let match;
+      let match: RegExpExecArray | null;
       
       // Find all URLs in the line
       const matches: Array<{ index: number; originalLength: number; text: string; url: string }> = [];
@@ -252,12 +576,12 @@ export async function exportCompanyToPDF(company: CompanyData): Promise<void> {
         let url = urlMatch;
         
         // Check for nested format: (text (https://...))
-        const nestedPattern = /\(([^)]+)\s*\((https?:\/\/[^\s)]+)\)\)/;
+        const nestedPattern = /\(([^)]+)\s*\((https?:\/\/[^)]+)\)\)/;
         const nestedMatch = urlMatch.match(nestedPattern);
         
         if (nestedMatch) {
           // Extract the URL from nested format
-          url = nestedMatch[2]; // The actual URL
+          url = nestedMatch[2]; // The actual URL (may have spaces from line breaks)
           hasNestedFormat = true;
           hasParentheses = true;
         } else if (urlMatch.startsWith('(') && urlMatch.endsWith(')')) {
@@ -266,27 +590,73 @@ export async function exportCompanyToPDF(company: CompanyData): Promise<void> {
           hasParentheses = true;
         }
         
-        // Clean the URL
-        const cleanedURL = cleanURL(url);
+        // Remove spaces from URL (they're from line breaks, URLs are already cleaned)
+        const urlWithoutSpaces = url.replace(/\s+/g, '');
+        // URLs are already cleaned, so we can use them directly
+        // But we need to remove spaces that might have been introduced by line breaks
+        const cleanedURL = urlWithoutSpaces;
         
-        // Reconstruct text with cleaned URL
-        let cleanedText: string;
-        if (hasNestedFormat && nestedMatch) {
-          // For nested format, show: (domain.com (cleanedURL))
-          const domainText = nestedMatch[1].trim();
-          cleanedText = `(${domainText} (${cleanedURL}))`;
-        } else if (hasParentheses) {
-          cleanedText = `(${cleanedURL})`;
-        } else {
-          cleanedText = cleanedURL;
+        // Use the original match text for display (preserves formatting, may be truncated)
+        // But use full cleaned URL (without spaces) for the link target
+        let displayText = urlMatch;
+        
+          matches.push({
+            index: match.index,
+            originalLength: originalLength,
+            text: displayText,
+            url: (() => {
+              // The URL we found might be truncated (ends with ...)
+              // Look it up in urlLookup to get the full version
+              if (urlLookup) {
+                const found = urlLookup.find(u => 
+                  cleanedURL.startsWith(u.cleaned.replace('...', ''))
+                );
+                if (found) return found.fullCleaned;
+              }
+              return cleanedURL; // Fallback to what we found
+            })()
+          });
+      }
+      
+      // If no URLs found by regex but we have knownUrl, try to find it in the line
+      if (matches.length === 0 && knownUrl) {
+        // Check for partial URL patterns (URL might be split across lines)
+        const partialPatterns = [
+          // Pattern for nested format start: (domain.com (https://
+          knownUrl.hasNested && knownUrl.domainText ? new RegExp(`\\(${knownUrl.domainText.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*\\(https?://`, 'i') : null,
+          // Pattern for URL start: https:// or (https://
+          /(\(?https?:\/\/)/i,
+          // Pattern for domain text: (domain.com
+          knownUrl.domainText ? new RegExp(`\\(${knownUrl.domainText.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`, 'i') : null
+        ].filter(Boolean) as RegExp[];
+        
+        for (const pattern of partialPatterns) {
+          const partialMatch = line.match(pattern);
+          if (partialMatch) {
+            // Found partial URL - render the line with the known URL info
+            const matchIndex = partialMatch.index || 0;
+            
+            // Render text before URL
+            if (matchIndex > 0) {
+              const textBefore = line.substring(0, matchIndex);
+              doc.setTextColor(0, 0, 0);
+              doc.text(textBefore, currentX, y);
+              currentX += doc.getTextWidth(textBefore);
+            }
+            
+            // Render URL part in blue (render only what's in this line, but link to cleaned URL)
+            doc.setTextColor(37, 99, 235);
+            
+            // Render the URL part that's actually in this line
+            const urlPart = line.substring(matchIndex);
+            // Use full cleaned URL for the link target, but display what's actually in the line
+            doc.textWithLink(urlPart, currentX, y, { url: knownUrl.fullCleaned });
+            
+            // Reset text color
+            doc.setTextColor(0, 0, 0);
+            return;
+          }
         }
-        
-        matches.push({
-          index: match.index,
-          originalLength: originalLength,
-          text: cleanedText,
-          url: cleanedURL
-        });
       }
       
       // If no URLs, render normally
