@@ -121,40 +121,34 @@ export async function exportCompanyToPDF(company: CompanyData): Promise<void> {
     };
 
     const addSection = (title: string, content: string) => {
-      // Step 1: Find all URLs in original content (before any processing)
+      // Step 1: Find all URLs in original content
       const originalUrls = findURLsInContent(content);
       
-      // Step 2: Replace original URLs with cleaned versions BEFORE processing
-      // Sort by start position (descending) to preserve indices during replacement
+      // Step 2: Replace URLs with truncated/cleaned versions BEFORE processing
       let processedContent = content;
       const sortedUrls = [...originalUrls].sort((a, b) => b.start - a.start);
       
       for (const urlInfo of sortedUrls) {
-        // Build replacement text with cleaned URL
         let replacement: string;
         if (urlInfo.hasNested && urlInfo.domainText) {
-          // Nested format: (domain.com (cleanedURL))
           replacement = `(${urlInfo.domainText} (${urlInfo.cleaned}))`;
         } else if (urlInfo.original.startsWith('(') && urlInfo.original.endsWith(')')) {
-          // Simple parentheses: (cleanedURL)
           replacement = `(${urlInfo.cleaned})`;
         } else {
-          // Standalone: cleanedURL
           replacement = urlInfo.cleaned;
         }
         
-        // Replace in content
         processedContent = 
           processedContent.substring(0, urlInfo.start) + 
           replacement + 
           processedContent.substring(urlInfo.end);
       }
       
-      // Step 3: Now process content normally (markdown, newlines, etc.)
+      // Step 3: Process markdown and formatting
       processedContent = processedContent
-        .replace(/\*\*([^*]+)\*\*/g, '$1')
-        .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '$1 ($2)')
-        .replace(/#+\s/g, '')
+        .replace(/\*\*([^*]+)\*\*/g, '$1')  // Remove bold markers
+        .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '$1 ($2)')  // Convert markdown links
+        .replace(/#+\s/g, '')  // Remove heading markers
         .replace(/\n+/g, ' ')  // Replace newlines with spaces for better flow
         .replace(/\s+/g, ' ')  // Normalize multiple spaces to single space
         .replace(/^[\s-]*$/gm, '')
@@ -195,8 +189,7 @@ export async function exportCompanyToPDF(company: CompanyData): Promise<void> {
           const end = Math.min(idx + availableLines, allContentLines.length);
           const slice = allContentLines.slice(idx, end);
           
-          // Render lines - URLs are already cleaned in processedContent
-          // Just detect and style them normally
+          // renderLineWithURLs will style URLs and use fullCleaned for link targets
           slice.forEach((line: string) => {
             renderLineWithURLs(line, margin, yPosition, 10, undefined, originalUrls);
             yPosition += contentLineHeight;
@@ -726,9 +719,9 @@ export async function exportCompanyToPDF(company: CompanyData): Promise<void> {
      */
     const addCampaignSection = (title: string, content: string) => {
       // Step 1: Parse campaign blocks from content
-      // Pattern matches campaign titles like "ESL Sponsorship:", "Music Tour Sponsorships:", etc.
-      // Looks for: optional ** markers, capitalized text (15-80 chars), colon
-      const campaignPattern = /(?:\*\*)?([A-Z][A-Za-z0-9\s\-&']{14,79})(?:\*\*)?:\s*/g;
+      // Pattern matches: **bold text** (with/without colon) OR plain text WITH colon
+      // This prevents matching random capitalized sentences
+      const campaignPattern = /\*\*([A-Z][A-Za-z0-9\s\-&']{14,79})\*\*:?\s*|([A-Z][A-Za-z0-9\s\-&']{14,79}):\s*/g;
       const campaigns: Array<{ name: string; content: string }> = [];
       
       const matches: Array<{ name: string; startIndex: number; endIndex: number }> = [];
@@ -736,24 +729,50 @@ export async function exportCompanyToPDF(company: CompanyData): Promise<void> {
       
       // Find all campaign markers
       while ((match = campaignPattern.exec(content)) !== null) {
+        // match[1] = bold text, match[2] = plain text with colon
+        const campaignName = (match[1] || match[2]).trim();
         matches.push({
-          name: match[1].trim(),
+          name: campaignName,
           startIndex: match.index,
           endIndex: match.index + match[0].length
         });
       }
       
-      // Extract campaign blocks
-      if (matches.length > 0) {
-        matches.forEach((match, index) => {
+      // Filter out lead-in phrases (e.g., "Deloitte focuses on:") that precede numbered lists
+      const filteredMatches = matches.filter((match, index) => {
+        // Only check the first match - it might be a lead-in phrase
+        if (index === 0) {
+          const contentAfter = content.substring(match.endIndex, match.endIndex + 100);
+          // If followed by a numbered list pattern (1., 2., etc.), it's a lead-in, not a campaign
+          if (/^\s*1\.\s+/.test(contentAfter)) {
+            return false; // Exclude this match - it's a lead-in phrase
+          }
+        }
+        return true; // Keep this match - it's a real campaign
+      });
+      
+      // Extract campaign blocks and preserve introduction
+      let introContent = '';
+      if (filteredMatches.length > 0) {
+        // Preserve content before first match as introduction
+        introContent = content.substring(0, filteredMatches[0].startIndex).trim();
+        
+        filteredMatches.forEach((match, index) => {
           const contentStart = match.endIndex;
-          const contentEnd = index < matches.length - 1 
-            ? matches[index + 1].startIndex 
+          const contentEnd = index < filteredMatches.length - 1 
+            ? filteredMatches[index + 1].startIndex 
             : content.length;
+          
+          // Get block content and strip orphaned numbers (both leading and trailing)
+          let blockContent = content.substring(contentStart, contentEnd).trim();
+          // Remove leading numbers like "2. " or "3. " that are orphaned from titles
+          blockContent = blockContent.replace(/^\d+\.\s*/, '');
+          // Remove trailing patterns like "))2." or ")) 3." from end of content
+          blockContent = blockContent.replace(/\)\s*\)?\s*\d+\.\s*$/, ')');
           
           campaigns.push({
             name: match.name,
-            content: content.substring(contentStart, contentEnd).trim()
+            content: blockContent
           });
         });
       }
@@ -765,7 +784,7 @@ export async function exportCompanyToPDF(company: CompanyData): Promise<void> {
         return;
       }
       
-      // Step 2: Render section title (with keep-together for first campaign)
+      // Step 2: Render section title
       const titleLineHeight = 12 * 0.5;
       doc.setFontSize(12);
       doc.setFont('helvetica', 'bold');
@@ -774,15 +793,29 @@ export async function exportCompanyToPDF(company: CompanyData): Promise<void> {
       const titleLines = doc.splitTextToSize(title, contentWidth);
       const titleHeight = titleLines.length * titleLineHeight + 2;
       
-      // Measure first campaign block to keep title + first campaign together
-      let firstCampaignHeight = 0;
-      if (campaigns.length > 0) {
-        const firstCampaign = campaigns[0];
-        const firstOriginalUrls = findURLsInContent(firstCampaign.content);
-        let firstProcessedContent = firstCampaign.content;
+      // Ensure space for title
+      if (yPosition + titleHeight > pageHeight - margin) {
+        doc.addPage();
+        yPosition = margin;
+      }
+      
+      doc.text(titleLines, margin, yPosition);
+      yPosition += titleHeight + 3;
+      
+      // Step 3: Render introduction if it exists
+      if (introContent) {
+        doc.setFontSize(10);
+        doc.setFont('helvetica', 'normal');
+        doc.setTextColor(colors.textPrimary[0], colors.textPrimary[1], colors.textPrimary[2]);
         
-        const firstSortedUrls = [...firstOriginalUrls].sort((a, b) => b.start - a.start);
-        for (const urlInfo of firstSortedUrls) {
+        // Find URLs in original intro content
+        const introUrls = findURLsInContent(introContent);
+        
+        // Replace URLs with truncated/cleaned versions BEFORE processing
+        let processedIntro = introContent;
+        const sortedIntroUrls = [...introUrls].sort((a, b) => b.start - a.start);
+        
+        for (const urlInfo of sortedIntroUrls) {
           let replacement: string;
           if (urlInfo.hasNested && urlInfo.domainText) {
             replacement = `(${urlInfo.domainText} (${urlInfo.cleaned}))`;
@@ -792,44 +825,46 @@ export async function exportCompanyToPDF(company: CompanyData): Promise<void> {
             replacement = urlInfo.cleaned;
           }
           
-          firstProcessedContent = 
-            firstProcessedContent.substring(0, urlInfo.start) + 
+          processedIntro = 
+            processedIntro.substring(0, urlInfo.start) + 
             replacement + 
-            firstProcessedContent.substring(urlInfo.end);
+            processedIntro.substring(urlInfo.end);
         }
         
-        firstProcessedContent = firstProcessedContent
-          .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '$1 ($2)')
-          .replace(/\n+/g, ' ')
-          .replace(/\s+/g, ' ')
+        // Process markdown and formatting
+        processedIntro = processedIntro
+          .replace(/\*\*([^*]+)\*\*/g, '$1')  // Remove bold markers
+          .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '$1 ($2)')  // Convert markdown links
+          .replace(/#+\s/g, '')  // Remove heading markers
+          .replace(/\n+/g, ' ')  // Replace newlines with spaces
+          .replace(/\s+/g, ' ')  // Normalize whitespace
           .trim();
         
-        firstCampaignHeight = measureCampaignBlockHeight(firstCampaign.name, firstProcessedContent);
-      }
-      
-      // Reset font for section title rendering (measureCampaignBlockHeight changes it to 10pt)
-      doc.setFontSize(12);
-      doc.setFont('helvetica', 'bold');
-      doc.setTextColor(colors.textPrimary[0], colors.textPrimary[1], colors.textPrimary[2]);
-      
-      // Ensure space for title + first campaign block
-      const requiredSpace = titleHeight + firstCampaignHeight + 10; // +10mm buffer
-      if (yPosition + requiredSpace > pageHeight - margin) {
-        doc.addPage();
-        yPosition = margin;
-      }
-      
-      doc.text(titleLines, margin, yPosition);
-      yPosition += titleHeight + 3;
-      
-      // Step 3: Render each campaign block
-      campaigns.forEach((campaign, campaignIndex) => {
-        // Process content for this campaign
-        const originalUrls = findURLsInContent(campaign.content);
-        let processedContent = campaign.content;
+        // Split at contentWidth (now with accurate display widths)
+        const introLines = doc.splitTextToSize(processedIntro, contentWidth);
         
-        // Replace URLs with cleaned versions
+        introLines.forEach((line: string) => {
+          // Check if we need a new page
+          if (yPosition > pageHeight - margin) {
+            doc.addPage();
+            yPosition = margin;
+          }
+          // renderLineWithURLs will style URLs and use fullCleaned for link targets
+          renderLineWithURLs(line, margin, yPosition, 10, undefined, introUrls);
+          yPosition += 5;
+        });
+        yPosition += 8; // Extra spacing after intro before first initiative
+      }
+      
+      // Step 4: Render each campaign block
+      campaigns.forEach((campaign, campaignIndex) => {
+        // Find URLs in original content
+        const originalUrls = findURLsInContent(campaign.content);
+        
+        // Replace URLs with truncated/cleaned versions BEFORE processing
+        let processedContent = campaign.content;
         const sortedUrls = [...originalUrls].sort((a, b) => b.start - a.start);
+        
         for (const urlInfo of sortedUrls) {
           let replacement: string;
           if (urlInfo.hasNested && urlInfo.domainText) {
@@ -846,11 +881,12 @@ export async function exportCompanyToPDF(company: CompanyData): Promise<void> {
             processedContent.substring(urlInfo.end);
         }
         
-        // Clean up content
+        // Process markdown and formatting
         processedContent = processedContent
-          .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '$1 ($2)')
-          .replace(/\n+/g, ' ')
-          .replace(/\s+/g, ' ')
+          .replace(/\*\*([^*]+)\*\*/g, '$1')  // Remove bold markers
+          .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '$1 ($2)')  // Convert markdown links
+          .replace(/\n+/g, ' ')  // Replace newlines with spaces
+          .replace(/\s+/g, ' ')  // Normalize whitespace
           .trim();
         
         // Measure this campaign block
@@ -873,7 +909,7 @@ export async function exportCompanyToPDF(company: CompanyData): Promise<void> {
         doc.text(campaignTitleLines, margin, yPosition);
         yPosition += campaignTitleLines.length * (10 * 0.5) + 3; // +3mm for spacing after title
         
-        // Render campaign content with URL styling (no indent for better readability)
+        // Split content at contentWidth (URLs already replaced with truncated versions)
         const contentLineHeight = 10 * 0.5;
         const contentLines = doc.splitTextToSize(processedContent, contentWidth);
         
@@ -881,6 +917,7 @@ export async function exportCompanyToPDF(company: CompanyData): Promise<void> {
         doc.setFontSize(10);
         doc.setFont('helvetica', 'normal');
         
+        // renderLineWithURLs will style URLs and use fullCleaned for link targets
         contentLines.forEach((line: string) => {
           renderLineWithURLs(line, margin, yPosition, 10, undefined, originalUrls);
           yPosition += contentLineHeight;
@@ -1033,7 +1070,7 @@ export async function exportCompanyToPDF(company: CompanyData): Promise<void> {
     }
 
     if (analysis?.strategicFocus?.content) {
-      addSection('Strategic Focus', analysis.strategicFocus.content);
+      addCampaignSection('Strategic Focus', analysis.strategicFocus.content);
     }
 
     // === FOOTER ON LAST PAGE ===
