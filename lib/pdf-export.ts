@@ -58,7 +58,7 @@ export async function exportCompanyToPDF(company: CompanyData): Promise<void> {
     const pageWidth = doc.internal.pageSize.getWidth();
     const pageHeight = doc.internal.pageSize.getHeight();
     const margin = 20;
-    const contentWidth = pageWidth - (margin * 2);
+    const contentWidth = pageWidth - (margin * 2) - 10; // Added 10mm buffer for right margin
     let yPosition = margin;
 
     // Helper function to add text with word wrapping
@@ -122,21 +122,24 @@ export async function exportCompanyToPDF(company: CompanyData): Promise<void> {
 
     const addSection = (title: string, content: string) => {
       // Normalize content (remove markdown formatting while keeping URLs visible)
+      // IMPORTANT: Replace newlines with spaces to ensure proper word wrapping
       let processedContent = content
         .replace(/\*\*([^*]+)\*\*/g, '$1')
         .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '$1 ($2)')
         .replace(/#+\s/g, '')
-        .replace(/^[\s-]*$/gm, '');
+        .replace(/\n+/g, ' ')  // Replace newlines with spaces for better flow
+        .replace(/\s+/g, ' ')  // Normalize multiple spaces to single space
+        .replace(/^[\s-]*$/gm, '')
+        .trim();
 
-      // Split text upfront to control the first N lines precisely
+      // Split text upfront
       const contentLineHeight = 10 * 0.5; // must match addText spacing
       const titleLineHeight = 12 * 0.5;
       const titleLines = doc.splitTextToSize(title, contentWidth);
       const allContentLines = doc.splitTextToSize(processedContent, contentWidth);
-      const pinnedLinesCount = Math.min(3, allContentLines.length); // keep 2-3 lines with the title
 
-      // Ensure there is room for: title block + pinned lines
-      const requiredSpace = (titleLines.length * titleLineHeight) + 2 + (pinnedLinesCount * contentLineHeight);
+      // Ensure there is room for: title block + at least 1 line of content
+      const requiredSpace = (titleLines.length * titleLineHeight) + 2 + contentLineHeight;
       if (yPosition + requiredSpace > pageHeight - margin) {
         doc.addPage();
         yPosition = margin;
@@ -148,23 +151,179 @@ export async function exportCompanyToPDF(company: CompanyData): Promise<void> {
       doc.text(titleLines, margin, yPosition);
       yPosition += (titleLines.length * titleLineHeight) + 2;
 
-      // Render the first N content lines directly so they stay with the title
-      if (pinnedLinesCount > 0) {
-        const pinned = allContentLines.slice(0, pinnedLinesCount);
+      // Render ALL content lines together (no pinned/remaining split to avoid gaps)
+      if (allContentLines.length > 0) {
         doc.setFontSize(10);
         doc.setFont('helvetica', 'normal');
-        doc.text(pinned, margin, yPosition);
-        yPosition += (pinned.length * contentLineHeight) + 3;
-      }
-
-      // Flow the remaining lines using addText so normal page breaks and margins apply
-      const remaining = allContentLines.slice(pinnedLinesCount).join('\n');
-      if (remaining.trim().length > 0) {
-        addText(remaining, 10, false);
+        
+        let idx = 0;
+        while (idx < allContentLines.length) {
+          const availableHeight = (pageHeight - margin) - yPosition;
+          const availableLines = Math.floor(availableHeight / contentLineHeight);
+          
+          if (availableLines <= 0) {
+            doc.addPage();
+            yPosition = margin;
+            continue;
+          }
+          
+          const end = Math.min(idx + availableLines, allContentLines.length);
+          const slice = allContentLines.slice(idx, end);
+          
+          // Render each line with URL styling
+          slice.forEach((line: string) => {
+            renderLineWithURLs(line, margin, yPosition, 10);
+            yPosition += contentLineHeight;
+          });
+          
+          yPosition += 3;
+          idx = end;
+        }
       }
 
       // Section spacing
       yPosition += 5;
+    };
+
+    // Helper function to check if a string is a URL
+    const isURL = (str: string): boolean => {
+      try {
+        const url = new URL(str);
+        return url.protocol === 'http:' || url.protocol === 'https:';
+      } catch {
+        return false;
+      }
+    };
+
+    // Helper function to clean and truncate URLs
+    const cleanURL = (url: string, maxLength: number = 70): string => {
+      try {
+        // Remove tracking parameters (utm_source, utm_medium, etc.)
+        const urlObj = new URL(url);
+        
+        // Remove common tracking parameters
+        const trackingParams = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content', 'ref', 'source'];
+        trackingParams.forEach(param => {
+          urlObj.searchParams.delete(param);
+        });
+        
+        // Reconstruct URL without tracking params
+        let cleaned = urlObj.toString();
+        
+        // Remove trailing ? if no params left
+        if (cleaned.endsWith('?')) {
+          cleaned = cleaned.slice(0, -1);
+        }
+        
+        // Truncate if too long
+        if (cleaned.length > maxLength) {
+          return cleaned.substring(0, maxLength - 3) + '...';
+        }
+        
+        return cleaned;
+      } catch {
+        // If URL parsing fails, just truncate the original
+        return url.length > maxLength ? url.substring(0, maxLength - 3) + '...' : url;
+      }
+    };
+
+    // Helper function to render a single line with styled URLs
+    const renderLineWithURLs = (line: string, x: number, y: number, fontSize: number = 10): void => {
+      doc.setFontSize(fontSize);
+      doc.setFont('helvetica', 'normal');
+      
+      // Pattern to match URLs in various formats:
+      // 1. (https://...) - URL in parentheses
+      // 2. https://... - Standalone URL
+      // 3. (text (https://...)) - Text followed by URL in nested parentheses
+      const urlPattern = /(\([^)]*\s*\(https?:\/\/[^\s)]+\)\)|\(https?:\/\/[^\s)]+\)|https?:\/\/[^\s)]+)/gi;
+      
+      let currentX = x;
+      let lastIndex = 0;
+      let match;
+      
+      // Find all URLs in the line
+      const matches: Array<{ index: number; originalLength: number; text: string; url: string }> = [];
+      while ((match = urlPattern.exec(line)) !== null) {
+        let urlMatch = match[0];
+        const originalLength = match[0].length;
+        let hasParentheses = false;
+        let hasNestedFormat = false;
+        let url = urlMatch;
+        
+        // Check for nested format: (text (https://...))
+        const nestedPattern = /\(([^)]+)\s*\((https?:\/\/[^\s)]+)\)\)/;
+        const nestedMatch = urlMatch.match(nestedPattern);
+        
+        if (nestedMatch) {
+          // Extract the URL from nested format
+          url = nestedMatch[2]; // The actual URL
+          hasNestedFormat = true;
+          hasParentheses = true;
+        } else if (urlMatch.startsWith('(') && urlMatch.endsWith(')')) {
+          // Simple parentheses format: (https://...)
+          url = urlMatch.slice(1, -1);
+          hasParentheses = true;
+        }
+        
+        // Clean the URL
+        const cleanedURL = cleanURL(url);
+        
+        // Reconstruct text with cleaned URL
+        let cleanedText: string;
+        if (hasNestedFormat && nestedMatch) {
+          // For nested format, show: (domain.com (cleanedURL))
+          const domainText = nestedMatch[1].trim();
+          cleanedText = `(${domainText} (${cleanedURL}))`;
+        } else if (hasParentheses) {
+          cleanedText = `(${cleanedURL})`;
+        } else {
+          cleanedText = cleanedURL;
+        }
+        
+        matches.push({
+          index: match.index,
+          originalLength: originalLength,
+          text: cleanedText,
+          url: cleanedURL
+        });
+      }
+      
+      // If no URLs, render normally
+      if (matches.length === 0) {
+        doc.setTextColor(0, 0, 0);
+        doc.text(line, currentX, y);
+        return;
+      }
+      
+      // Render segments: text and URLs
+      matches.forEach((urlMatch) => {
+        // Render text before URL
+        if (urlMatch.index > lastIndex) {
+          const textBefore = line.substring(lastIndex, urlMatch.index);
+          doc.setTextColor(0, 0, 0);
+          doc.text(textBefore, currentX, y);
+          currentX += doc.getTextWidth(textBefore);
+        }
+        
+        // Render URL in blue and clickable
+        doc.setTextColor(37, 99, 235); // Blue color matching text-blue-600 (#2563eb)
+        doc.textWithLink(urlMatch.text, currentX, y, { url: urlMatch.url });
+        currentX += doc.getTextWidth(urlMatch.text);
+        
+        // Use original length to maintain correct index for next segment
+        lastIndex = urlMatch.index + urlMatch.originalLength;
+      });
+      
+      // Render remaining text after last URL
+      if (lastIndex < line.length) {
+        const textAfter = line.substring(lastIndex);
+        doc.setTextColor(0, 0, 0);
+        doc.text(textAfter, currentX, y);
+      }
+      
+      // Reset text color
+      doc.setTextColor(0, 0, 0);
     };
 
     const addSourcesList = (sources: string[] | undefined) => {
@@ -172,8 +331,41 @@ export async function exportCompanyToPDF(company: CompanyData): Promise<void> {
       
       addText('Sources:', 10, true);
       sources.forEach((source, index) => {
-        const truncated = source.length > 80 ? source.substring(0, 77) + '...' : source;
-        addText(`${index + 1}. ${truncated}`, 9, false);
+        // Clean URL if it's a URL
+        const cleanedSource = isURL(source) ? cleanURL(source, 80) : source;
+        const truncated = cleanedSource.length > 80 ? cleanedSource.substring(0, 77) + '...' : cleanedSource;
+        
+        // Check if source is a URL and style it accordingly
+        if (isURL(source)) {
+          // Render number prefix in black
+          doc.setFontSize(9);
+          doc.setFont('helvetica', 'normal');
+          doc.setTextColor(0, 0, 0);
+          doc.text(`${index + 1}. `, margin, yPosition);
+          
+          // Calculate x position after the number
+          const numberWidth = doc.getTextWidth(`${index + 1}. `);
+          const urlX = margin + numberWidth;
+          
+          // Render URL in blue and clickable (use cleaned URL for display, original for link)
+          doc.setFontSize(9);
+          doc.setTextColor(37, 99, 235); // Blue color matching text-blue-600 (#2563eb)
+          const urlLines = doc.splitTextToSize(truncated, contentWidth - numberWidth);
+          
+          urlLines.forEach((line: string, lineIndex: number) => {
+            const currentY = yPosition + (lineIndex * 9 * 0.5);
+            // Use original source URL for the link, but display cleaned version
+            doc.textWithLink(line, urlX, currentY, { url: source });
+          });
+          
+          yPosition += urlLines.length * 9 * 0.5 + 3;
+          
+          // Reset text color
+          doc.setTextColor(0, 0, 0);
+        } else {
+          // Not a URL, render normally
+          addText(`${index + 1}. ${truncated}`, 9, false);
+        }
       });
       yPosition += 3;
     };
@@ -209,7 +401,18 @@ export async function exportCompanyToPDF(company: CompanyData): Promise<void> {
     ].filter(Boolean) as string[];
 
     infoItems.forEach(item => {
-      addText(item, 10, false);
+      // Check if item contains a URL (for website field)
+      const urlPattern = /(https?:\/\/[^\s]+)/gi;
+      const urlMatch = urlPattern.exec(item);
+      
+      if (urlMatch && isURL(urlMatch[1])) {
+        // Render with URL styling
+        renderLineWithURLs(item, margin, yPosition, 10);
+        yPosition += 10 * 0.5 + 3;
+      } else {
+        // Render normally
+        addText(item, 10, false);
+      }
     });
     
     yPosition += 5;
