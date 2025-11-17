@@ -516,7 +516,7 @@ The company invests in sustainable materials and circular-design innovation [Nik
       broadcastScopeUpdate({ companyName: validatedInput, step: 2 })
       assistantResponse = `Great! How would you like me to focus the research on ${validatedInput}?
 
-Please choose one of the options below.`
+Please choose one of the options below:`
       nextStage = "region"
       setCurrentStage("region")
     } else if (currentStage === "region") {
@@ -528,7 +528,7 @@ Please choose one of the options below.`
         broadcastScopeUpdate({ regionFocus: "Global", specificRegion: "Global", step: 3 })
         assistantResponse = `Perfect! Now how would you like me to focus the research on ${companyName}?
 
-Please choose one of the options below.`
+Please choose one of the options below:`
         nextStage = "division"
         setCurrentStage("division")
       } else if (userResponse === "2") {
