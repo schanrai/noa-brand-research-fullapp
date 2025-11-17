@@ -62,7 +62,6 @@ export default function CoPilotInterface({
 
   // Broadcast research scope updates to sidebar
   const broadcastScopeUpdate = (updates: Partial<NonNullable<typeof researchScope>>) => {
-    console.log('🔍 broadcastScopeUpdate called with updates:', updates)
     if (!updates) return
     
     setResearchScope((prev) => {
@@ -77,8 +76,6 @@ export default function CoPilotInterface({
       ...prev,
       ...updates,
     }
-    
-    console.log('🔔 Research scope update:', newScope)
     
     window.dispatchEvent(new CustomEvent('research-scope-update', { 
       detail: { scope: newScope } 
@@ -478,8 +475,6 @@ The company invests in sustainable materials and circular-design innovation [Nik
     e.preventDefault()
     if (!userInput.trim()) return
 
-    console.log('🔍 handleSubmit called, currentStage:', currentStage)
-
     // Validate input based on current stage
     const trimmedInput = userInput.trim();
     let validationResult;
@@ -522,7 +517,6 @@ The company invests in sustainable materials and circular-design innovation [Nik
 
     if (currentStage === "initial") {
       setCompanyName(validatedInput) // Use validated input for state
-      console.log('🔍 About to call broadcastScopeUpdate with:', { companyName: validatedInput, step: 2 })
       broadcastScopeUpdate({ companyName: validatedInput, step: 2 })
       assistantResponse = `Great! How would you like me to focus the research on ${validatedInput}?
 
@@ -538,7 +532,6 @@ Please choose 1 or 2, or describe your preference.`
       if (userResponse === "1") {
         setRegionFocus("global");
         setSpecificRegion("global");
-        console.log('🔍 About to call broadcastScopeUpdate with:', { regionFocus: "Global", specificRegion: "Global", step: 3 })
         broadcastScopeUpdate({ regionFocus: "Global", specificRegion: "Global", step: 3 })
         assistantResponse = `Perfect! Now how would you like me to focus the research on ${companyName}?
 
@@ -798,7 +791,7 @@ Please choose 1 or 2.`
                               aria-label={`Select ${option.label}`}
                               tabIndex={0}
                               role="button"
-                              className="flex-1 text-left bg-white border-2 border-gray-200 hover:border-black hover:bg-gray-50 rounded-lg p-4 transition-all duration-200 group"
+                              className="flex-1 text-left bg-white border-2 border-gray-200 hover:border-black hover:bg-gray-50 hover:shadow-sm cursor-pointer rounded-lg p-4 transition-all duration-200 group"
                             >
                               <div className="font-semibold text-sm group-hover:text-black">{option.label}</div>
                               <div className="text-xs text-gray-600 mt-1">{option.description}</div>
