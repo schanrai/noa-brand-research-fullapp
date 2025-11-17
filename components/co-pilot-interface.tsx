@@ -751,29 +751,6 @@ Please choose 1 or 2.`
           </div>
         ) : (
           <>
-            {/* Progress Stepper - only show when not in feedback mode */}
-            {!feedbackMode && (
-              <div className="mb-6 px-4 py-3 bg-gray-50 rounded-lg border border-gray-200">
-                <div className="flex items-center justify-between text-xs font-medium uppercase tracking-wide">
-                  <span className={currentStage === 'initial' ? 'text-black' : 'text-gray-400'}>
-                    1. Company
-                  </span>
-                  <div className="h-px flex-1 mx-2 bg-gray-300" />
-                  <span className={['region', 'region-specific'].includes(currentStage) ? 'text-black' : 'text-gray-400'}>
-                    2. Region
-                  </span>
-                  <div className="h-px flex-1 mx-2 bg-gray-300" />
-                  <span className={['division', 'division-specific'].includes(currentStage) ? 'text-black' : 'text-gray-400'}>
-                    3. Scope
-                  </span>
-                  <div className="h-px flex-1 mx-2 bg-gray-300" />
-                  <span className={currentStage === 'confirmation' ? 'text-black' : 'text-gray-400'}>
-                    4. Confirm
-                  </span>
-                </div>
-              </div>
-            )}
-
             {/* Conversation Thread - only show when not collapsed or not in feedback mode */}
             <div className="flex-1 space-y-4 mb-6 overflow-y-auto max-h-[400px] scroll-smooth">
               {/* Show conversation history toggle button in feedback mode */}
@@ -891,6 +868,29 @@ Please choose 1 or 2.`
                 </div>
               )}
             </div>
+
+            {/* Progress Stepper - only show after company name entered */}
+            {!feedbackMode && currentStage !== 'initial' && companyName && (
+              <div className="mt-6 px-4 py-3 bg-gray-50 rounded-lg border border-gray-200">
+                <div className="flex items-center justify-between text-xs font-medium uppercase tracking-wide">
+                  <span className={currentStage === 'initial' ? 'text-black' : 'text-gray-400'}>
+                    1. Company
+                  </span>
+                  <div className="h-px flex-1 mx-2 bg-gray-300" />
+                  <span className={['region', 'region-specific'].includes(currentStage) ? 'text-black' : 'text-gray-400'}>
+                    2. Region
+                  </span>
+                  <div className="h-px flex-1 mx-2 bg-gray-300" />
+                  <span className={['division', 'division-specific'].includes(currentStage) ? 'text-black' : 'text-gray-400'}>
+                    3. Scope
+                  </span>
+                  <div className="h-px flex-1 mx-2 bg-gray-300" />
+                  <span className={currentStage === 'confirmation' ? 'text-black' : 'text-gray-400'}>
+                    4. Confirm
+                  </span>
+                </div>
+              </div>
+            )}
           </>
         )}
       </div>
