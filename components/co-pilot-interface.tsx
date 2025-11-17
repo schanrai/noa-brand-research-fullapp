@@ -48,6 +48,46 @@ export default function CoPilotInterface({
   const [specificDivision, setSpecificDivision] = useState("")
   const [regionFocus, setRegionFocus] = useState<"global" | "specific">("global")
   const [specificRegion, setSpecificRegion] = useState("")
+  
+  // Research scope state for tracking user choices and sidebar communication
+  const [researchScope, setResearchScope] = useState<{
+    companyName: string
+    regionFocus: string
+    specificRegion: string
+    researchFocus: string
+    specificDivision: string
+    step: number
+    totalSteps: number
+  } | null>(null)
+
+  // Broadcast research scope updates to sidebar
+  const broadcastScopeUpdate = (updates: Partial<NonNullable<typeof researchScope>>) => {
+    console.log('🔍 broadcastScopeUpdate called with updates:', updates)
+    if (!updates) return
+    
+    setResearchScope((prev) => {
+      const newScope = {
+        companyName: "",
+        regionFocus: "",
+        specificRegion: "",
+        researchFocus: "",
+        specificDivision: "",
+        step: 1,
+        totalSteps: 4,
+      ...prev,
+      ...updates,
+    }
+    
+    console.log('🔔 Research scope update:', newScope)
+    
+    window.dispatchEvent(new CustomEvent('research-scope-update', { 
+      detail: { scope: newScope } 
+    }))
+      
+      return newScope
+    })
+  }
+  
   // Reset conversation when stage changes to initial
   useEffect(() => {
     if (stage === "initial" && !feedbackMode) {
@@ -64,6 +104,7 @@ export default function CoPilotInterface({
       setSpecificDivision("")
       setRegionFocus("global")
       setSpecificRegion("")
+      broadcastScopeUpdate({ companyName: "", step: 1 })
       setIsProcessing(false)
       setProcessingSteps([])
       setCurrentStage("initial")
@@ -402,6 +443,8 @@ The company invests in sustainable materials and circular-design innovation [Nik
     e.preventDefault()
     if (!userInput.trim()) return
 
+    console.log('🔍 handleSubmit called, currentStage:', currentStage)
+
     // Validate input based on current stage
     const trimmedInput = userInput.trim();
     let validationResult;
@@ -444,6 +487,8 @@ The company invests in sustainable materials and circular-design innovation [Nik
 
     if (currentStage === "initial") {
       setCompanyName(validatedInput) // Use validated input for state
+      console.log('🔍 About to call broadcastScopeUpdate with:', { companyName: validatedInput, step: 2 })
+      broadcastScopeUpdate({ companyName: validatedInput, step: 2 })
       assistantResponse = `Great! How would you like me to focus the research on ${validatedInput}?
 
 1. Global overview (worldwide operations)
@@ -458,6 +503,8 @@ Please choose 1 or 2, or describe your preference.`
       if (userResponse === "1") {
         setRegionFocus("global");
         setSpecificRegion("global");
+        console.log('🔍 About to call broadcastScopeUpdate with:', { regionFocus: "Global", specificRegion: "Global", step: 3 })
+        broadcastScopeUpdate({ regionFocus: "Global", specificRegion: "Global", step: 3 })
         assistantResponse = `Perfect! Now how would you like me to focus the research on ${companyName}?
 
 1. Comprehensive overview (all business areas)
@@ -468,6 +515,7 @@ Please choose 1 or 2.`
         setCurrentStage("division")
       } else if (userResponse === "2") {
         setRegionFocus("specific");
+        broadcastScopeUpdate({ regionFocus: "Specific Region", step: 2.5 })
         assistantResponse = `Great! Which specific region or market would you like me to focus on? For example: North America, Europe, Asia Pacific, Latin America, or a specific country.`
         nextStage = "region-specific"
         setCurrentStage("region-specific")
@@ -479,6 +527,7 @@ Please choose 1 or 2.`
       }
     } else if (currentStage === "region-specific") {
       setSpecificRegion(validatedInput);
+      broadcastScopeUpdate({ specificRegion: validatedInput, step: 3 })
       assistantResponse = `Perfect! Now how would you like me to focus the research on ${companyName} in ${validatedInput}?
 
 1. Comprehensive overview (all business areas)
@@ -492,12 +541,14 @@ Please choose 1 or 2.`
       
       if (userResponse === "1") {
         setResearchFocus("comprehensive");
+        broadcastScopeUpdate({ researchFocus: "Comprehensive", step: 4 })
         // Don't set specificDivision for comprehensive overview
         assistantResponse = `Perfect! I'll provide a research report for ${companyName}${regionFocus === "specific" ? ` in ${specificRegion}` : " globally"}. Sound good?`
         nextStage = "confirmation"
         setCurrentStage("confirmation")
       } else if (userResponse === "2") {
         setResearchFocus("specific");
+        broadcastScopeUpdate({ researchFocus: "Specific Division", step: 3.5 })
         assistantResponse = `Great! Which specific division or business unit would you like me to focus on?`
         nextStage = "division-specific"
         setCurrentStage("division-specific")
@@ -509,6 +560,7 @@ Please choose 1 or 2.`
       }
     } else if (currentStage === "division-specific") {
       setSpecificDivision(validatedInput);
+      broadcastScopeUpdate({ specificDivision: validatedInput, step: 4 })
       assistantResponse = `Perfect! I'll provide a research report for ${companyName}${regionFocus === "specific" ? ` in ${specificRegion}` : " globally"}, focusing on their ${validatedInput} division. Sound good?`
       nextStage = "confirmation"
       setCurrentStage("confirmation")
