@@ -436,20 +436,16 @@ The company invests in sustainable materials and circular-design innovation [Nik
     return () => clearTimeout(timeoutId)
   }, [conversationHistory])
 
-  // Extract button options from assistant message content
-  const extractOptions = (content: string): Array<{ value: string; label: string; description: string }> => {
-    if (!content.includes('1.') || !content.includes('2.')) return []
-    
-    // Region choice pattern
-    if (content.includes('Global overview') && content.includes('Specific region')) {
+  // Get button options based on current stage
+  const getOptionsForStage = (stage: string): Array<{ value: string; label: string; description: string }> => {
+    if (stage === "region") {
       return [
         { value: '1', label: 'Global overview', description: 'Worldwide operations' },
         { value: '2', label: 'Specific region', description: 'Focus on one market' }
       ]
     }
     
-    // Division choice pattern
-    if (content.includes('Comprehensive overview') && content.includes('Specific division')) {
+    if (stage === "division") {
       return [
         { value: '1', label: 'Comprehensive overview', description: 'All business areas' },
         { value: '2', label: 'Specific division', description: 'Focus on one unit' }
@@ -520,10 +516,7 @@ The company invests in sustainable materials and circular-design innovation [Nik
       broadcastScopeUpdate({ companyName: validatedInput, step: 2 })
       assistantResponse = `Great! How would you like me to focus the research on ${validatedInput}?
 
-1. Global overview (worldwide operations)
-2. Specific region or market
-
-Please choose 1 or 2, or describe your preference.`
+Please choose one of the options below.`
       nextStage = "region"
       setCurrentStage("region")
     } else if (currentStage === "region") {
@@ -535,10 +528,7 @@ Please choose 1 or 2, or describe your preference.`
         broadcastScopeUpdate({ regionFocus: "Global", specificRegion: "Global", step: 3 })
         assistantResponse = `Perfect! Now how would you like me to focus the research on ${companyName}?
 
-1. Comprehensive overview (all business areas)
-2. Specific division or business unit
-
-Please choose 1 or 2.`
+Please choose one of the options below.`
         nextStage = "division"
         setCurrentStage("division")
       } else if (userResponse === "2") {
@@ -548,8 +538,8 @@ Please choose 1 or 2.`
         nextStage = "region-specific"
         setCurrentStage("region-specific")
       } else {
-        // Invalid input - ask them to choose 1 or 2
-        assistantResponse = `Please choose 1 for global overview or 2 for specific region.`
+        // Invalid input - ask them to choose from buttons
+        assistantResponse = `Please choose one of the options below to continue.`
         nextStage = "region"
         setCurrentStage("region")
       }
@@ -558,10 +548,7 @@ Please choose 1 or 2.`
       broadcastScopeUpdate({ specificRegion: validatedInput, step: 3 })
       assistantResponse = `Perfect! Now how would you like me to focus the research on ${companyName} in ${validatedInput}?
 
-1. Comprehensive overview (all business areas)
-2. Specific division or business unit
-
-Please choose 1 or 2.`
+Please choose one of the options below.`
       nextStage = "division"
       setCurrentStage("division")
     } else if (currentStage === "division") {
@@ -581,8 +568,8 @@ Please choose 1 or 2.`
         nextStage = "division-specific"
         setCurrentStage("division-specific")
       } else {
-        // Invalid input - ask them to choose 1 or 2
-        assistantResponse = `Please choose 1 for comprehensive overview or 2 for specific division.`
+        // Invalid input - ask them to choose from buttons
+        assistantResponse = `Please choose one of the options below to continue.`
         nextStage = "division"
         setCurrentStage("division")
       }
@@ -781,9 +768,9 @@ Please choose 1 or 2.`
                       {/* Add clickable button options for numbered choices */}
                       {message.role === "assistant" && 
                        index === displayedMessages.length - 1 && 
-                       extractOptions(message.content).length > 0 && (
+                       getOptionsForStage(currentStage).length > 0 && (
                         <div className="mt-4 flex gap-3">
-                          {extractOptions(message.content).map((option) => (
+                          {getOptionsForStage(currentStage).map((option) => (
                             <button
                               key={option.value}
                               onClick={() => handleQuickSelect(option.value)}
@@ -833,23 +820,35 @@ Please choose 1 or 2.`
             {/* Input Area - always visible */}
             <div className="pt-6">
               <form onSubmit={handleSubmit} className="flex gap-4">
-                <textarea
-                  placeholder={
-                    currentStage === "feedback" || currentStage === "feedback-clarification"
-                      ? "Try: 'Focus more on their recent partnerships' or 'Include more financial data' or 'Add information about their sustainability initiatives' or 'Expand on their target audience demographics'"
-                      : "Type your response..."
-                  }
-                  value={userInput}
-                  onChange={(e) => setUserInput(e.target.value)}
-                  maxLength={200}
-                  className="flex-1 bg-white border-gray-200 rounded-md px-3 py-2 h-20 resize-none border text-sm focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" && !e.shiftKey) {
-                      e.preventDefault()
-                      handleSubmit(e)
-                    }
-                  }}
-                />
+                {(() => {
+                  const hasButtonOptions = currentStage === "region" || currentStage === "division"
+                  return (
+                    <textarea
+                      disabled={hasButtonOptions}
+                      placeholder={
+                        hasButtonOptions
+                          ? "Please select an option above"
+                          : currentStage === "feedback" || currentStage === "feedback-clarification"
+                          ? "Try: 'Focus more on their recent partnerships' or 'Include more financial data' or 'Add information about their sustainability initiatives' or 'Expand on their target audience demographics'"
+                          : "Type your response..."
+                      }
+                      value={userInput}
+                      onChange={(e) => setUserInput(e.target.value)}
+                      maxLength={200}
+                      className={`flex-1 bg-white border-gray-200 rounded-md px-3 py-2 h-20 resize-none border text-sm focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent ${hasButtonOptions ? 'opacity-50 cursor-not-allowed' : ''}`}
+                      onKeyDown={(e) => {
+                        if (hasButtonOptions) {
+                          e.preventDefault()
+                          return
+                        }
+                        if (e.key === "Enter" && !e.shiftKey) {
+                          e.preventDefault()
+                          handleSubmit(e)
+                        }
+                      }}
+                    />
+                  )
+                })()}
                 <Button type="submit" size="icon" className="bg-black text-white hover:bg-gray-800">
                   <Send className="h-4 w-4" />
                   <span className="sr-only">Send</span>
