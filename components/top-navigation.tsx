@@ -4,7 +4,7 @@ import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
-import { Settings, User, LogOut } from "lucide-react"
+import { Settings, User, LogOut, HelpCircle } from "lucide-react"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -92,6 +92,17 @@ export default function TopNavigation({ onTabChange }: TopNavigationProps) {
       )}
 
       <div className="flex items-center gap-4 flex-shrink-0">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="rounded-full hover-scale h-10 w-10"
+          onClick={() => window.location.href = 'mailto:help@scova.io?subject=Support Request'}
+          title="Contact Support"
+        >
+          <HelpCircle className="h-5 w-5" />
+          <span className="sr-only">Contact Support</span>
+        </Button>
+
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="icon" className="rounded-full hover-scale h-10 w-10">
