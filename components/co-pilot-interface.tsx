@@ -439,6 +439,41 @@ The company invests in sustainable materials and circular-design innovation [Nik
     return () => clearTimeout(timeoutId)
   }, [conversationHistory])
 
+  // Extract button options from assistant message content
+  const extractOptions = (content: string): Array<{ value: string; label: string; description: string }> => {
+    if (!content.includes('1.') || !content.includes('2.')) return []
+    
+    // Region choice pattern
+    if (content.includes('Global overview') && content.includes('Specific region')) {
+      return [
+        { value: '1', label: 'Global overview', description: 'Worldwide operations' },
+        { value: '2', label: 'Specific region', description: 'Focus on one market' }
+      ]
+    }
+    
+    // Division choice pattern
+    if (content.includes('Comprehensive overview') && content.includes('Specific division')) {
+      return [
+        { value: '1', label: 'Comprehensive overview', description: 'All business areas' },
+        { value: '2', label: 'Specific division', description: 'Focus on one unit' }
+      ]
+    }
+    
+    return []
+  }
+
+  // Handle quick selection from button cards
+  const handleQuickSelect = (value: string) => {
+    if (!value) return
+    
+    setUserInput(value)
+    // Trigger form submission after a brief moment
+    setTimeout(() => {
+      const form = document.querySelector('form')
+      form?.requestSubmit()
+    }, 50)
+  }
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     if (!userInput.trim()) return
@@ -716,8 +751,31 @@ Please choose 1 or 2.`
           </div>
         ) : (
           <>
+            {/* Progress Stepper - only show when not in feedback mode */}
+            {!feedbackMode && (
+              <div className="mb-6 px-4 py-3 bg-gray-50 rounded-lg border border-gray-200">
+                <div className="flex items-center justify-between text-xs font-medium uppercase tracking-wide">
+                  <span className={currentStage === 'initial' ? 'text-black' : 'text-gray-400'}>
+                    1. Company
+                  </span>
+                  <div className="h-px flex-1 mx-2 bg-gray-300" />
+                  <span className={['region', 'region-specific'].includes(currentStage) ? 'text-black' : 'text-gray-400'}>
+                    2. Region
+                  </span>
+                  <div className="h-px flex-1 mx-2 bg-gray-300" />
+                  <span className={['division', 'division-specific'].includes(currentStage) ? 'text-black' : 'text-gray-400'}>
+                    3. Scope
+                  </span>
+                  <div className="h-px flex-1 mx-2 bg-gray-300" />
+                  <span className={currentStage === 'confirmation' ? 'text-black' : 'text-gray-400'}>
+                    4. Confirm
+                  </span>
+                </div>
+              </div>
+            )}
+
             {/* Conversation Thread - only show when not collapsed or not in feedback mode */}
-            <div className="flex-1 space-y-6 mb-6 overflow-y-auto max-h-[400px] scroll-smooth">
+            <div className="flex-1 space-y-4 mb-6 overflow-y-auto max-h-[400px] scroll-smooth">
               {/* Show conversation history toggle button in feedback mode */}
               {feedbackMode && conversationHistory.length > 1 && (
                 <div className="flex justify-center pb-2">
@@ -749,6 +807,28 @@ Please choose 1 or 2.`
 
                     <div className={`max-w-[80%] ${message.role === "user" ? "text-right" : "text-left"}`}>
                       <p className="text-body text-gray-800 leading-relaxed">{message.content}</p>
+                      
+                      {/* Add clickable button options for numbered choices */}
+                      {message.role === "assistant" && 
+                       index === displayedMessages.length - 1 && 
+                       extractOptions(message.content).length > 0 && (
+                        <div className="mt-4 flex gap-3">
+                          {extractOptions(message.content).map((option) => (
+                            <button
+                              key={option.value}
+                              onClick={() => handleQuickSelect(option.value)}
+                              onKeyDown={(e) => e.key === 'Enter' && handleQuickSelect(option.value)}
+                              aria-label={`Select ${option.label}`}
+                              tabIndex={0}
+                              role="button"
+                              className="flex-1 text-left bg-white border-2 border-gray-200 hover:border-black hover:bg-gray-50 rounded-lg p-4 transition-all duration-200 group"
+                            >
+                              <div className="font-semibold text-sm group-hover:text-black">{option.label}</div>
+                              <div className="text-xs text-gray-600 mt-1">{option.description}</div>
+                            </button>
+                          ))}
+                        </div>
+                      )}
                     </div>
 
                     {message.role === "user" && (
