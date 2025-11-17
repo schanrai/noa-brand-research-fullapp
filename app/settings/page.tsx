@@ -193,8 +193,17 @@ export default function SettingsPage() {
               <p className="text-sm text-muted-foreground mb-2">
                 Permanently delete your account and all associated data. This action cannot be undone.
               </p>
-              <Button variant="destructive" size="sm" disabled>
-                Delete Account (Coming Soon)
+              <Button 
+                variant="destructive" 
+                size="sm"
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault()
+                  window.location.href = 'mailto:help@scova.io?subject=Delete my account'
+                }}
+                className="cursor-pointer"
+              >
+                Delete Account
               </Button>
             </div>
           </CardContent>
