@@ -41,12 +41,19 @@ export default function TopNavigation({ onTabChange }: TopNavigationProps) {
   }
 
   const handleSignOut = async () => {
-    const { error } = await signOut()
-    if (!error) {
-      router.push('/login')
-    } else {
-      console.error('Sign out error:', error)
+    // Optimistically clear local state and navigate immediately
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('user-cache')
     }
+    
+    // Navigate immediately for instant feedback
+    router.push('/login')
+    
+    // Sign out in background (don't wait)
+    signOut().catch(error => {
+      console.error('Sign out error:', error)
+      // Error is non-critical since we've already navigated away
+    })
   }
 
   return (

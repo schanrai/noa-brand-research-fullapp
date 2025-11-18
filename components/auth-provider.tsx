@@ -135,12 +135,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   const signOut = async () => {
-    const { error } = await supabase.auth.signOut()
-    
-    // Clear cache on sign out
+    // Clear cache immediately
     if (typeof window !== 'undefined') {
       localStorage.removeItem('user-cache')
     }
+    
+    // Sign out (don't block UI)
+    const { error } = await supabase.auth.signOut()
     
     return { error }
   }
