@@ -73,22 +73,8 @@ export default function ProfilePage() {
                   <div className="h-4 w-32 bg-gray-200 rounded" />
                 </div>
               </div>
-            </CardContent>
-          </Card>
-
-          {/* Additional Card Skeleton */}
-          <Card className="mt-6">
-            <CardHeader>
-              <div className="h-6 w-40 bg-gray-200 rounded mb-2" />
-              <div className="h-4 w-64 bg-gray-200 rounded" />
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-2">
-                <div className="h-4 w-full bg-gray-200 rounded" />
-                <div className="h-4 w-3/4 bg-gray-200 rounded" />
-              </div>
-            </CardContent>
-          </Card>
+          </CardContent>
+        </Card>
         </div>
       </div>
     )
@@ -185,22 +171,6 @@ export default function ProfilePage() {
                 </p>
               </div>
             </div>
-          </CardContent>
-        </Card>
-
-        {/* Additional Settings Placeholder */}
-        <Card className="mt-6">
-          <CardHeader>
-            <CardTitle>Additional Settings</CardTitle>
-            <CardDescription>
-              More profile customization options coming soon
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-muted-foreground">
-              Profile customization features such as avatar upload, display name, 
-              and notification preferences will be available in a future update.
-            </p>
           </CardContent>
         </Card>
       </div>
