@@ -101,7 +101,7 @@ export default function RightSidebar() {
                   className="flex items-center gap-16 rounded-lg p-16 hover:bg-white transition-all duration-200 cursor-pointer hover-scale"
                 >
                   <Avatar className="h-10 w-10">
-                    <AvatarImage src={company.logo || "/placeholder.svg"} alt={company.companyName} />
+                    <AvatarImage src={company.logo} alt={company.companyName} />
                     <AvatarFallback className="bg-deep text-black font-bold text-xs">
                       {company.companyName.substring(0, 2)}
                     </AvatarFallback>

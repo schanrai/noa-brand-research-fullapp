@@ -62,7 +62,7 @@ export default function BrandCard({
           <div className="flex items-start justify-between">
             <div className="flex items-start gap-24">
               <Avatar className="h-16 w-16">
-                <AvatarImage src={company.logo || "/placeholder.svg"} alt={company.companyName} />
+                <AvatarImage src={company.logo} alt={company.companyName} />
                 <AvatarFallback className="bg-deep text-black font-bold">
                   {company.companyName.substring(0, 2)}
                 </AvatarFallback>
