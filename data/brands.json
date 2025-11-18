@@ -54,7 +54,7 @@
       "profileURL": "/companies/greenearth",
       "outreachProfile": "Actively seeking partnerships aligned with sustainability goals",
       "lastUpdated": "2023-12-05",
-      "logo": "",
+      "logo": "/placeholder.svg?height=80&width=80",
       "inCRM": false,
       "contacts": [
         {
@@ -87,7 +87,7 @@
       "profileURL": "/companies/healthplus",
       "outreachProfile": "Selective about partnerships, focuses on evidence-based collaborations",
       "lastUpdated": "2023-10-28",
-      "logo": "",
+      "logo": "/placeholder.svg?height=80&width=80",
       "inCRM": true,
       "contacts": [
         {
@@ -120,7 +120,7 @@
       "profileURL": "/companies/urbanmove",
       "outreachProfile": "Open to innovative partnerships that align with sustainable urban mobility",
       "lastUpdated": "2023-11-30",
-      "logo": "",
+      "logo": "/placeholder.svg?height=80&width=80",
       "inCRM": false,
       "contacts": [
         {
@@ -186,7 +186,7 @@
       "profileURL": "/companies/medcare",
       "outreachProfile": "Focused on partnerships that advance healthcare technology and patient outcomes",
       "lastUpdated": "2023-12-08",
-      "logo": "",
+      "logo": "/placeholder.svg?height=80&width=80",
       "inCRM": false,
       "contacts": [
         {
