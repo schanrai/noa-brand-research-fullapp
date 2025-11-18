@@ -97,6 +97,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         localStorage.setItem('user-cache', JSON.stringify(newUser))
       } else if (typeof window !== 'undefined') {
         localStorage.removeItem('user-cache')
+        // Clear recently viewed companies when user logs out
+        sessionStorage.removeItem('recently-viewed-companies')
       }
     })
 
@@ -138,6 +140,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Clear cache immediately
     if (typeof window !== 'undefined') {
       localStorage.removeItem('user-cache')
+      // Clear recently viewed companies from sessionStorage
+      sessionStorage.removeItem('recently-viewed-companies')
     }
     
     // Sign out (don't block UI)
