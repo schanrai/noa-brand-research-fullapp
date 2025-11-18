@@ -21,17 +21,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const supabase = createClient()
 
   useEffect(() => {
+    console.log('[AuthProvider] Initializing auth')
     // Try to get cached user first for instant display
     const cachedUser = typeof window !== 'undefined' 
       ? localStorage.getItem('user-cache') 
       : null
     
+    console.log('[AuthProvider] Cached user:', cachedUser ? 'exists' : 'none')
+    
     if (cachedUser) {
       try {
         const parsedUser = JSON.parse(cachedUser)
+        console.log('[AuthProvider] Setting cached user:', parsedUser.email)
         setUser(parsedUser)
         setLoading(false) // Show content immediately
       } catch (e) {
+        console.error('[AuthProvider] Error parsing cached user:', e)
         // Invalid cache, continue to fetch
         if (typeof window !== 'undefined') {
           localStorage.removeItem('user-cache')
@@ -42,8 +47,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Get fresh session in background
     const initializeAuth = async () => {
       try {
+        console.log('[AuthProvider] Fetching fresh session...')
         const { data: { session } } = await supabase.auth.getSession()
         const currentUser = session?.user ?? null
+        console.log('[AuthProvider] Session user:', currentUser ? currentUser.email : 'none')
         setUser(currentUser)
         
         // Cache user for next visit
@@ -53,8 +60,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           localStorage.removeItem('user-cache')
         }
       } catch (error) {
-        console.error('Auth initialization error:', error)
+        console.error('[AuthProvider] Auth initialization error:', error)
       } finally {
+        console.log('[AuthProvider] Setting loading to false')
         setLoading(false)
       }
     }
@@ -62,7 +70,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     initializeAuth()
 
     // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log('[AuthProvider] Auth state changed:', event, session?.user?.email || 'no user')
       const newUser = session?.user ?? null
       setUser(newUser)
       

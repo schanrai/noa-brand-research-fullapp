@@ -7,13 +7,25 @@ import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 // import { Switch } from '@/components/ui/switch' // Commented out - will be used when Notifications section is enabled
 import { Settings as SettingsIcon, Shield, CreditCard } from 'lucide-react'
+import { useEffect } from 'react'
 
 export default function SettingsPage() {
   const { user, loading } = useAuth()
   const router = useRouter()
 
+  useEffect(() => {
+    console.log('[Settings] Component mounted')
+    console.log('[Settings] Loading state:', loading)
+    console.log('[Settings] User:', user ? { id: user.id, email: user.email } : null)
+  }, [])
+
+  useEffect(() => {
+    console.log('[Settings] State changed - loading:', loading, 'user:', user ? 'exists' : 'null')
+  }, [loading, user])
+
   // Skeleton UI while loading (middleware already protects this route)
   if (loading || !user) {
+    console.log('[Settings] Rendering skeleton - loading:', loading, 'user:', user ? 'exists' : 'null')
     return (
       <div className="min-h-screen bg-background">
         <div className="container max-w-4xl mx-auto py-12 px-4 animate-pulse">
@@ -54,6 +66,7 @@ export default function SettingsPage() {
     )
   }
 
+  console.log('[Settings] Rendering main content')
   return (
     <div className="min-h-screen bg-background">
       <div className="container max-w-4xl mx-auto py-12 px-4">
@@ -191,17 +204,15 @@ export default function SettingsPage() {
             <div className="space-y-2">
               <Label>Delete Account</Label>
               <p className="text-sm text-muted-foreground mb-2">
-                Permanently delete your account and all associated data. This action cannot be undone.
+                Permanently delete your account and all associated data.
               </p>
               <Button 
-                variant="destructive" 
+                variant="outline" 
                 size="sm"
-                type="button"
                 onClick={(e) => {
                   e.preventDefault()
                   window.location.href = 'mailto:help@scova.io?subject=Delete my account'
                 }}
-                className="cursor-pointer"
               >
                 Delete Account
               </Button>

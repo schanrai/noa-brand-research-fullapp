@@ -5,13 +5,25 @@ import { useAuth } from '@/components/auth-provider'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { User, Mail, Calendar } from 'lucide-react'
+import { useEffect } from 'react'
 
 export default function ProfilePage() {
   const { user, loading } = useAuth()
   const router = useRouter()
 
+  useEffect(() => {
+    console.log('[Profile] Component mounted')
+    console.log('[Profile] Loading state:', loading)
+    console.log('[Profile] User:', user ? { id: user.id, email: user.email } : null)
+  }, [])
+
+  useEffect(() => {
+    console.log('[Profile] State changed - loading:', loading, 'user:', user ? 'exists' : 'null')
+  }, [loading, user])
+
   // Skeleton UI while loading (middleware already protects this route)
   if (loading || !user) {
+    console.log('[Profile] Rendering skeleton - loading:', loading, 'user:', user ? 'exists' : 'null')
     return (
       <div className="min-h-screen bg-background">
         <div className="container max-w-4xl mx-auto py-12 px-4 animate-pulse">
@@ -82,6 +94,7 @@ export default function ProfilePage() {
     )
   }
 
+  console.log('[Profile] Rendering main content')
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
