@@ -76,7 +76,7 @@ export default function ConfirmationModal({
         <DialogHeader className="space-y-4 pb-4">
           <div className="flex items-center gap-4">
             <Avatar className="h-16 w-16">
-              <AvatarImage src={company.logo || "/placeholder.svg"} alt={company.companyName} />
+              <AvatarImage src={company.logo} alt={company.companyName} />
               <AvatarFallback className="bg-deep text-black font-bold text-lg">
                 {company.companyName.substring(0, 2)}
               </AvatarFallback>

@@ -315,7 +315,7 @@ export default function Home() {
         profileURL: `/companies/${companyName.toLowerCase().replace(/\s+/g, "-")}`,
         outreachProfile: "Actively seeking strategic partnerships and sponsorship opportunities",
         lastUpdated: new Date().toISOString().split("T")[0],
-        logo: "/placeholder.svg?height=80&width=80",
+        logo: "",
         inCRM: false,
         source: "research",
         // Remove contacts array completely - no contacts for LLM research

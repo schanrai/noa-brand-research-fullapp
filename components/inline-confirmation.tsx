@@ -77,7 +77,7 @@ export default function InlineConfirmation({
             <div className="flex items-start justify-between mb-2">
               <div className="flex items-center gap-3">
                 <Avatar className="h-8 w-8">
-                  <AvatarImage src={company.logo || "/placeholder.svg"} alt={company.companyName} />
+                  <AvatarImage src={company.logo} alt={company.companyName} />
                   <AvatarFallback className="bg-deep text-black text-xs font-bold">
                     {company.companyName.substring(0, 2)}
                   </AvatarFallback>
