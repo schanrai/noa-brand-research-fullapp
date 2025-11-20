@@ -47,7 +47,7 @@ export default function LoginPage() {
               Get started with Scova
             </h1>
             <p className="mt-2 text-muted-foreground">
-              Brand research and discovery platform
+              Brand research and prospect brief engine
             </p>
           </div>
 
