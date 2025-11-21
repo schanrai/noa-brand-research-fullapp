@@ -720,9 +720,9 @@ export async function exportCompanyToPDF(company: CompanyData): Promise<void> {
      */
     const addCampaignSection = (title: string, content: string) => {
       // Step 1: Parse campaign blocks from content
-      // Pattern matches: **bold text WITH colon** OR plain text WITH colon
+      // Pattern matches: **bold text** (colon optional) OR plain text WITH colon
       // This prevents matching random capitalized sentences or inline bold emphasis
-      const campaignPattern = /\*\*([A-Z][A-Za-z0-9\s\-&']{10,79})\*\*:\s*|([A-Z][A-Za-z0-9\s\-&']{10,79}):\s*/g;
+      const campaignPattern = /\*\*([A-Z][A-Za-z0-9\s\-&'()]{10,79})\*\*:?\s*|([A-Z][A-Za-z0-9\s\-&'()]{10,79}):\s*/g;
       const campaigns: Array<{ name: string; content: string }> = [];
       
       const matches: Array<{ name: string; startIndex: number; endIndex: number }> = [];
@@ -739,17 +739,57 @@ export async function exportCompanyToPDF(company: CompanyData): Promise<void> {
         });
       }
       
-      // Filter out lead-in phrases (e.g., "Deloitte focuses on:") that precede numbered lists
+      // Smart filter: Distinguish campaign titles from inline emphasis using context
       const filteredMatches = matches.filter((match, index) => {
-        // Only check the first match - it might be a lead-in phrase
+        // Filter 1: Lead-in phrases that precede numbered lists
         if (index === 0) {
           const contentAfter = content.substring(match.endIndex, match.endIndex + 100);
-          // If followed by a numbered list pattern (1., 2., etc.), it's a lead-in, not a campaign
           if (/^\s*1\.\s+/.test(contentAfter)) {
-            return false; // Exclude this match - it's a lead-in phrase
+            return false; // Exclude - it's a lead-in phrase
           }
         }
-        return true; // Keep this match - it's a real campaign
+        
+        // Filter 2: Check context BEFORE the match
+        const contentBefore = content.substring(Math.max(0, match.startIndex - 50), match.startIndex);
+        
+        // If preceded by structural boundary (newline, `))`, or start of content) → likely campaign
+        const isAtStructuralBoundary = 
+          match.startIndex === 0 || // Start of content
+          /\n\s*$/.test(contentBefore) || // Preceded by newline
+          /\)\)\s*$/.test(contentBefore); // Preceded by `))` (end of URL)
+        
+        // If preceded by lowercase letter → likely inline emphasis
+        const isPrecededByLowercase = /[a-z]\s*$/.test(contentBefore);
+        
+        // Filter 3: Check context AFTER the match
+        const contentAfter = content.substring(match.endIndex, Math.min(content.length, match.endIndex + 200));
+        // If followed by substantial content (long paragraph) → likely campaign
+        const hasSubstantialContent = contentAfter.trim().length > 50;
+        
+        // Check if the original match included a colon (strong signal for campaign)
+        const matchedText = content.substring(match.startIndex, match.endIndex);
+        const hasColon = matchedText.includes(':');
+        
+        // Decision logic:
+        // - If preceded by lowercase AND no colon → inline emphasis ❌
+        // - If at structural boundary AND has substantial content → campaign ✅
+        // - If has colon → likely campaign ✅ (colon is strong signal)
+        // - Otherwise, be conservative and include it
+        
+        if (isPrecededByLowercase && !hasColon) {
+          return false; // Inline emphasis - exclude
+        }
+        
+        if (isAtStructuralBoundary && hasSubstantialContent) {
+          return true; // Campaign title - include
+        }
+        
+        if (hasColon) {
+          return true; // Campaign with colon - include
+        }
+        
+        // Default: include (conservative approach - let other filters catch false positives)
+        return true;
       });
       
       // Extract campaign blocks and preserve introduction
