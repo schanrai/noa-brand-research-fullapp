@@ -720,9 +720,12 @@ export async function exportCompanyToPDF(company: CompanyData): Promise<void> {
      */
     const addCampaignSection = (title: string, content: string) => {
       // Step 1: Parse campaign blocks from content
-      // Pattern matches: **bold text** (colon optional) OR plain text WITH colon
-      // This prevents matching random capitalized sentences or inline bold emphasis
-      const campaignPattern = /\*\*([A-Z][A-Za-z0-9\s\-&'()]{10,79})\*\*:?\s*|([A-Z][A-Za-z0-9\s\-&'()]{10,79}):\s*/g;
+      // Pattern matches:
+      // - **bold text** (colon optional)
+      // - numbered campaigns like "1. "Campaign Name"" (quotes optional)
+      // - plain text containing keywords (Partnership, Sponsorship, etc.) with colon required
+      // This prevents matching random section headings or inline bold emphasis
+      const campaignPattern = /\*\*([A-Z][A-Za-z0-9\s\-&'()]{10,79})\*\*:?\s*|(?:\d+\.\s*)"?([A-Z][A-Za-z0-9\s\-&'()]{10,79})"?|([A-Z][A-Za-z0-9\s\-&'()]*(?:Partnership|Sponsorship|Collaboration|Festival|Campaign|Initiative)[A-Za-z0-9\s\-&'()]*?):\s*/g;
       const campaigns: Array<{ name: string; content: string }> = [];
       
       const matches: Array<{ name: string; startIndex: number; endIndex: number }> = [];
@@ -730,8 +733,8 @@ export async function exportCompanyToPDF(company: CompanyData): Promise<void> {
       
       // Find all campaign markers
       while ((match = campaignPattern.exec(content)) !== null) {
-        // match[1] = bold text, match[2] = plain text with colon
-        const campaignName = (match[1] || match[2]).trim();
+        // match[1] = bold text, match[2] = numbered campaign, match[3] = keyword-based plain text
+        const campaignName = (match[1] || match[2] || match[3]).trim().replace(/^["']|["']$/g, '');
         matches.push({
           name: campaignName,
           startIndex: match.index,
