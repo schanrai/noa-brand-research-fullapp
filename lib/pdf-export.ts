@@ -720,12 +720,10 @@ export async function exportCompanyToPDF(company: CompanyData): Promise<void> {
      */
     const addCampaignSection = (title: string, content: string) => {
       // Step 1: Parse campaign blocks from content
-      // Pattern matches:
-      // - **bold text** (colon optional)
-      // - numbered campaigns like "1. "Campaign Name"" (quotes optional)
-      // - plain text containing keywords (Partnership, Sponsorship, etc.) with colon required
-      // This prevents matching random section headings or inline bold emphasis
-      const campaignPattern = /\*\*([A-Z][A-Za-z0-9\s\-&'()]{10,79})\*\*:?\s*|(?:\d+\.\s*)"?([A-Z][A-Za-z0-9\s\-&'()]{10,79})"?|([A-Z][A-Za-z0-9\s\-&'()]*(?:Partnership|Sponsorship|Collaboration|Festival|Campaign|Initiative)[A-Za-z0-9\s\-&'()]*?):\s*/g;
+      // Pattern matches: **Any Text**: or **Any Text** (colon optional)
+      // This matches what the LLM outputs for campaigns
+      // Smart filters below distinguish campaigns from inline emphasis
+      const campaignPattern = /\*\*([^*]+?)\*\*:?\s*/g;
       const campaigns: Array<{ name: string; content: string }> = [];
       
       const matches: Array<{ name: string; startIndex: number; endIndex: number }> = [];
@@ -733,8 +731,8 @@ export async function exportCompanyToPDF(company: CompanyData): Promise<void> {
       
       // Find all campaign markers
       while ((match = campaignPattern.exec(content)) !== null) {
-        // match[1] = bold text, match[2] = numbered campaign, match[3] = keyword-based plain text
-        const campaignName = (match[1] || match[2] || match[3]).trim().replace(/^["']|["']$/g, '');
+        // Strip quotes from campaign names (e.g., **"Campaign Name"**: -> Campaign Name)
+        const campaignName = match[1].trim().replace(/^["']|["']$/g, '');
         matches.push({
           name: campaignName,
           startIndex: match.index,
@@ -1148,7 +1146,7 @@ export async function exportCompanyToPDF(company: CompanyData): Promise<void> {
     }
 
     if (analysis?.strategicFocus?.content) {
-      addCampaignSection('Strategic Focus', analysis.strategicFocus.content);
+      addSection('Strategic Focus', analysis.strategicFocus.content);
     }
 
     // === FOOTER ON LAST PAGE ===
