@@ -2,8 +2,8 @@ export interface Contact {
   name: string;
   email: string;
   title: string;
-  phone: string;
-  linkedIn: string;
+  source: string;
+  relationshipNotes: string;
 }
 
 export interface Brand {

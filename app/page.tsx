@@ -19,6 +19,7 @@ export default function Home() {
   const [searchStage, setSearchStage] = useState<"initial" | "region" | "division" | "results">("initial")
   const [searchMode, setSearchMode] = useState<'research' | 'crm'>('crm')
   const [filters, setFilters] = useState({
+    query: "",
     region: "",
     industry: "",
     sponsorshipType: "",
@@ -123,27 +124,31 @@ export default function Home() {
     let results = brandsData.companies.filter((company) => company.inCRM)
 
     if (newFilters.query) {
+      const query = newFilters.query
       results = results.filter(
         (company) =>
-          company.companyName.toLowerCase().includes(newFilters.query.toLowerCase()) ||
-          company.description.toLowerCase().includes(newFilters.query.toLowerCase()),
+          company.companyName.toLowerCase().includes(query.toLowerCase()) ||
+          company.description.toLowerCase().includes(query.toLowerCase()),
       )
     }
 
     if (newFilters.region) {
+      const regionFilter = newFilters.region
       results = results.filter((company) =>
-        company.regions.some((region: string) => region.toLowerCase().includes(newFilters.region.toLowerCase())),
+        company.regions.some((region: string) => region.toLowerCase().includes(regionFilter.toLowerCase())),
       )
     }
 
     if (newFilters.industry) {
-      results = results.filter((company) => company.industry.toLowerCase().includes(newFilters.industry.toLowerCase()))
+      const industry = newFilters.industry
+      results = results.filter((company) => company.industry.toLowerCase().includes(industry.toLowerCase()))
     }
 
     if (newFilters.sponsorshipType) {
+      const sponsorshipType = newFilters.sponsorshipType
       results = results.filter((company) =>
         company.sponsorshipTypes.some((type: string) =>
-          type.toLowerCase().includes(newFilters.sponsorshipType.toLowerCase()),
+          type.toLowerCase().includes(sponsorshipType.toLowerCase()),
         ),
       )
     }
@@ -170,8 +175,9 @@ export default function Home() {
     if (newFilters.revenue) {
       // Add revenue filtering logic - this would need more sophisticated parsing
       // For now, we'll do a simple string match
+      const revenueFilter = newFilters.revenue
       results = results.filter((company) =>
-        company.annualRevenue.toLowerCase().includes(newFilters.revenue.toLowerCase()),
+        company.annualRevenue.toLowerCase().includes(revenueFilter.toLowerCase()),
       )
     }
 
@@ -231,6 +237,7 @@ export default function Home() {
       setSearchResults([])
       setSelectedCompany(null)
       setFilters({
+        query: "",
         region: "",
         industry: "",
         sponsorshipType: "",
@@ -252,6 +259,7 @@ export default function Home() {
       setSearchResults([])
       setSelectedCompany(null)
       setFilters({
+        query: "",
         region: "",
         industry: "",
         sponsorshipType: "",
@@ -319,8 +327,7 @@ export default function Home() {
         logo: "/placeholder.svg?height=80&width=80",
         inCRM: false,
         source: "research",
-        // Remove contacts array completely - no contacts for LLM research
-        // contacts: [], // This line should be removed entirely
+        contacts: [], // Empty array - no contacts for LLM research
         // Use the actual LLM data for detailed analysis
         detailedAnalysis: parsedData?.detailedAnalysis || {
           companyOverview: {
