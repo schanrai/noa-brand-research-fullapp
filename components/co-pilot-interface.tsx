@@ -865,7 +865,7 @@ Please choose one of the options below.`
             {!feedbackMode && currentStage !== 'initial' && companyName && (
               <div className="mt-6 px-4 py-3 bg-gray-50 rounded-lg border border-gray-200">
                 <div className="flex items-center justify-between text-xs font-medium uppercase tracking-wide">
-                  <span className="text-black">
+                  <span className="text-gray-400">
                     1. Company
                   </span>
                   <div className="h-px flex-1 mx-2 bg-gray-300" />
