@@ -865,7 +865,7 @@ Please choose one of the options below.`
             {!feedbackMode && currentStage !== 'initial' && companyName && (
               <div className="mt-6 px-4 py-3 bg-gray-50 rounded-lg border border-gray-200">
                 <div className="flex items-center justify-between text-xs font-medium uppercase tracking-wide">
-                  <span className={currentStage === 'initial' ? 'text-black' : 'text-gray-400'}>
+                  <span className="text-black">
                     1. Company
                   </span>
                   <div className="h-px flex-1 mx-2 bg-gray-300" />

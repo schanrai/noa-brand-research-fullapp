@@ -10,9 +10,10 @@ import { useCRMActions } from "@/hooks/use-crm-actions"
 import { useState } from "react"
 import { isReportOnlyMode } from "@/lib/feature-flags"
 import { exportCompanyToPDF } from "@/lib/pdf-export"
+import type { Brand } from "@/types/brand"
 
 interface BrandCardProps {
-  company: any
+  company: Brand
   isExpanded: boolean
   onToggleExpand: () => void
   onApprove: () => void

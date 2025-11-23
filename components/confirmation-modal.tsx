@@ -16,11 +16,12 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Separator } from "@/components/ui/separator"
 import { Building2, Users, MapPin, DollarSign, Calendar, AlertTriangle } from "lucide-react"
 import { normalizeCurrencyFormat } from "@/lib/utils"
+import type { Brand } from "@/types/brand"
 
 interface ConfirmationModalProps {
   isOpen: boolean
   onClose: () => void
-  company: any
+  company: Brand
   onConfirm: () => void
   onCancel: () => void
   isLoading?: boolean
@@ -131,7 +132,7 @@ export default function ConfirmationModal({
                 Contacts to be added ({company.contacts.length})
               </h4>
               <div className="space-y-3">
-                {company.contacts.slice(0, 2).map((contact: any, index: number) => (
+                {company.contacts.slice(0, 2).map((contact, index: number) => (
                   <div key={index} className="flex items-center gap-4 p-3 bg-white rounded-lg border border-gray-100">
                     <Avatar className="h-10 w-10">
                       <AvatarFallback className="bg-gray-100 text-gray-600 text-sm">

@@ -117,7 +117,7 @@ export default function PrivacyPolicyPage() {
                 <li><strong>Restriction:</strong> Request restriction of processing in certain circumstances</li>
               </ul>
               <p>
-                To exercise these rights, please contact us using the information provided in the "Contact Us" section below.
+                To exercise these rights, please contact us using the information provided in the &ldquo;Contact Us&rdquo; section below.
               </p>
             </section>
 
@@ -129,7 +129,7 @@ export default function PrivacyPolicyPage() {
             </section>
 
             <section>
-              <h2 className="text-lg font-semibold mb-4">9. Children's Privacy</h2>
+              <h2 className="text-lg font-semibold mb-4">9. Children&apos;s Privacy</h2>
               <p>
                 Our services are not intended for individuals under the age of 18. We do not knowingly collect personal information from children. If you believe we have inadvertently collected information from a child, please contact us immediately.
               </p>
@@ -145,7 +145,7 @@ export default function PrivacyPolicyPage() {
             <section>
               <h2 className="text-lg font-semibold mb-4">11. Changes to This Privacy Policy</h2>
               <p>
-                We may update this Privacy Policy from time to time to reflect changes in our practices or legal requirements. We will notify you of any material changes by posting the updated policy on this page and updating the "Last Updated" date. Your continued use of our services after such changes constitutes acceptance of the updated policy.
+                We may update this Privacy Policy from time to time to reflect changes in our practices or legal requirements. We will notify you of any material changes by posting the updated policy on this page and updating the &ldquo;Last Updated&rdquo; date. Your continued use of our services after such changes constitutes acceptance of the updated policy.
               </p>
             </section>
 

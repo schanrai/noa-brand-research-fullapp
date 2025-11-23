@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { useAuth } from '@/components/auth-provider'
 import { createClient } from '@/lib/supabase/client'
-import { AlertCircle, CheckCircle, Mail } from 'lucide-react'
+import { AlertCircle, CheckCircle } from 'lucide-react'
 
 export function EmailSignInForm() {
   const [mode, setMode] = useState<'signin' | 'signup' | 'forgot'>('signin')
@@ -38,7 +38,7 @@ export function EmailSignInForm() {
       // Always show success (non-enumeration security)
       setSuccess('If an account exists with that email, you will receive password reset instructions.')
       setEmail('')
-    } catch (err) {
+    } catch {
       // Even on error, show success (don't reveal if email exists)
       setSuccess('If an account exists with that email, you will receive password reset instructions.')
     } finally {
@@ -235,7 +235,7 @@ export function EmailSignInForm() {
             </>
           ) : mode === 'signin' ? (
             <>
-              Don't have an account?{' '}
+              Don&apos;t have an account?{' '}
               <span className="text-blue-600 underline hover:text-blue-800 hover:no-underline transition-colors">
                 Sign up
               </span>

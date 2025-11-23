@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 // import { Switch } from '@/components/ui/switch' // Commented out - will be used when Notifications section is enabled
-import { Settings as SettingsIcon, Shield, CreditCard } from 'lucide-react'
+import { Shield, CreditCard } from 'lucide-react'
 import { useEffect } from 'react'
 
 export default function SettingsPage() {
@@ -17,7 +17,7 @@ export default function SettingsPage() {
     console.log('[Settings] Component mounted')
     console.log('[Settings] Loading state:', loading)
     console.log('[Settings] User:', user ? { id: user.id, email: user.email } : null)
-  }, [])
+  }, [loading, user])
 
   useEffect(() => {
     console.log('[Settings] State changed - loading:', loading, 'user:', user ? 'exists' : 'null')

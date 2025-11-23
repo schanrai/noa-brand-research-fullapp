@@ -11,9 +11,10 @@ import { FileDown } from "lucide-react"
 import { exportCompanyToPDF } from "@/lib/pdf-export"
 import { isReportOnlyMode } from "@/lib/feature-flags"
 import { normalizeCurrencyFormat } from "@/lib/utils"
+import type { Brand } from "@/types/brand"
 
 interface BrandProfilePanelProps {
-  company: any
+  company: Brand
 }
 
 export default function BrandProfilePanel({ company }: BrandProfilePanelProps) {
@@ -370,7 +371,7 @@ export default function BrandProfilePanel({ company }: BrandProfilePanelProps) {
           {/* Only render contacts tab content when contacts exist */}
           {hasContacts && (
             <TabsContent value="contacts">
-              {company.contacts.map((contact: any, index: number) => (
+              {company.contacts.map((contact, index: number) => (
                 <ContactInfoPanel key={index} contact={contact} />
               ))}
             </TabsContent>

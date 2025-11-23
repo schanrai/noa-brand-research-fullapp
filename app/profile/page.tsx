@@ -15,7 +15,7 @@ export default function ProfilePage() {
     console.log('[Profile] Component mounted')
     console.log('[Profile] Loading state:', loading)
     console.log('[Profile] User:', user ? { id: user.id, email: user.email } : null)
-  }, [])
+  }, [loading, user])
 
   useEffect(() => {
     console.log('[Profile] State changed - loading:', loading, 'user:', user ? 'exists' : 'null')

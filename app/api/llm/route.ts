@@ -1,6 +1,6 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
-import { validatePrompt, isInputSafe } from '@/lib/input-validator';
+import { isInputSafe } from '@/lib/input-validator';
 
 
 
@@ -42,7 +42,19 @@ if (prompt.includes('TEST_ERROR')) {
     );
   }
 
-   const requestBody: any = {
+  interface OpenRouterRequestBody {
+    model: string;
+    messages: Array<{ role: string; content: string }>;
+    temperature: number;
+    top_p?: number;
+    max_tokens?: number;
+    stop?: string | string[];
+    response_format?: { type: string };
+    plugins?: string[];
+    web_search_options?: Record<string, unknown>;
+  }
+
+  const requestBody: OpenRouterRequestBody = {
     model,
     messages: [
       { role: 'system', content: 'You are a helpful assistant for brand research.' },

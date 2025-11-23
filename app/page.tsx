@@ -10,11 +10,12 @@ import ConfirmationToast from "@/components/confirmation-toast"
 import ErrorToast from "@/components/error-toast"
 import brandsData from "@/data/brands.json"
 import { isReportOnlyMode } from "@/lib/feature-flags"
+import type { Brand } from "@/types/brand"
 
 
 export default function Home() {
-  const [searchResults, setSearchResults] = useState<any[]>([])
-  const [selectedCompany, setSelectedCompany] = useState<any>(null)
+  const [searchResults, setSearchResults] = useState<Brand[]>([])
+  const [selectedCompany, setSelectedCompany] = useState<Brand | null>(null)
   const [searchStage, setSearchStage] = useState<"initial" | "region" | "division" | "results">("initial")
   const [searchMode, setSearchMode] = useState<'research' | 'crm'>('crm')
   const [filters, setFilters] = useState({
@@ -29,7 +30,7 @@ export default function Home() {
   const [toastNotification, setToastNotification] = useState<{
     show: boolean
     type: "success" | "error" | "pending"
-    company?: any
+    company?: Brand
     message: string
   }>({
     show: false,
@@ -47,7 +48,7 @@ export default function Home() {
   })
 
   // Enhanced error message function
-  const getErrorMessage = (companyName: string, error?: any): string => {
+  const getErrorMessage = (companyName: string, error?: { status?: number; message?: string; code?: string }): string => {
     // 500 Server errors
     if (error?.status === 500 || error?.message?.includes('500')) {
       return `Error 500: Our research service is temporarily unavailable. Please try again in a few moments.`
@@ -97,7 +98,7 @@ export default function Home() {
     }
   }, [])
 
-  const handleSearch = (newFilters: any) => {
+  const handleSearch = (newFilters: Partial<typeof filters>) => {
     setFilters({ ...filters, ...newFilters })
     setSearchMode('crm')
 
@@ -178,7 +179,7 @@ export default function Home() {
     setSearchStage("results")
   }
 
-  const handleCompanySelect = (company: any) => {
+  const handleCompanySelect = (company: Brand) => {
     setSelectedCompany(company)
     
     // Dispatch event for recently viewed tracking

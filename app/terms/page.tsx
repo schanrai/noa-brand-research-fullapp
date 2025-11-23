@@ -23,7 +23,7 @@ export default function TermsOfServicePage() {
             <section>
               <h2 className="text-lg font-semibold mb-4">1. Acceptance of Terms</h2>
               <p>
-                By accessing or using the Scova Brand Research Tool ("Service"), you agree to be bound by these Terms of Service ("Terms"). If you disagree with any part of these terms, you may not access or use the Service. These Terms apply to all users, including visitors, registered users, and subscribers.
+                By accessing or using the Scova Brand Research Tool (&ldquo;Service&rdquo;), you agree to be bound by these Terms of Service (&ldquo;Terms&rdquo;). If you disagree with any part of these terms, you may not access or use the Service. These Terms apply to all users, including visitors, registered users, and subscribers.
               </p>
             </section>
 
@@ -84,7 +84,7 @@ export default function TermsOfServicePage() {
                 <li>You agree to pay all fees associated with your subscription</li>
                 <li>Fees are billed in advance on a recurring basis (monthly or annually)</li>
                 <li>All fees are non-refundable except as required by law or as explicitly stated</li>
-                <li>We reserve the right to change our pricing with 30 days' notice</li>
+                <li>We reserve the right to change our pricing with 30 days&apos; notice</li>
                 <li>Late payments may result in suspension or termination of your account</li>
                 <li>You are responsible for any taxes applicable to your use of the Service</li>
               </ul>
@@ -146,7 +146,7 @@ export default function TermsOfServicePage() {
             <section>
               <h2 className="text-lg font-semibold mb-4">10. Disclaimers and Warranties</h2>
               <p className="mb-4">
-                THE SERVICE IS PROVIDED "AS IS" AND "AS AVAILABLE" WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO:
+                THE SERVICE IS PROVIDED &ldquo;AS IS&rdquo; AND &ldquo;AS AVAILABLE&rdquo; WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO:
               </p>
               <ul className="list-disc pl-6 space-y-1 mb-4">
                 <li>WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, OR NON-INFRINGEMENT</li>
@@ -214,7 +214,7 @@ export default function TermsOfServicePage() {
             <section>
               <h2 className="text-lg font-semibold mb-4">16. Changes to Terms</h2>
               <p>
-                We reserve the right to modify these Terms at any time. We will notify users of material changes by posting the updated Terms on this page and updating the "Last Updated" date. Your continued use of the Service after such changes constitutes acceptance of the modified Terms. If you do not agree to the changes, you must stop using the Service.
+                We reserve the right to modify these Terms at any time. We will notify users of material changes by posting the updated Terms on this page and updating the &ldquo;Last Updated&rdquo; date. Your continued use of the Service after such changes constitutes acceptance of the modified Terms. If you do not agree to the changes, you must stop using the Service.
               </p>
             </section>
 
