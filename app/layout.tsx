@@ -16,7 +16,7 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   title: "Scova - The Prospect-Brief Engine for Teams Who Pitch for a Living",
-  description: "Turn content overload into a cited, comparable prospect brief—so your team can qualify accounts, prioritize outreach, and align fast.",
+  description: "Turn content overload  into a cited, comparable prospect brief—so your team can qualify accounts, prioritize outreach, and align fast.",
   openGraph: {
     title: "Scova - The Prospect-Brief Engine for Teams Who Pitch for a Living",
     description: "Turn content overload into a cited, comparable prospect brief—so your team can qualify accounts, prioritize outreach, and align fast.",
