@@ -57,6 +57,16 @@ h1, h2, h3, h4, h5, h6 {
   letter-spacing: 0.025em;
 }
 
+/* Keep headings readable (original case) inside prose blocks */
+.prose-readable h1,
+.prose-readable h2,
+.prose-readable h3,
+.prose-readable h4,
+.prose-readable h5,
+.prose-readable h6 {
+  text-transform: none;
+}
+
 /* Smooth transitions for all interactive elements */
 button, a, [role="button"] {
   transition: all 0.2s ease-in-out;
@@ -117,5 +127,11 @@ button, a, [role="button"] {
 
 .btn-premium:hover {
   transform: scale(1.05);
+}
+
+/* Dynamic viewport height for DevTools compatibility */
+.h-screen-dynamic {
+  height: 100vh; /* Fallback for older browsers */
+  height: 100dvh; /* Dynamic viewport height */
 }
 

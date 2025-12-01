@@ -3,14 +3,17 @@
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { ChevronDown, ChevronUp, Check } from "lucide-react"
+import { ChevronDown, ChevronUp, Check, FileDown } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import ConfirmationModal from "./confirmation-modal"
 import { useCRMActions } from "@/hooks/use-crm-actions"
 import { useState } from "react"
+import { isReportOnlyMode } from "@/lib/feature-flags"
+import { exportCompanyToPDF } from "@/lib/pdf-export"
+import type { Brand } from "@/types/brand"
 
 interface BrandCardProps {
-  company: any
+  company: Brand
   isExpanded: boolean
   onToggleExpand: () => void
   onApprove: () => void
@@ -44,6 +47,15 @@ export default function BrandCard({
     onReject()
   }
 
+  const handlePDFDownload = async () => {
+    try {
+      await exportCompanyToPDF(company)
+    } catch (error) {
+      console.error('Failed to generate PDF:', error)
+      alert('Failed to generate PDF. Please try again.')
+    }
+  }
+
   return (
     <>
       <Card className="card-premium">
@@ -51,7 +63,7 @@ export default function BrandCard({
           <div className="flex items-start justify-between">
             <div className="flex items-start gap-24">
               <Avatar className="h-16 w-16">
-                <AvatarImage src={company.logo || "/placeholder.svg"} alt={company.companyName} />
+                <AvatarImage src={company.logo} alt={company.companyName} />
                 <AvatarFallback className="bg-deep text-black font-bold">
                   {company.companyName.substring(0, 2)}
                 </AvatarFallback>
@@ -59,7 +71,7 @@ export default function BrandCard({
               <div className="space-y-16">
                 <div className="flex items-center gap-16">
                   <h3 className="text-xl font-bold uppercase tracking-wide">{company.companyName}</h3>
-                  {company.inCRM && (
+                  {!isReportOnlyMode() && company.inCRM && (
                     <Badge
                       variant="outline"
                       className="border-green-500 text-green-600 text-xs uppercase tracking-wide"
@@ -98,7 +110,7 @@ export default function BrandCard({
             </Button>
           </div>
         </CardContent>
-        {showActions && !company.inCRM && company.source === 'research' && (
+        {!isReportOnlyMode() && showActions && !company.inCRM && company.source === 'research' && (
           <CardFooter className="flex justify-end gap-16 border-t border-gray-200 bg-edge px-24 py-16">
             <Button
               size="sm"
@@ -120,7 +132,7 @@ export default function BrandCard({
             </Button>
           </CardFooter>
         )}
-        {showActions && company.inCRM && company.source === 'crm' && (
+        {!isReportOnlyMode() && showActions && company.inCRM && company.source === 'crm' && (
           <CardFooter className="flex justify-end gap-16 border-t border-gray-200 bg-edge px-24 py-16">
             <Button
               size="sm"
@@ -130,6 +142,18 @@ export default function BrandCard({
             >
               <Check className="mr-2 h-4 w-4" />
               <span className="text-xs">Update CRM</span>
+            </Button>
+          </CardFooter>
+        )}
+        {isReportOnlyMode() && (
+          <CardFooter className="flex justify-end gap-16 border-t border-gray-200 bg-edge px-24 py-16">
+            <Button
+              size="sm"
+              onClick={handlePDFDownload}
+              className="btn-premium bg-black text-white hover:bg-gray-800"
+            >
+              <FileDown className="mr-2 h-4 w-4" />
+              <span className="text-xs">Download as PDF</span>
             </Button>
           </CardFooter>
         )}

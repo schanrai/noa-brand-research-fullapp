@@ -46,5 +46,38 @@ Follow these rules when you write code:
 - Implement accessibility features on elements. For example, a tag should have a tabindex=“0”, aria-label, on:click, and on:keydown, and similar attributes.
 - Use consts instead of functions, for example, “const toggle = () =>”. Also, define a type if possible.
 
+### Production-Ready Development Standards
+Always develop with production-level strictness to catch issues early:
 
+**TypeScript:**
+- Use strict mode: `"strict": true` in `tsconfig.json`
+- Run `npm run build` locally before committing to verify production compatibility
+- Fix all type errors; never rely on dev mode's relaxed checking
+- Ensure type safety with proper control flow analysis
+- No `any` types without explicit justification
+
+**Build Verification:**
+- Test production builds locally: `npm run build && npm start`
+- Verify no build errors or warnings before deployment
+- Check that all environment variables are properly typed and validated
+- Ensure ESLint and TypeScript checks pass in production mode
+
+**Testing Standards:**
+- Write code that passes both development AND production builds
+- If it works locally but fails in production build, the local code is wrong
+- Assume production build strictness is the correct standard
+- Never suggest workarounds to bypass production type checking
+
+**General Principles:**
+- Development mode convenience should never compromise production quality
+- Type safety is non-negotiable; runtime flexibility is not an excuse for loose types
+- If TypeScript flags a logical impossibility, the logic is wrong, not the compiler
+- Code should be production-ready from the first commit, not "fixed later"
+
+### Code Preservation Guidelines
+- **Never modify working components** unless fixing broken functionality
+- **Prefer additive approaches** - create new rather than change existing
+- **Use minimal integration** - event-driven communication over direct coupling
+- **Test existing functionality** before and after any changes
+- **Ask "Is this the simplest solution?"** before implementing
 

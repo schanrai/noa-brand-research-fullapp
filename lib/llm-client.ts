@@ -39,7 +39,8 @@ export async function getStructuredData(prompt: string) {
       model: "openai/gpt-4o-mini-search-preview",
       temperature: 0.0,
       top_p: 0.0,
-      max_tokens: 300
+      max_tokens: 300,
+      skipValidation: true // Skip validation for LLM-generated content
     }),
   });
   const data = await response.json();
@@ -67,15 +68,15 @@ export async function getDetailedAnalysis(prompt: string) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ 
         prompt, 
-        model: "openai/gpt-4o-search-preview",
+        model: "openai/gpt-4o-search-preview", // ADD :online suffix
         temperature: 0.3,
         top_p: 0.9,
-        max_tokens: 4000
+        max_tokens: 4000,
+        skipValidation: true // Skip validation for LLM-generated content
       }),
     });
     
     const data = await response.json();
-    //console.log("Detailed analysis result: ", data);
     
     if (!response.ok) {
       console.error("API Error:", data);
@@ -85,6 +86,43 @@ export async function getDetailedAnalysis(prompt: string) {
     return data.result; // Return raw text, not parsed JSON
   } catch (e) {
     console.error("Detailed analysis failed:", e);
+    const errorMessage = e instanceof Error ? e.message : String(e);
+    throw new Error(`LLM request failed: ${errorMessage}`);
+  }
+}
+
+// ADD: New function for citation-heavy analysis (more search results)
+export async function getDetailedAnalysisWithCitations(prompt: string) {
+  console.log("Getting detailed analysis with enhanced citation search");
+  try {
+    const response = await fetch('/api/llm', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ 
+        prompt, 
+        model: "openai/gpt-4o-search-preview",
+        temperature: 0.3,
+        top_p: 0.9,
+        max_tokens: 4000,
+        plugins: [{
+          id: "web",
+          engine: "exa",
+          max_results: 50 
+        }],
+        skipValidation: true // Skip validation for LLM-generated content
+      }),
+    });
+    
+    const data = await response.json();
+    
+    if (!response.ok) {
+      console.error("API Error:", data);
+      throw new Error(data.error || `HTTP ${response.status}: ${response.statusText}`);
+    }
+    
+    return data.result; // Return raw text, not parsed JSON
+  } catch (e) {
+    console.error("Detailed analysis with citations failed:", e);
     const errorMessage = e instanceof Error ? e.message : String(e);
     throw new Error(`LLM request failed: ${errorMessage}`);
   }
@@ -101,6 +139,10 @@ export async function getFormattedData(content: string, schema: any) {
 
 IMPORTANT: If there are paragraphs, line breaks or other formatting, preserve it as long as the result is readable and follows the schema requirements.  Preserve all markdown links in the format [Link Text](URL) - do not convert them to plain text.
 
+CRITICAL MAPPING RULES:
+- For social media: If the input begins with a bullet list of official/verified social handles, copy that bullet list VERBATIM into socialMediaPresence.handles (do not alter order or content), and put the subsequent narrative into socialMediaPresence.content. Do not drop, merge, or rewrite the bullet list. Do not add any text before it.
+- For other sections, map narrative into the corresponding content field(s).
+
 RESEARCH CONTENT:
 ${content}
 
@@ -109,7 +151,8 @@ Format as clean, readable narrative text that follows the schema requirements, k
       temperature: 0.0,
       top_p: 0.1,
       max_tokens: 15000,
-      response_format: schema
+      response_format: schema,
+      skipValidation: true // Skip validation for LLM-generated content
     }),
   });
   const data = await response.json();

@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { marked } from "marked"
 import {
   Dialog,
   DialogContent,
@@ -14,11 +15,13 @@ import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Separator } from "@/components/ui/separator"
 import { Building2, Users, MapPin, DollarSign, Calendar, AlertTriangle } from "lucide-react"
+import { normalizeCurrencyFormat } from "@/lib/utils"
+import type { Brand } from "@/types/brand"
 
 interface ConfirmationModalProps {
   isOpen: boolean
   onClose: () => void
-  company: any
+  company: Brand
   onConfirm: () => void
   onCancel: () => void
   isLoading?: boolean
@@ -34,6 +37,35 @@ export default function ConfirmationModal({
 }: ConfirmationModalProps) {
   const [showDetails, setShowDetails] = useState(false)
 
+  // Markdown conversion function
+  const convertToHtml = (content: string) => {
+    if (!content) return ""
+    
+    try {
+      // Configure marked options
+      marked.setOptions({
+        breaks: true, // Convert line breaks to <br>
+        gfm: true,    // GitHub Flavored Markdown
+      });
+      
+      // Convert markdown to HTML
+      let htmlContent = marked(content);
+      
+      // If it's a Promise, return the original content
+      if (htmlContent instanceof Promise) {
+        return content;
+      }
+      
+      // Add Tailwind classes to all links for styling and new window behavior
+      htmlContent = htmlContent.replace(/<a /g, '<a target="_blank" rel="noopener noreferrer" class="text-blue-600 underline hover:text-blue-800 hover:no-underline transition-colors" ');
+      
+      return htmlContent;
+    } catch (error) {
+      console.error('Markdown parsing error:', error);
+      return content.replace(/[<>]/g, '');
+    }
+  }
+
   if (!company) return null
 
   return (
@@ -45,7 +77,7 @@ export default function ConfirmationModal({
         <DialogHeader className="space-y-4 pb-4">
           <div className="flex items-center gap-4">
             <Avatar className="h-16 w-16">
-              <AvatarImage src={company.logo || "/placeholder.svg"} alt={company.companyName} />
+              <AvatarImage src={company.logo} alt={company.companyName} />
               <AvatarFallback className="bg-deep text-black font-bold text-lg">
                 {company.companyName.substring(0, 2)}
               </AvatarFallback>
@@ -80,7 +112,7 @@ export default function ConfirmationModal({
               </div>
               <div className="flex items-center gap-3">
                 <DollarSign className="h-5 w-5 text-gray-500" />
-                <span className="text-gray-700">{company.annualRevenue}</span>
+                <span className="text-gray-700">{normalizeCurrencyFormat(company?.annualRevenue)}</span>
               </div>
               <div className="flex items-center gap-3">
                 <MapPin className="h-5 w-5 text-gray-500" />
@@ -100,7 +132,7 @@ export default function ConfirmationModal({
                 Contacts to be added ({company.contacts.length})
               </h4>
               <div className="space-y-3">
-                {company.contacts.slice(0, 2).map((contact: any, index: number) => (
+                {company.contacts.slice(0, 2).map((contact, index: number) => (
                   <div key={index} className="flex items-center gap-4 p-3 bg-white rounded-lg border border-gray-100">
                     <Avatar className="h-10 w-10">
                       <AvatarFallback className="bg-gray-100 text-gray-600 text-sm">
@@ -148,19 +180,37 @@ export default function ConfirmationModal({
 
           {showDetails && (
             <div className="space-y-4 pt-4 border-t border-gray-100">
+              {/* Enhanced Company Overview Section */}
               <div>
-                <h5 className="text-sm font-semibold uppercase tracking-wide mb-3">Sponsorship Types</h5>
-                <div className="flex flex-wrap gap-2">
-                  {company.sponsorshipTypes?.slice(0, 3).map((type: string, index: number) => (
-                    <Badge key={index} variant="secondary" className="text-sm px-3 py-1">
-                      {type}
-                    </Badge>
-                  ))}
+                <h5 className="text-sm font-semibold uppercase tracking-wide mb-3">Company Overview</h5>
+                <div className="space-y-3">
+                  {/* Company Description with Markdown */}
+                  {company.description && (
+                    <div>
+                      <div 
+                        className="text-sm text-gray-600 leading-relaxed prose prose-sm max-w-none prose-readable"
+                        dangerouslySetInnerHTML={{ __html: convertToHtml(company.description) }}
+                      />
+                    </div>
+                  )}
+                  
+                  {/* Key Sponsorships */}
+                  {company.keySponsorships && company.keySponsorships.length > 0 && (
+                    <div>
+                      <h6 className="text-sm font-semibold uppercase tracking-wide mb-3">Key Sponsorships</h6>
+                      <div className="flex flex-wrap gap-2">
+                        {company.keySponsorships.slice(0, 3).map((sponsorship: string, index: number) => (
+                          <Badge key={index} variant="outline" className="text-xs px-2 py-1 border-gray-300 text-gray-600">
+                            {sponsorship}
+                          </Badge>
+                        ))}
+                        {company.keySponsorships.length > 3 && (
+                          <span className="text-xs text-gray-500">+{company.keySponsorships.length - 3} more</span>
+                        )}
+                      </div>
+                    </div>
+                  )}
                 </div>
-              </div>
-              <div>
-                <h5 className="text-sm font-semibold uppercase tracking-wide mb-2">Strategic Focus</h5>
-                <div className="text-sm text-gray-600 leading-relaxed">{company.strategicFocus}</div>
               </div>
             </div>
           )}

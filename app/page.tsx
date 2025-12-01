@@ -1,20 +1,25 @@
 "use client"
 
 import React from 'react';
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import TopNavigation from "@/components/top-navigation"
 import LeftSidebar from "@/components/left-sidebar"
 import MainContent from "@/components/main-content"
 import RightSidebar from "@/components/right-sidebar"
 import ConfirmationToast from "@/components/confirmation-toast"
+import ErrorToast from "@/components/error-toast"
 import brandsData from "@/data/brands.json"
+import { isReportOnlyMode } from "@/lib/feature-flags"
+import type { Brand } from "@/types/brand"
+
 
 export default function Home() {
-  const [searchResults, setSearchResults] = useState<any[]>([])
-  const [selectedCompany, setSelectedCompany] = useState<any>(null)
+  const [searchResults, setSearchResults] = useState<Brand[]>([])
+  const [selectedCompany, setSelectedCompany] = useState<Brand | null>(null)
   const [searchStage, setSearchStage] = useState<"initial" | "region" | "division" | "results">("initial")
   const [searchMode, setSearchMode] = useState<'research' | 'crm'>('crm')
   const [filters, setFilters] = useState({
+    query: "",
     region: "",
     industry: "",
     sponsorshipType: "",
@@ -26,7 +31,7 @@ export default function Home() {
   const [toastNotification, setToastNotification] = useState<{
     show: boolean
     type: "success" | "error" | "pending"
-    company?: any
+    company?: Brand
     message: string
   }>({
     show: false,
@@ -34,7 +39,67 @@ export default function Home() {
     message: "",
   })
 
-  const handleSearch = (newFilters: any) => {
+  // Error toast state (separate from success toast)
+  const [errorToast, setErrorToast] = useState<{
+    show: boolean
+    message: string
+  }>({
+    show: false,
+    message: "",
+  })
+
+  // Enhanced error message function
+  const getErrorMessage = (companyName: string, error?: { status?: number; message?: string; code?: string }): string => {
+    // 500 Server errors
+    if (error?.status === 500 || error?.message?.includes('500')) {
+      return `Error 500: Our research service is temporarily unavailable. Please try again in a few moments.`
+    }
+    
+    // Network/connection errors
+    if (error?.message?.includes('network') || error?.code === 'NETWORK_ERROR') {
+      return `Network Error: Unable to connect to our research service. Please check your internet connection and try again.`
+    }
+    
+    // LLM service errors (from the client)
+    if (error?.message?.includes('LLM request failed')) {
+      return `Service Error: The research service encountered an error. Please try again or contact support if the problem persists.`
+    }
+    
+    // Validation errors (400 status)
+    if (error?.status === 400) {
+      return `Error 400: "${companyName}" is not valid for our search. Please check the company name and try again.`
+    }
+    
+    // Rate limiting
+    if (error?.status === 429) {
+      return `Error 429: Too many requests. Please wait a moment before trying again.`
+    }
+    
+    // No data found (current case)
+    return `No Data Found: We couldn't find reliable information about "${companyName}". Try using the company's official legal name or check for typos.`
+  }
+
+  // Add event listener for showing recent companies
+  useEffect(() => {
+    const handleShowCompany = (event: CustomEvent) => {
+      const company = event.detail.company
+      setSelectedCompany(company)
+      setSearchResults([company])
+      setSearchStage("results")
+      setSearchMode('crm')
+      
+      // Dispatch event for recently viewed tracking (update timestamp)
+      window.dispatchEvent(new CustomEvent('company-viewed', { detail: { company } }))
+    }
+
+    window.addEventListener('show-company', handleShowCompany as EventListener)
+    
+    return () => {
+      window.removeEventListener('show-company', handleShowCompany as EventListener)
+    }
+  }, [])
+
+  const handleSearch = (newFilters: Partial<typeof filters>) => {
     setFilters({ ...filters, ...newFilters })
     setSearchMode('crm')
 
@@ -59,27 +124,31 @@ export default function Home() {
     let results = brandsData.companies.filter((company) => company.inCRM)
 
     if (newFilters.query) {
+      const query = newFilters.query
       results = results.filter(
         (company) =>
-          company.companyName.toLowerCase().includes(newFilters.query.toLowerCase()) ||
-          company.description.toLowerCase().includes(newFilters.query.toLowerCase()),
+          company.companyName.toLowerCase().includes(query.toLowerCase()) ||
+          company.description.toLowerCase().includes(query.toLowerCase()),
       )
     }
 
     if (newFilters.region) {
+      const regionFilter = newFilters.region
       results = results.filter((company) =>
-        company.regions.some((region: string) => region.toLowerCase().includes(newFilters.region.toLowerCase())),
+        company.regions.some((region: string) => region.toLowerCase().includes(regionFilter.toLowerCase())),
       )
     }
 
     if (newFilters.industry) {
-      results = results.filter((company) => company.industry.toLowerCase().includes(newFilters.industry.toLowerCase()))
+      const industry = newFilters.industry
+      results = results.filter((company) => company.industry.toLowerCase().includes(industry.toLowerCase()))
     }
 
     if (newFilters.sponsorshipType) {
+      const sponsorshipType = newFilters.sponsorshipType
       results = results.filter((company) =>
         company.sponsorshipTypes.some((type: string) =>
-          type.toLowerCase().includes(newFilters.sponsorshipType.toLowerCase()),
+          type.toLowerCase().includes(sponsorshipType.toLowerCase()),
         ),
       )
     }
@@ -106,8 +175,9 @@ export default function Home() {
     if (newFilters.revenue) {
       // Add revenue filtering logic - this would need more sophisticated parsing
       // For now, we'll do a simple string match
+      const revenueFilter = newFilters.revenue
       results = results.filter((company) =>
-        company.annualRevenue.toLowerCase().includes(newFilters.revenue.toLowerCase()),
+        company.annualRevenue.toLowerCase().includes(revenueFilter.toLowerCase()),
       )
     }
 
@@ -115,8 +185,11 @@ export default function Home() {
     setSearchStage("results")
   }
 
-  const handleCompanySelect = (company: any) => {
+  const handleCompanySelect = (company: Brand) => {
     setSelectedCompany(company)
+    
+    // Dispatch event for recently viewed tracking
+    window.dispatchEvent(new CustomEvent('company-viewed', { detail: { company } }))
   }
 
   const handleApprove = (companyId: string) => {
@@ -164,6 +237,7 @@ export default function Home() {
       setSearchResults([])
       setSelectedCompany(null)
       setFilters({
+        query: "",
         region: "",
         industry: "",
         sponsorshipType: "",
@@ -173,6 +247,11 @@ export default function Home() {
     }, 300) // Small delay to allow toast fade-out animation
   }
 
+  const handleErrorToastDismiss = () => {
+    setErrorToast({ show: false, message: "" })
+    window.location.reload() // Reload page for clean state
+  }
+
   const handleChatResponse = (stage: string, value: string, llmResult?: string) => {
     if (stage === "reset-to-initial") {
       // Handle reset from top navigation
@@ -180,6 +259,7 @@ export default function Home() {
       setSearchResults([])
       setSelectedCompany(null)
       setFilters({
+        query: "",
         region: "",
         industry: "",
         sponsorshipType: "",
@@ -207,6 +287,15 @@ export default function Home() {
       }
       
       const companyName = value && value.trim() ? value : "Unknown Company"
+      
+      // Show error toast if no valid data - don't create dummy company
+      if (!parsedData || !parsedData.structuredData) {
+        setErrorToast({
+          show: true,
+          message: getErrorMessage(companyName) // Use enhanced message
+        });
+        return; // Exit early - no company object created
+      }
       
       // Generate a company based on the search query and LLM data
       const companyResult = {
@@ -238,8 +327,7 @@ export default function Home() {
         logo: "/placeholder.svg?height=80&width=80",
         inCRM: false,
         source: "research",
-        // Remove contacts array completely - no contacts for LLM research
-        // contacts: [], // This line should be removed entirely
+        contacts: [], // Empty array - no contacts for LLM research
         // Use the actual LLM data for detailed analysis
         detailedAnalysis: parsedData?.detailedAnalysis || {
           companyOverview: {
@@ -285,10 +373,10 @@ export default function Home() {
   }
 
   return (
-    <div className="flex h-screen flex-col">
+    <div className="flex h-screen-dynamic flex-col">
       <TopNavigation onTabChange={handleChatResponse} />
-      <div className="flex flex-1 overflow-hidden">
-        <LeftSidebar onSearch={handleSearch} />
+      <div className="flex flex-1 min-h-0 overflow-auto">
+        {!isReportOnlyMode() && <LeftSidebar onSearch={handleSearch} />}
         <MainContent
           searchResults={searchResults}
           selectedCompany={selectedCompany}
@@ -303,11 +391,26 @@ export default function Home() {
         <RightSidebar />
       </div>
 
+
       {/* Success Banner Notification */}
       {toastNotification.show && (
         <ConfirmationToast
           message={toastNotification.message}
           onDismiss={handleToastDismiss}
+        />
+      )}
+
+      {/* Error Toast Notification */}
+      {errorToast.show && (
+        <ErrorToast
+          message={errorToast.message}
+          onDismiss={handleErrorToastDismiss}
+          showRetry={errorToast.message.includes('Error 500') || errorToast.message.includes('Error 429') || errorToast.message.includes('Network Error') || errorToast.message.includes('Service Error')}
+          onRetry={() => {
+            setErrorToast({ show: false, message: "" });
+            // Trigger a retry - reload page for clean state
+            window.location.reload();
+          }}
         />
       )}
     </div>

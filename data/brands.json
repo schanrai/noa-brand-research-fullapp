@@ -21,7 +21,7 @@
       "profileURL": "/companies/techvision",
       "outreachProfile": "High engagement with previous partners, responsive to collaboration proposals",
       "lastUpdated": "2023-11-15",
-      "logo": "/placeholder.svg?height=80&width=80",
+      "logo": "",
       "inCRM": true,
       "contacts": [
         {
@@ -153,7 +153,7 @@
       "profileURL": "/companies/nutriwell",
       "outreachProfile": "Actively seeking partnerships aligned with health and sustainability values",
       "lastUpdated": "2023-12-10",
-      "logo": "/placeholder.svg?height=80&width=80",
+      "logo": "",
       "inCRM": true,
       "contacts": [
         {
@@ -203,7 +203,7 @@
   "chatHistory": [
     {
       "role": "assistant",
-      "content": "Hey Chris, which company would you like to research today?"
+      "content": "Hey there, which company would you like to research today?"
     },
     {
       "role": "user",

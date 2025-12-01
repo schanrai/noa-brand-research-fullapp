@@ -5,8 +5,9 @@ import type React from "react"
 import { useState, useEffect, useRef } from "react"
 import { Button } from "@/components/ui/button"
 import { Send, Lightbulb, Star, Loader2, Network } from "lucide-react"
-import { getLLMResearch, getStructuredData, getDetailedAnalysis, getFormattedData } from "@/lib/llm-client"
+import { getLLMResearch, getStructuredData, getDetailedAnalysis, getDetailedAnalysisWithCitations, getFormattedData } from "@/lib/llm-client"
 import { overviewSchema, marketingSchema, sponsorshipsSchema, socialMediaSchema } from "@/lib/schemas"
+import { validateCompanyName, validateRegionName, validateDivisionName, validateNumericChoice } from "@/lib/input-validator"
 
 interface CoPilotInterfaceProps {
   stage: "initial" | "region" | "region-specific" | "division" | "division-specific" | "confirmation" | "results" | "feedback" | "feedback-clarification" | "processing" | "processing-feedback"
@@ -22,6 +23,7 @@ export default function CoPilotInterface({
   onFeedbackComplete,
 }: CoPilotInterfaceProps) {
   const [userInput, setUserInput] = useState("")
+  const [validationError, setValidationError] = useState("")
   const [conversationHistory, setConversationHistory] = useState([
     {
       role: "assistant",
@@ -46,6 +48,43 @@ export default function CoPilotInterface({
   const [specificDivision, setSpecificDivision] = useState("")
   const [regionFocus, setRegionFocus] = useState<"global" | "specific">("global")
   const [specificRegion, setSpecificRegion] = useState("")
+  
+  // Research scope state for tracking user choices and sidebar communication
+  const [researchScope, setResearchScope] = useState<{
+    companyName: string
+    regionFocus: string
+    specificRegion: string
+    researchFocus: string
+    specificDivision: string
+    step: number
+    totalSteps: number
+  } | null>(null)
+
+  // Broadcast research scope updates to sidebar
+  const broadcastScopeUpdate = (updates: Partial<NonNullable<typeof researchScope>>) => {
+    if (!updates) return
+    
+    setResearchScope((prev) => {
+      const newScope = {
+        companyName: "",
+        regionFocus: "",
+        specificRegion: "",
+        researchFocus: "",
+        specificDivision: "",
+        step: 1,
+        totalSteps: 4,
+      ...prev,
+      ...updates,
+    }
+    
+    window.dispatchEvent(new CustomEvent('research-scope-update', { 
+      detail: { scope: newScope } 
+    }))
+      
+      return newScope
+    })
+  }
+  
   // Reset conversation when stage changes to initial
   useEffect(() => {
     if (stage === "initial" && !feedbackMode) {
@@ -62,6 +101,7 @@ export default function CoPilotInterface({
       setSpecificDivision("")
       setRegionFocus("global")
       setSpecificRegion("")
+      broadcastScopeUpdate({ companyName: "", step: 1 })
       setIsProcessing(false)
       setProcessingSteps([])
       setCurrentStage("initial")
@@ -127,7 +167,7 @@ Please provide the company data in this exact JSON format:
   "founded": "<value>",
   "website": "<value>",
   "headquarters": "<value>",
-  "annualRevenue": "<value>",
+  "annualRevenue": "<value with appropriate currency symbol for company's primary market>",
   "employees": "<value>"
 }
 
@@ -161,9 +201,9 @@ Your answer will be reformatted later, so keep each section’s content followed
               // PASS 3: Marketing Activity (restored detailed structure)
               const marketingPrompt = `Research ${companyName}${regionText}${focusText} recent and current marketing activities.
 
-Provide a detailed narrative analysis of current and recent global marketing activity. Include at least 5 specific named campaigns. For each campaign, bold the campaign name (e.g., **Campaign Name:**) followed by the campaign details. For each campaign describe the campaign name, target audiences, messaging themes, measurable outcomes, creative concepts, channels used, and partnerships or collaborations where possible. Do not make up the details of the campaigns, only use the information you find even if it is not complete.
+Provide a detailed narrative analysis of current and recent global marketing activity. Include at least 5 specific named campaigns. For each campaign, bold the campaign name (e.g., **Christmas Campaign 2024:**) followed by the campaign details. For each campaign describe (where possible) the campaign name, campaign date or period, target audiences, messaging themes, measurable outcomes, creative concepts, channels used, and partnerships or collaborations. Do not make up the details of the campaigns, only use the information you find even if it is not complete.
 
-Write this as flowing narrative text that naturally incorporates all the details about each campaign. Use bold formatting only for campaign names. Focus on high quality, verifiable information from the company website, press releases, reputable media coverage and high authority publishers. Avoid vague descriptions - all examples must reference verifiable sources, initiatives, or announcements.
+Write this as flowing narrative text that naturally incorporates all the details about each campaign. Use bold formatting only for campaign names (e.g., **Christmas Campaign 2024:**). Never output ALL CAPS. Focus on high quality, verifiable information from the company website, press releases, reputable media coverage and high authority publishers. Avoid vague descriptions - all examples must reference verifiable sources, initiatives, or announcements.
 
 IMPORTANT: 
 - If you cannot find 5 specific campaigns within the last 3-5 years, extend your search beyond this timeframe to find the required 5 campaigns. Do not limit yourself to recent years if insufficient recent examples exist.
@@ -176,11 +216,11 @@ CRITICAL:
               // PASS 4: Sponsorships & Experiential (dedicated search for depth)
               const sponsorshipsPrompt = `Research ${companyName}${regionText}${focusText} recent and current sponsorship portfolio and experiential initiatives.
 
-Provide a detailed narrative analysis of at least 5 specific named sponsorships in sports, arts, culture, entertainment, or lifestyle. For each sponsorship, bold the sponsorship name (e.g., **McLaren Racing Partnership:**) followed by the sponsorship details (if available) such as exact or approximate start/end dates, geographic location, event/partner name, activation channels, budget or scale indicators , strategic fit with brand goals, and measurable outcomes (audience reach, media coverage, ROI, engagement metrics). Do not make up the details of the sponsorships, only use the information you find even if it is not complete.
+Provide a detailed narrative analysis of at least 5 specific named sponsorships in sports, arts, culture, entertainment, or lifestyle. For each sponsorship, bold the sponsorship name (e.g., **McLaren Racing Partnership:**) followed by the details (if available) such as exact or approximate start/end dates, geographic location, event/partner name, activation channels, budget or scale indicators, strategic fit with brand goals, and measurable outcomes (audience reach, media coverage, ROI, engagement metrics). Do not make up the details of the sponsorships, only use the information you find even if it is not complete.
 
-For experiential initiatives, identify and describe at least 3 named initiatives such as VIP/client-only events, curated experiences, global tours, or museum tie-ins. For each initiative, bold the event name (e.g., **Cisco Live:**) followed by the initiative details (if available)such as the dates and location, purpose/context, audience profile, unique experiential elements, cultural or thought leadership integration, and measurable impact. Do not make up the details of the initiatives, only use the information you find even if it is not complete.
+For experiential initiatives, identify and describe at least 3 named initiatives such as VIP/client-only events, curated experiences, global tours, or museum tie-ins. For each initiative, bold the event name in the form **Event Name:** followed by the initiative details (if available) such as the dates and location, purpose/context, audience profile, unique experiential elements, cultural or thought leadership integration, and measurable impact. Do not make up the details of the initiatives, only use the information you find even if it is not complete.
 
-Write this as flowing narrative text that naturally incorporates all the details about each sponsorship. Use bold formatting only for sponsorship and experiential initiative names. Focus on verifiable information from the company website, press releases, high authority news sources and publishers. Avoid vague statements like 'supports local events'. All examples must reference named events, partners, or programs with verifiable details. 
+Write this as flowing narrative text. Use bold formatting only for sponsorship and experiential initiative names (e.g., **Cisco Live:**). Do not use any headings (no #, ##, or HTML <h1>–<h6>), lists, or title case; keep everything as normal paragraph text in sentence case. Never output ALL CAPS. Focus on verifiable information from the company website, press releases, high authority news sources and publishers. Avoid vague statements like 'supports local events'. All examples must reference named events, partners, or programs with verifiable details. 
 
 IMPORTANT: 
 - If you cannot find 5 specific sponsorships within the last 3-5 years, extend your search beyond this timeframe to find the required 5 sponsorships. Similarly, if you cannot find 3 experiential initiatives within the last 3-5 years, extend your search to find the required 3 initiatives. Do not limit yourself to recent years if insufficient recent examples exist.
@@ -188,32 +228,82 @@ IMPORTANT:
 
 CRITICAL: 
 -Include inline source links using markdown format [Link Text](URL) for all verifiable information.
--Do not start your response with generic time phrases like "over the past five years". Use flexible language that reflects the actual timeframe found`;
+-Do not start your response with generic time phrases like "over the past five years". Use flexible language that reflects the actual timeframe found.`;
 
-              // PASS 5: Social Media & Strategic Focus (shorter, focused searches)
-              const socialMediaPrompt = `Research ${companyName}${regionText} social media and strategic focus.
-
+              // --- PASS 5A: Social Media ONLY (keep your last good social prompt here)
+              const socialMediaPrompt = `Research ${companyName}${regionText} social media presence
+              
 Social Media (250-350 words):
-- Focus on the last 6–12 months (note year if older).
-- Cover the 2–3 most relevant platforms among LinkedIn, X/Twitter, Instagram, TikTok, YouTube
-- For each platform you mention: link the official handle at first mention using markdown format [Link Text](URL). 
-- Summarize overall content themes, rough posting cadence (approx weekly/monthly), and a brief read on engagement (e.g., “consistently low/medium/high for the category” or “not visible”).
-- Call out one or two concrete patterns (e.g., product launches, exec thought leadership, talent/employer brand, partnerships) grounded in linked examples. Avoid generic claims.
-MANDATORY URL REQUIREMENT:
--For each platform, you MUST include at least 1 direct post URL inline tied to the specific concrete patterns or themes and using markdown format [Link Text](URL). This is in addition to the official handle link. Format like this:
-  "In [Month YYYY], [platform] post [LinkText][URL] focused on [topic]."
--Do NOT include URLs that are clearly dead links or redirect to generic pages.
--If you cannot find a valid post URL, do not make the claim.
 
-Strategic Focus (175–250 words):
-- Explain differentiation, brand traits, competitive stance, and 2–3 named growth/communication priorities.
-- MANDATORY: Include at least 2 inline citations from different sources using markdown format [Link Text](URL) to back up specific claims. If you cannot find 2 verifiable sources, do not make the claim.
-- Use only high authority sources for your citations. These include CEO/executive quotes (earnings calls, interviews, press releases), official strategy announcements (IR presentations, annual reports), product/market moves with dates, regulatory filings, or high-authority media coverage (Reuters,FT, WSJ, AP).
-- Avoid SWOT-style boilerplate. Ground every strategic claim in a dated, verifiable source.
+CRITICAL: Your response MUST begin with this exact bullet list format. Do not skip this step and do not write anything before this list:
 
-IMPORTANT:
-- Prefer official handles and primary sources; exclude low-quality, low-authority blogs/AI summaries.
-- Use narrative prose and inline links [Text](URL); avoid vague time phrases. If details are unavailable, write “Not found”.`;
+- YouTube: [handle or link]
+- Instagram: [handle or link]
+- TikTok: [handle or link]
+- Facebook: [handle or link]
+- LinkedIn: [handle or link]
+- X/Twitter: [handle or link]
+
+ONLY include platforms where you can find the official/verified handle. If not found, omit that line entirely.
+
+After the bullet list, write a flowing narrative analysis focusing on the 2-3 MOST ACTIVE platforms (based on follower count). Describe their content style and tone, posting frequency, audience engagement, visual identity and brand voice, and strategic role in their overall social presence. Write this as continuous prose, not bullet points or subheadings.
+
+MANDATORY:
+- Do NOT include links to third-party blogs or websites
+- Do NOT include specific post URLs
+- Only link to official social media handles in the bullet list
+-Focus on high-level, aggregate insights from the last 6-12 months only. 
+-Do not make up the details of the platforms, only use the information you find even if it is not complete.`;
+
+
+              // --- PASS 5B: Strategic Focus ONLY (separate prompt with links required)
+              const strategicFocusPrompt = ` 
+Mode: show sources — every paragraph must contain at least one inline markdown citation [SourceName](URL).        
+              
+Research the strategic focus of ${companyName}${regionText}.
+
+Strategic Focus (175-250 words):
+- Explain core strategy and differentiation, brand traits and positioning, competitive stance, and 2–3 named growth/communication priorities.
+
+Each factual or strategic statement must include a markdown citation exactly like this:
+Apple emphasizes privacy and seamless integration [Reuters](https://www.reuters.com)
+
+Citation Rules (Hard Requirements):
+1. Every factual or strategic claim must end with an inline citation [SourceName](URL).
+2. No claim may appear without a citation. 
+3. Include a minimum of two distinct high-authority sources - more if multiple claims are made.
+4. If fewer than two valid sources are found, run another search before generating the summary.
+5. Before writing, search again if you cannot locate verifiable sources.
+
+Example pattern (follow exactly):  
+ Nike invests in sustainability initiatives [Reuters](https://www.reuters.com) and expands direct-to-consumer channels [Company Press Release](https://news.nike.com). 
+
+Source Quality - Hard Constraints:
+-Never use student essays, personal blogs, AI-generated summaries, content farms, or SEO spam.
+-Use only the following for citations and factual grounding:
+1.The official ${companyName} website
+2.Verified press releases from ${companyName} or recognized newswires
+3.Major business and news outlets (e.g., bloomberg.com, reuters.com, wsj.com, ft.com, cnbc.com, apnews.com)
+4.Trade or industry publications with editorial oversight (e.g., adweek.com, campaignlive.com, techcrunch.com)
+
+Domain Exclusions:
+Do not use or cite any source whose domain includes:
+scribd, panmore, accelingo, latterly, blogspot, medium.com (unless the official ${companyName} account), wordpress, quora, fandom, slideshare, essay, ai-summary, contentfarm.
+
+If retrieved results include any of these excluded domains, discard them and repeat the search until at least two valid, high-authority sources are found.
+
+Output Format:
+- Output only the Strategic Focus section.
+- Each factual or strategic sentence must end with an inline citation
+
+Self-Check Before Finalizing:
+If any sentence lacks a [SourceName](URL) citation, regenerate that sentence with one.
+The final output must contain at least two distinct citations.
+
+Example output:
+Nike emphasizes digital transformation to deepen consumer relationships [Reuters](https://www.reuters.com).  
+The company invests in sustainable materials and circular-design innovation [Nike Press Release](https://news.nike.com). 
+`;
 
               // Execute all searches in parallel for better performance
               console.log('🚀 Starting multi-pass research...');
@@ -223,14 +313,19 @@ IMPORTANT:
                 overviewOutput,
                 marketingOutput,
                 sponsorshipsOutput,
-                socialMediaOutput
+                socialMediaText,          // NEW
+                strategicFocusText        // NEW
               ] = await Promise.all([
                 getStructuredData(structuredPrompt),
-                getDetailedAnalysis(overviewPrompt),
-                getDetailedAnalysis(marketingPrompt),
-                getDetailedAnalysis(sponsorshipsPrompt),
-                getDetailedAnalysis(socialMediaPrompt)
+                getDetailedAnalysis(overviewPrompt), // Light search - just company info
+                getDetailedAnalysisWithCitations(marketingPrompt), // Heavy search - needs campaign URLs
+                getDetailedAnalysisWithCitations(sponsorshipsPrompt), // Heavy search - needs sponsorship URLs
+                getDetailedAnalysisWithCitations(socialMediaPrompt),    // Social links OK here
+                getDetailedAnalysisWithCitations(strategicFocusPrompt) // Citations allowed here
               ]);
+
+              // Combine the two sections for the existing formatter/schema
+              const socialMediaOutput = `${socialMediaText}\n\n${strategicFocusText}`;
 
               console.log('✅ All search passes completed');
 
@@ -240,7 +335,8 @@ IMPORTANT:
               console.log('📚 Overview Output:', overviewOutput);
               console.log('📈 Marketing Output:', marketingOutput);
               console.log('🎯 Sponsorships Output:', sponsorshipsOutput);
-              console.log('📱 Social Media Output:', socialMediaOutput);
+              console.log('📱 Social Media Output:', socialMediaText);
+              console.log('📈 Strategic Focus Output:', strategicFocusText);
 
               // The formatting calls
               const [
@@ -252,7 +348,7 @@ IMPORTANT:
                 getFormattedData(overviewOutput, overviewSchema),        
                 getFormattedData(marketingOutput, marketingSchema),     
                 getFormattedData(sponsorshipsOutput, sponsorshipsSchema), 
-                getFormattedData(socialMediaOutput, socialMediaSchema)   
+                getFormattedData(socialMediaOutput, socialMediaSchema) // now contains both sections
               ]);
 
               console.log('✅ All formatting passes completed');
@@ -340,14 +436,75 @@ IMPORTANT:
     return () => clearTimeout(timeoutId)
   }, [conversationHistory])
 
+  // Get button options based on current stage
+  const getOptionsForStage = (stage: string): Array<{ value: string; label: string; description: string }> => {
+    if (stage === "region") {
+      return [
+        { value: '1', label: 'Global overview', description: 'Worldwide operations' },
+        { value: '2', label: 'Specific region', description: 'Focus on one market' }
+      ]
+    }
+    
+    if (stage === "division") {
+      return [
+        { value: '1', label: 'Comprehensive overview', description: 'All business areas' },
+        { value: '2', label: 'Specific division', description: 'Focus on one unit' }
+      ]
+    }
+    
+    return []
+  }
+
+  // Handle quick selection from button cards
+  const handleQuickSelect = (value: string) => {
+    if (!value) return
+    
+    setUserInput(value)
+    // Trigger form submission after a brief moment
+    setTimeout(() => {
+      const form = document.querySelector('form')
+      form?.requestSubmit()
+    }, 50)
+  }
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     if (!userInput.trim()) return
 
-    // Add user message to conversation
+    // Validate input based on current stage
+    const trimmedInput = userInput.trim();
+    let validationResult;
+    let validatedInput = trimmedInput;
+
+    if (currentStage === "initial") {
+      validationResult = validateCompanyName(trimmedInput);
+      validatedInput = validationResult.sanitized;
+    } else if (currentStage === "region-specific") {
+      validationResult = validateRegionName(trimmedInput);
+      validatedInput = validationResult.sanitized;
+    } else if (currentStage === "division-specific") {
+      validationResult = validateDivisionName(trimmedInput);
+      validatedInput = validationResult.sanitized;
+    } else if (currentStage === "region" || currentStage === "division") {
+      validationResult = validateNumericChoice(trimmedInput, ["1", "2"]);
+      validatedInput = validationResult.sanitized;
+    } else {
+      // For other stages, just use trimmed input
+      validationResult = { isValid: true, sanitized: trimmedInput, issues: [], blocked: false };
+      validatedInput = trimmedInput;
+    }
+
+    // If input was completely blocked (only malicious content), show error message and reject
+    if (validationResult.blocked || (!validationResult.isValid && validatedInput === "")) {
+      setValidationError("Invalid input detected");
+      setTimeout(() => setValidationError(""), 3000);
+      return; // Silent rejection - input field just doesn't respond
+    }
+
+    // Add user message to conversation (use original input for display, validated for processing)
     const newUserMessage = {
       role: "user",
-      content: userInput,
+      content: validatedInput, // Use validated/sanitized input for display
       timestamp: new Date(),
     }
 
@@ -355,73 +512,71 @@ IMPORTANT:
     let nextStage = ""
 
     if (currentStage === "initial") {
-      setCompanyName(userInput)
-      assistantResponse = `Great! How would you like me to focus the research on ${userInput}?
+      setCompanyName(validatedInput) // Use validated input for state
+      broadcastScopeUpdate({ companyName: validatedInput, step: 2 })
+      assistantResponse = `Great! How would you like me to focus the research on ${validatedInput}?
 
-1. Global overview (worldwide operations)
-2. Specific region or market
-
-Please choose 1 or 2, or describe your preference.`
+Please choose one of the options below:`
       nextStage = "region"
       setCurrentStage("region")
     } else if (currentStage === "region") {
-      const userResponse = userInput.trim();
+      const userResponse = validatedInput; // Use validated input
       
       if (userResponse === "1") {
         setRegionFocus("global");
         setSpecificRegion("global");
+        broadcastScopeUpdate({ regionFocus: "Global", specificRegion: "Global", step: 3 })
         assistantResponse = `Perfect! Now how would you like me to focus the research on ${companyName}?
 
-1. Comprehensive overview (all business areas)
-2. Specific division or business unit
-
-Please choose 1 or 2.`
+Please choose one of the options below:`
         nextStage = "division"
         setCurrentStage("division")
       } else if (userResponse === "2") {
         setRegionFocus("specific");
+        broadcastScopeUpdate({ regionFocus: "Specific Region", step: 2.5 })
         assistantResponse = `Great! Which specific region or market would you like me to focus on? For example: North America, Europe, Asia Pacific, Latin America, or a specific country.`
         nextStage = "region-specific"
         setCurrentStage("region-specific")
       } else {
-        // Invalid input - ask them to choose 1 or 2
-        assistantResponse = `Please choose 1 for global overview or 2 for specific region.`
+        // Invalid input - ask them to choose from buttons
+        assistantResponse = `Please choose one of the options below to continue.`
         nextStage = "region"
         setCurrentStage("region")
       }
     } else if (currentStage === "region-specific") {
-      setSpecificRegion(userInput);
-      assistantResponse = `Perfect! Now how would you like me to focus the research on ${companyName} in ${userInput}?
+      setSpecificRegion(validatedInput);
+      broadcastScopeUpdate({ specificRegion: validatedInput, step: 3 })
+      assistantResponse = `Perfect! Now how would you like me to focus the research on ${companyName} in ${validatedInput}?
 
-1. Comprehensive overview (all business areas)
-2. Specific division or business unit
-
-Please choose 1 or 2.`
+Please choose one of the options below.`
       nextStage = "division"
       setCurrentStage("division")
     } else if (currentStage === "division") {
-      const userResponse = userInput.trim();
+      const userResponse = validatedInput; // Use validated input
       
       if (userResponse === "1") {
         setResearchFocus("comprehensive");
+        broadcastScopeUpdate({ researchFocus: "Comprehensive", step: 4 })
         // Don't set specificDivision for comprehensive overview
         assistantResponse = `Perfect! I'll provide a research report for ${companyName}${regionFocus === "specific" ? ` in ${specificRegion}` : " globally"}. Sound good?`
         nextStage = "confirmation"
         setCurrentStage("confirmation")
       } else if (userResponse === "2") {
         setResearchFocus("specific");
+        broadcastScopeUpdate({ researchFocus: "Specific Division", step: 3.5 })
         assistantResponse = `Great! Which specific division or business unit would you like me to focus on?`
         nextStage = "division-specific"
         setCurrentStage("division-specific")
       } else {
-        // Invalid input - ask them to choose 1 or 2
-        assistantResponse = `Please choose 1 for comprehensive overview or 2 for specific division.`
+        // Invalid input - ask them to choose from buttons
+        assistantResponse = `Please choose one of the options below to continue.`
         nextStage = "division"
         setCurrentStage("division")
       }
     } else if (currentStage === "division-specific") {
-      setSpecificDivision(userInput);
-      assistantResponse = `Perfect! I'll provide a research report for ${companyName}${regionFocus === "specific" ? ` in ${specificRegion}` : " globally"}, focusing on their ${userInput} division. Sound good?`
+      setSpecificDivision(validatedInput);
+      broadcastScopeUpdate({ specificDivision: validatedInput, step: 4 })
+      assistantResponse = `Perfect! I'll provide a research report for ${companyName}${regionFocus === "specific" ? ` in ${specificRegion}` : " globally"}, focusing on their ${validatedInput} division. Sound good?`
       nextStage = "confirmation"
       setCurrentStage("confirmation")
     } else if (currentStage === "confirmation") {
@@ -432,7 +587,7 @@ Please choose 1 or 2.`
       setCurrentStage("processing")
     } else if (currentStage === "feedback") {
       // Analyze feedback and potentially ask clarifying questions
-      const feedback = userInput.toLowerCase()
+      const feedback = validatedInput.toLowerCase()
 
       if (feedback.includes("industry") || feedback.includes("sector")) {
         assistantResponse =
@@ -476,7 +631,7 @@ Please choose 1 or 2.`
           contextualSuggestions.push("detail their strategic partnerships and collaborations")
         }
 
-        const baseMessage = `Thanks for the feedback! Based on your input "${userInput}", I can help you refine the research.`
+        const baseMessage = `Thanks for the feedback! Based on your input "${validatedInput}", I can help you refine the research.`
 
         if (contextualSuggestions.length > 0) {
           assistantResponse = `${baseMessage} Would you like me to ${contextualSuggestions.join(", or ")}? Please let me know which specific aspects you'd like me to adjust.`
@@ -503,7 +658,7 @@ Please choose 1 or 2.`
     setConversationHistory((prev) => [...prev, newUserMessage, newAssistantMessage])
 
     if (currentStage !== "confirmation" && currentStage !== "processing") {
-      onResponse(nextStage, userInput)
+      onResponse(nextStage, validatedInput)
     }
 
     setUserInput("")
@@ -577,7 +732,7 @@ Please choose 1 or 2.`
         ) : (
           <>
             {/* Conversation Thread - only show when not collapsed or not in feedback mode */}
-            <div className="flex-1 space-y-6 mb-6 overflow-y-auto max-h-[400px] scroll-smooth">
+            <div className="flex-1 space-y-4 mb-6 overflow-y-auto max-h-[400px] scroll-smooth">
               {/* Show conversation history toggle button in feedback mode */}
               {feedbackMode && conversationHistory.length > 1 && (
                 <div className="flex justify-center pb-2">
@@ -609,6 +764,28 @@ Please choose 1 or 2.`
 
                     <div className={`max-w-[80%] ${message.role === "user" ? "text-right" : "text-left"}`}>
                       <p className="text-body text-gray-800 leading-relaxed">{message.content}</p>
+                      
+                      {/* Add clickable button options for numbered choices */}
+                      {message.role === "assistant" && 
+                       index === displayedMessages.length - 1 && 
+                       getOptionsForStage(currentStage).length > 0 && (
+                        <div className="mt-4 flex gap-3">
+                          {getOptionsForStage(currentStage).map((option) => (
+                            <button
+                              key={option.value}
+                              onClick={() => handleQuickSelect(option.value)}
+                              onKeyDown={(e) => e.key === 'Enter' && handleQuickSelect(option.value)}
+                              aria-label={`Select ${option.label}`}
+                              tabIndex={0}
+                              role="button"
+                              className="flex-1 text-left bg-white border-2 border-gray-200 hover:border-black hover:bg-gray-50 hover:shadow-sm cursor-pointer rounded-lg p-4 transition-all duration-200 group"
+                            >
+                              <div className="font-semibold text-sm group-hover:text-black">{option.label}</div>
+                              <div className="text-xs text-gray-600 mt-1">{option.description}</div>
+                            </button>
+                          ))}
+                        </div>
+                      )}
                     </div>
 
                     {message.role === "user" && (
@@ -643,28 +820,69 @@ Please choose 1 or 2.`
             {/* Input Area - always visible */}
             <div className="pt-6">
               <form onSubmit={handleSubmit} className="flex gap-4">
-                <textarea
-                  placeholder={
-                    currentStage === "feedback" || currentStage === "feedback-clarification"
-                      ? "Try: 'Focus more on their recent partnerships' or 'Include more financial data' or 'Add information about their sustainability initiatives' or 'Expand on their target audience demographics'"
-                      : "Type your response..."
-                  }
-                  value={userInput}
-                  onChange={(e) => setUserInput(e.target.value)}
-                  className="flex-1 bg-white border-gray-200 rounded-md px-3 py-2 h-20 resize-none border text-sm focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" && !e.shiftKey) {
-                      e.preventDefault()
-                      handleSubmit(e)
-                    }
-                  }}
-                />
+                {(() => {
+                  const hasButtonOptions = currentStage === "region" || currentStage === "division"
+                  return (
+                    <textarea
+                      disabled={hasButtonOptions}
+                      placeholder={
+                        hasButtonOptions
+                          ? "Please select an option above"
+                          : currentStage === "feedback" || currentStage === "feedback-clarification"
+                          ? "Try: 'Focus more on their recent partnerships' or 'Include more financial data' or 'Add information about their sustainability initiatives' or 'Expand on their target audience demographics'"
+                          : "Type your response..."
+                      }
+                      value={userInput}
+                      onChange={(e) => setUserInput(e.target.value)}
+                      maxLength={200}
+                      className={`flex-1 bg-white border-gray-200 rounded-md px-3 py-2 h-20 resize-none border text-sm focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent ${hasButtonOptions ? 'opacity-50 cursor-not-allowed' : ''}`}
+                      onKeyDown={(e) => {
+                        if (hasButtonOptions) {
+                          e.preventDefault()
+                          return
+                        }
+                        if (e.key === "Enter" && !e.shiftKey) {
+                          e.preventDefault()
+                          handleSubmit(e)
+                        }
+                      }}
+                    />
+                  )
+                })()}
                 <Button type="submit" size="icon" className="bg-black text-white hover:bg-gray-800">
                   <Send className="h-4 w-4" />
                   <span className="sr-only">Send</span>
                 </Button>
               </form>
+              {validationError && (
+                <div className="text-red-600 text-sm mt-2 px-3 py-2 bg-red-50 border border-red-200 rounded-md">
+                  {validationError}
+                </div>
+              )}
             </div>
+
+            {/* Progress Stepper - only show after company name entered */}
+            {!feedbackMode && currentStage !== 'initial' && companyName && (
+              <div className="mt-6 px-4 py-3 bg-gray-50 rounded-lg border border-gray-200">
+                <div className="flex items-center justify-between text-xs font-medium uppercase tracking-wide">
+                  <span className="text-gray-400">
+                    1. Company
+                  </span>
+                  <div className="h-px flex-1 mx-2 bg-gray-300" />
+                  <span className={['region', 'region-specific'].includes(currentStage) ? 'text-black' : 'text-gray-400'}>
+                    2. Region
+                  </span>
+                  <div className="h-px flex-1 mx-2 bg-gray-300" />
+                  <span className={['division', 'division-specific'].includes(currentStage) ? 'text-black' : 'text-gray-400'}>
+                    3. Scope
+                  </span>
+                  <div className="h-px flex-1 mx-2 bg-gray-300" />
+                  <span className={currentStage === 'confirmation' ? 'text-black' : 'text-gray-400'}>
+                    4. Confirm
+                  </span>
+                </div>
+              </div>
+            )}
           </>
         )}
       </div>
