@@ -35,11 +35,6 @@ export default function TopNavigation({ onTabChange }: TopNavigationProps) {
     }
   }
 
-  const handleLogoClick = () => {
-    // Reload the app by refreshing the page
-    window.location.reload()
-  }
-
   const handleSignOut = async () => {
     // Optimistically clear local state and navigate immediately
     if (typeof window !== 'undefined') {
@@ -59,18 +54,22 @@ export default function TopNavigation({ onTabChange }: TopNavigationProps) {
   return (
     <header className="flex h-32 items-center justify-between border-b border-gray-200 bg-white px-24 py-4 overflow-visible">
       <div className="flex-shrink-0 -my-4">
-        <div
-          onClick={handleLogoClick}
-          tabIndex={-1}
-          className="cursor-pointer hover:opacity-80 transition-opacity duration-200 outline-none focus:outline-none focus-visible:outline-none"
+        <a
+          href="/"
+          onClick={(e) => {
+            e.preventDefault()
+            window.location.reload()
+          }}
+          className="cursor-pointer hover:opacity-80 transition-opacity duration-200 outline-none focus:outline-none focus-visible:outline-none inline-block"
         >
           <img
             src="/Scova_Logo_Crop.png"
             alt="Scova"
             className="h-32 w-auto select-none"
             draggable="false"
+            data-pin-nopin="true"
           />
-        </div>
+        </a>
       </div>
 
       {!isReportOnlyMode() && (
