@@ -61,7 +61,7 @@ export default function TopNavigation({ onTabChange }: TopNavigationProps) {
       <div className="flex-shrink-0">
         <div
           onClick={handleLogoClick}
-          className="cursor-pointer hover:opacity-80 transition-opacity duration-200"
+          className="cursor-pointer hover:opacity-80 transition-opacity duration-200 outline-none focus:outline-none focus-visible:outline-none"
         >
           <img
             src="/Scova_Logo_Crop.png"
