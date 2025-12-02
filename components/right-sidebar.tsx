@@ -63,13 +63,13 @@ export default function RightSidebar() {
   }, [])
 
   return (
-    <div className="w-80 border-l border-gray-200 bg-edge pt-24 px-24 pb-24">
-      <div className="space-y-48">
+    <div className="w-full md:w-80 border-t md:border-t-0 md:border-l border-gray-200 bg-edge pt-6 md:pt-24 px-4 md:px-24 pb-6 md:pb-24">
+      <div className="space-y-6 md:space-y-48">
         {!isReportOnlyMode() && (
           <>
             <div>
-              <h2 className="mb-24 text-sm font-bold uppercase tracking-wide">AI Co-pilot History</h2>
-              <ScrollArea className="h-[300px] rounded-lg border border-gray-200 bg-white p-16">
+              <h2 className="mb-4 md:mb-24 text-sm font-bold uppercase tracking-wide">AI Co-pilot History</h2>
+              <ScrollArea className="h-[200px] md:h-[300px] rounded-lg border border-gray-200 bg-white p-4 md:p-16">
                 <div className="space-y-16">
                   {chatHistory.map((message, index) => (
                     <div key={index} className={`flex ${message.role === "assistant" ? "justify-start" : "justify-end"}`}>
@@ -91,7 +91,7 @@ export default function RightSidebar() {
         )}
 
         <div>
-          <h2 className="mb-24 text-sm font-bold uppercase tracking-wide">Recently Viewed Companies</h2>
+          <h2 className="mb-4 md:mb-24 text-sm font-bold uppercase tracking-wide">Recently Viewed Companies</h2>
           <div className="space-y-8">
             {recentCompanies.length > 0 ? (
               recentCompanies.map((company) => (

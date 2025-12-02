@@ -375,7 +375,7 @@ export default function Home() {
   return (
     <div className="flex h-screen-dynamic flex-col">
       <TopNavigation onTabChange={handleChatResponse} />
-      <div className="flex flex-1 min-h-0 overflow-auto">
+      <div className="flex flex-col md:flex-row flex-1 min-h-0 overflow-auto">
         {!isReportOnlyMode() && <LeftSidebar onSearch={handleSearch} />}
         <MainContent
           searchResults={searchResults}
@@ -388,7 +388,9 @@ export default function Home() {
           searchMode={searchMode}
           filters={filters}
         />
-        <RightSidebar />
+        <div className="w-full md:w-80">
+          <RightSidebar />
+        </div>
       </div>
 
 
