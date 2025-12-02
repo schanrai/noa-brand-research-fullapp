@@ -107,7 +107,7 @@ export async function getDetailedAnalysisWithCitations(prompt: string) {
         plugins: [{
           id: "web",
           engine: "exa",
-          max_results: 50 
+          max_results: 15 // Reduced from 50 due to OpenRouter API changes (Dec 2024)
         }],
         skipValidation: true // Skip validation for LLM-generated content
       }),
