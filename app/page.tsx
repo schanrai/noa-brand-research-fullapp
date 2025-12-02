@@ -67,6 +67,10 @@ export default function Home() {
     
     // Validation errors (400 status)
     if (error?.status === 400) {
+      // Check for token limit exceeded
+      if (error?.message?.includes('Search results too large')) {
+        return `Search results too large: The search returned too much content to process. Please try again - results vary by timing.`
+      }
       return `Error 400: "${companyName}" is not valid for our search. Please check the company name and try again.`
     }
     
