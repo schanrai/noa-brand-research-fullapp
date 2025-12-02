@@ -106,15 +106,26 @@ if (prompt.includes('TEST_ERROR')) {
       }
       
       // Get the actual error response from OpenRouter
-      let errorDetails = {};
+      let errorDetails: { error?: { message?: string } } = {};
       try {
           errorDetails = await response.json();
       } catch {
-          errorDetails = { text: await response.text() };
+          errorDetails = { error: { message: await response.text() } };
       }
       
       // Log to server console for debugging
       console.error('OpenRouter error:', errorDetails);
+      
+      // Handle 400 token limit exceeded error
+      if (response.status === 400 && errorDetails?.error?.message?.includes('maximum context length')) {
+        return NextResponse.json(
+          { 
+            error: 'Search results too large',
+            details: 'The search returned too much content to process. Please try again - results vary by timing.'
+          },
+          { status: 400 }
+        );
+      }
       
       // Return the error details in the API response
       return NextResponse.json(
