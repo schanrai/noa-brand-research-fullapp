@@ -292,6 +292,15 @@ export default function Home() {
       
       const companyName = value && value.trim() ? value : "Unknown Company"
       
+      // Check if this is an error response
+      if (parsedData?.error) {
+        setErrorToast({
+          show: true,
+          message: getErrorMessage(companyName, { message: parsedData.message })
+        });
+        return; // Exit early - error occurred
+      }
+      
       // Show error toast if no valid data - don't create dummy company
       if (!parsedData || !parsedData.structuredData) {
         setErrorToast({

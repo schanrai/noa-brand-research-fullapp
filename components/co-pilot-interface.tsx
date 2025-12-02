@@ -395,7 +395,22 @@ The company invests in sustainable materials and circular-design innovation [Nik
               
             } catch (e) {
               console.error('Research failed:', e);
-              setLlmResult("Error: " + (e as Error).message);
+              const errorMessage = (e as Error).message;
+              setLlmResult("Error: " + errorMessage);
+              
+              // Pass error details to parent for better error messages
+              const errorDetails = JSON.stringify({
+                error: true,
+                message: errorMessage
+              });
+              
+              if (currentStage === "processing-feedback") {
+                onFeedbackComplete?.();
+              } else {
+                onResponse("results", companyName, errorDetails);
+              }
+              setIsProcessing(false);
+              return;
             } finally {
               setIsProcessing(false);
               if (currentStage === "processing-feedback") {
@@ -404,8 +419,6 @@ The company invests in sustainable materials and circular-design innovation [Nik
                 // FIX: Check if combinedResult exists before using it
                 if (combinedResult) {
                 onResponse("results", companyName, JSON.stringify(combinedResult));
-                } else {
-                  onResponse("results", companyName, "");
                 }
               }
             }
