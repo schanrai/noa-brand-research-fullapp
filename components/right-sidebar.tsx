@@ -4,6 +4,8 @@ import { useState, useEffect } from "react"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Separator } from "@/components/ui/separator"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { ChevronDown, ChevronUp } from "lucide-react"
+import { Button } from "@/components/ui/button"
 import brandsData from "@/data/brands.json"
 import { isReportOnlyMode } from "@/lib/feature-flags"
 
@@ -12,6 +14,7 @@ const STORAGE_KEY = 'recently-viewed-companies'
 export default function RightSidebar() {
   const [chatHistory, setChatHistory] = useState<any[]>([])
   const [recentCompanies, setRecentCompanies] = useState<any[]>([])
+  const [isRecentExpanded, setIsRecentExpanded] = useState(false)
 
   // Simple sessionStorage functions
   const getRecentCompanies = (): any[] => {
@@ -63,13 +66,13 @@ export default function RightSidebar() {
   }, [])
 
   return (
-    <div className="w-80 border-l border-gray-200 bg-edge pt-24 px-24 pb-24">
-      <div className="space-y-48">
+    <div className="w-full md:w-80 border-t md:border-t-0 md:border-l border-gray-200 bg-edge pt-6 md:pt-24 px-4 md:px-24 pb-6 md:pb-24">
+      <div className="space-y-6 md:space-y-48">
         {!isReportOnlyMode() && (
           <>
             <div>
-              <h2 className="mb-24 text-sm font-bold uppercase tracking-wide">AI Co-pilot History</h2>
-              <ScrollArea className="h-[300px] rounded-lg border border-gray-200 bg-white p-16">
+              <h2 className="mb-4 md:mb-24 text-sm font-bold uppercase tracking-wide">AI Co-pilot History</h2>
+              <ScrollArea className="h-[200px] md:h-[300px] rounded-lg border border-gray-200 bg-white p-4 md:p-16">
                 <div className="space-y-16">
                   {chatHistory.map((message, index) => (
                     <div key={index} className={`flex ${message.role === "assistant" ? "justify-start" : "justify-end"}`}>
@@ -91,8 +94,26 @@ export default function RightSidebar() {
         )}
 
         <div>
-          <h2 className="mb-24 text-sm font-bold uppercase tracking-wide">Recently Viewed Companies</h2>
-          <div className="space-y-8">
+          <div className="flex items-center justify-between mb-4 md:mb-24">
+            <h2 className="text-sm font-bold uppercase tracking-wide">Recently Viewed Companies</h2>
+            {/* Mobile-only collapse/expand button */}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setIsRecentExpanded(!isRecentExpanded)}
+              className="md:hidden h-8 w-8 p-0"
+            >
+              {isRecentExpanded ? (
+                <ChevronDown className="h-4 w-4" />
+              ) : (
+                <ChevronUp className="h-4 w-4" />
+              )}
+              <span className="sr-only">{isRecentExpanded ? 'Collapse' : 'Expand'}</span>
+            </Button>
+          </div>
+          
+          {/* Desktop: Always show, Mobile: Collapsible */}
+          <div className={`space-y-8 ${!isRecentExpanded ? 'hidden md:block' : ''}`}>
             {recentCompanies.length > 0 ? (
               recentCompanies.map((company) => (
                 <div

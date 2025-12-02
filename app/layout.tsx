@@ -15,6 +15,7 @@ const inter = Inter({
 })
 
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://www.scova.io"),
   title: "Scova - The Prospect-Brief Engine for Teams Who Pitch for a Living",
   description: "Turn content overload  into a cited, comparable prospect brief—so your team can qualify accounts, prioritize outreach, and align fast.",
   openGraph: {
@@ -24,7 +25,7 @@ export const metadata: Metadata = {
     siteName: "Scova",
     images: [
       {
-        url: "/public/og-image.png",
+        url: "/og-image.png",
         width: 1200,
         height: 630,
         alt: "Scova - The Prospect-Brief Engine for Teams Who Pitch for a Living",
@@ -37,7 +38,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Scova - The Prospect-Brief Engine for Teams Who Pitch for a Living",
     description: "Turn content overload into a cited, comparable prospect brief—so your team can qualify accounts, prioritize outreach, and align fast.",
-    images: ["/public/og-image.png"],
+    images: ["/og-image.png"],
   },
 }
 

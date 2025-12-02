@@ -60,6 +60,11 @@ export default function Home() {
       return `Network Error: Unable to connect to our research service. Please check your internet connection and try again.`
     }
     
+    // Check for token limit exceeded (must check before generic LLM error)
+    if (error?.message?.includes('Search results too large')) {
+      return `The search returned too much content to process. Please try again - results vary by timing.`
+    }
+    
     // LLM service errors (from the client)
     if (error?.message?.includes('LLM request failed')) {
       return `Service Error: The research service encountered an error. Please try again or contact support if the problem persists.`
@@ -288,6 +293,15 @@ export default function Home() {
       
       const companyName = value && value.trim() ? value : "Unknown Company"
       
+      // Check if this is an error response
+      if (parsedData?.error) {
+        setErrorToast({
+          show: true,
+          message: getErrorMessage(companyName, { message: parsedData.message })
+        });
+        return; // Exit early - error occurred
+      }
+      
       // Show error toast if no valid data - don't create dummy company
       if (!parsedData || !parsedData.structuredData) {
         setErrorToast({
@@ -375,7 +389,7 @@ export default function Home() {
   return (
     <div className="flex h-screen-dynamic flex-col">
       <TopNavigation onTabChange={handleChatResponse} />
-      <div className="flex flex-1 min-h-0 overflow-auto">
+      <div className="flex flex-col md:flex-row flex-1 min-h-0 overflow-auto">
         {!isReportOnlyMode() && <LeftSidebar onSearch={handleSearch} />}
         <MainContent
           searchResults={searchResults}
@@ -388,7 +402,9 @@ export default function Home() {
           searchMode={searchMode}
           filters={filters}
         />
-        <RightSidebar />
+        <div className="w-full md:w-80">
+          <RightSidebar />
+        </div>
       </div>
 
 

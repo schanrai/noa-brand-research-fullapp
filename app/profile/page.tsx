@@ -21,9 +21,10 @@ export default function ProfilePage() {
     console.log('[Profile] State changed - loading:', loading, 'user:', user ? 'exists' : 'null')
   }, [loading, user])
 
-  // Skeleton UI while loading (middleware already protects this route)
-  if (loading || !user) {
-    console.log('[Profile] Rendering skeleton - loading:', loading, 'user:', user ? 'exists' : 'null')
+  // Middleware already verified user exists - only show skeleton if user data not loaded yet
+  // Trust middleware: if we got here, user is authenticated, just waiting for user data
+  if (!user) {
+    console.log('[Profile] Rendering skeleton - waiting for user data (middleware already verified auth)')
     return (
       <div className="min-h-screen bg-background">
         <div className="container max-w-4xl mx-auto py-12 px-4 animate-pulse">

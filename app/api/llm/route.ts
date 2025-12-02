@@ -93,16 +93,39 @@ if (prompt.includes('TEST_ERROR')) {
         );
       }
       
+      // Handle 500 Internal Server Error
+      if (response.status === 500) {
+        console.error('OpenRouter 500 error');
+        return NextResponse.json(
+          { 
+            error: 'Service temporarily unavailable',
+            details: 'OpenRouter server is currently busy. Please try again in a little while.'
+          },
+          { status: 500 }
+        );
+      }
+      
       // Get the actual error response from OpenRouter
-      let errorDetails = {};
+      let errorDetails: { error?: { message?: string } } = {};
       try {
           errorDetails = await response.json();
       } catch {
-          errorDetails = { text: await response.text() };
+          errorDetails = { error: { message: await response.text() } };
       }
       
       // Log to server console for debugging
       console.error('OpenRouter error:', errorDetails);
+      
+      // Handle 400 token limit exceeded error
+      if (response.status === 400 && errorDetails?.error?.message?.includes('maximum context length')) {
+        return NextResponse.json(
+          { 
+            error: 'Search results too large',
+            details: 'The search returned too much content to process. Please try again - results vary by timing.'
+          },
+          { status: 400 }
+        );
+      }
       
       // Return the error details in the API response
       return NextResponse.json(
