@@ -93,6 +93,18 @@ if (prompt.includes('TEST_ERROR')) {
         );
       }
       
+      // Handle 500 Internal Server Error
+      if (response.status === 500) {
+        console.error('OpenRouter 500 error');
+        return NextResponse.json(
+          { 
+            error: 'Service temporarily unavailable',
+            details: 'OpenRouter server is currently busy. Please try again in a little while.'
+          },
+          { status: 500 }
+        );
+      }
+      
       // Get the actual error response from OpenRouter
       let errorDetails = {};
       try {
