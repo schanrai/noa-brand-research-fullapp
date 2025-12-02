@@ -107,7 +107,7 @@ export async function getDetailedAnalysisWithCitations(prompt: string) {
         plugins: [{
           id: "web",
           engine: "exa",
-          max_results: 15 // Reduced from 50 due to OpenRouter API changes (Dec 2024)
+          max_results: 7 // Reduced to stay under 128K token limit (Dec 2024)
         }],
         skipValidation: true // Skip validation for LLM-generated content
       }),
@@ -147,7 +147,7 @@ RESEARCH CONTENT:
 ${content}
 
 Format as clean, readable narrative text that follows the schema requirements, keeping all markdown links intact.`,
-      model: "openai/gpt-4o", // Upgraded from gpt-4o-mini for larger context handling
+      model: "openai/gpt-4o-mini",
       temperature: 0.0,
       top_p: 0.1,
       max_tokens: 15000,
