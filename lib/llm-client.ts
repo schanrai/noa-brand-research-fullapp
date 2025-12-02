@@ -147,7 +147,7 @@ RESEARCH CONTENT:
 ${content}
 
 Format as clean, readable narrative text that follows the schema requirements, keeping all markdown links intact.`,
-      model: "openai/gpt-4o-mini",
+      model: "openai/gpt-4o", // Upgraded from gpt-4o-mini for larger context handling
       temperature: 0.0,
       top_p: 0.1,
       max_tokens: 15000,
