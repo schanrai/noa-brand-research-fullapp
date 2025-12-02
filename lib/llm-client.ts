@@ -107,7 +107,7 @@ export async function getDetailedAnalysisWithCitations(prompt: string) {
         plugins: [{
           id: "web",
           engine: "exa",
-          max_results: 15
+          max_results: 7
         }],
         skipValidation: true // Skip validation for LLM-generated content
       }),

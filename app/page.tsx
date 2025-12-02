@@ -60,6 +60,11 @@ export default function Home() {
       return `Network Error: Unable to connect to our research service. Please check your internet connection and try again.`
     }
     
+    // Check for token limit exceeded (must check before generic LLM error)
+    if (error?.message?.includes('Search results too large')) {
+      return `The search returned too much content to process. Please try again - results vary by timing.`
+    }
+    
     // LLM service errors (from the client)
     if (error?.message?.includes('LLM request failed')) {
       return `Service Error: The research service encountered an error. Please try again or contact support if the problem persists.`
@@ -67,10 +72,6 @@ export default function Home() {
     
     // Validation errors (400 status)
     if (error?.status === 400) {
-      // Check for token limit exceeded
-      if (error?.message?.includes('Search results too large')) {
-        return `Search results too large: The search returned too much content to process. Please try again - results vary by timing.`
-      }
       return `Error 400: "${companyName}" is not valid for our search. Please check the company name and try again.`
     }
     
